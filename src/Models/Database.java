@@ -77,8 +77,10 @@ public class Database {
 
     try {
       String command =
-              "INSERT INTO users(name,password,contact,address,cc,type) " +
-                      "VALUES(?, ?, ?, ?, ?, ?)";
+              "INSERT INTO users(" +
+                      "name, password, contact, address, cc, type) " +
+                      "VALUES(?, ?, ?, ?, ?, ?" +
+                      ")";
 
       dbConn = connectToDB();
 

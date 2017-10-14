@@ -1,11 +1,10 @@
 package Data;
 
 public class User {
-  private int ID;
   private String name;
   private String password;
-  private int departmentID;
-  private int facultyID;
+  private Department department;
+  private Faculty faculty;
   private String contact;
   private String address;
   private String cc;
@@ -14,12 +13,11 @@ public class User {
 
   public User() {}
 
-  public User(int ID, String name, String password, int departmentID, int facultyID, String contact, String address, String cc, String expireDate, int type) {
-      this.ID = ID;
+  public User(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) {
       this.name = name;
       this.password = password;
-      this.departmentID = departmentID;
-      this.facultyID = facultyID;
+      this.department = department;
+      this.faculty = faculty;
       this.contact = contact;
       this.address = address;
       this.cc = cc;
@@ -28,11 +26,6 @@ public class User {
   }
 
   // Getters and Setters
-  public int getID() { return ID; }
-  public void setID(int ID) {
-      this.ID = ID;
-  }
-
   public String getName() {
       return name;
   }
@@ -47,19 +40,11 @@ public class User {
       this.password = password;
   }
 
-  public int getDepartmentID() {
-      return departmentID;
-  }
-  public void setDepartmentID(int departmentID) {
-      this.departmentID = departmentID;
-  }
+  public Department getDepartment() { return department; }
+  public void setDepartment(Department department) { this.department = department; }
 
-  public int getFacultyID() {
-      return facultyID;
-  }
-  public void setFacultyID(int facultyID) {
-      this.facultyID = facultyID;
-  }
+  public Faculty getFaculty() { return faculty; }
+  public void setFaculty(Faculty faculty) { this.faculty = faculty; }
 
   public String getContact() {
       return contact;
@@ -98,17 +83,16 @@ public class User {
 
   @Override
   public String toString() {
-      return "Data.User{" +
-              "ID=" + ID +
-              ", name='" + name + '\'' +
-              ", password='" + password + '\'' +
-              ", departmentID=" + departmentID +
-              ", facultyID=" + facultyID +
-              ", contact='" + contact + '\'' +
-              ", address='" + address + '\'' +
-              ", cc='" + cc + '\'' +
-              ", expireDate='" + expireDate + '\'' +
-              ", type=" + type +
-              '}';
+    return "User{" +
+            "name='" + name + '\'' +
+            ", password='" + password + '\'' +
+            ", department=" + department +
+            ", faculty=" + faculty +
+            ", contact='" + contact + '\'' +
+            ", address='" + address + '\'' +
+            ", cc='" + cc + '\'' +
+            ", expireDate='" + expireDate + '\'' +
+            ", type=" + type +
+            '}';
   }
 }

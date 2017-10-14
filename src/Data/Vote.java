@@ -1,55 +1,33 @@
 package Data;
 
 public class Vote {
-  private int ID;
-  private int userID;
-  private int electionID;
-  private int candidateListID;
+  private User user;
+  private Election election;
+  private CandidateList candidateList;
 
   public Vote() {}
 
-  public Vote(int ID, int userID, int electionID, int candidateListID) {
-    this.ID = ID;
-    this.userID = userID;
-    this.electionID = electionID;
-    this.candidateListID = candidateListID;
+  public Vote(User user, Election election, CandidateList candidateList) {
+    this.user = user;
+    this.election = election;
+    this.candidateList = candidateList;
   }
 
-  public int getID() {
-      return ID;
-  }
-  public void setID(int ID) {
-      this.ID = ID;
-  }
+  public User getUser() { return user; }
+  public void setUser(User user) { this.user = user; }
 
-  public int getUserID() {
-      return userID;
-  }
-  public void setUserID(int userID) {
-      this.userID = userID;
-  }
+  public Election getElection() { return election; }
+  public void setElection(Election election) { this.election = election; }
 
-  public int getElectionID() {
-      return electionID;
-  }
-  public void setElectionID(int electionID) {
-      this.electionID = electionID;
-  }
-
-  public int getCandidateListID() {
-      return candidateListID;
-  }
-  public void setCandidateListID(int candidateListID) {
-      this.candidateListID = candidateListID;
-  }
+  public CandidateList getCandidateList() { return candidateList; }
+  public void setCandidateList(CandidateList candidateList) { this.candidateList = candidateList; }
 
   @Override
   public String toString() {
     return "Vote{" +
-            "ID=" + ID +
-            ", userID=" + userID +
-            ", electionID=" + electionID +
-            ", candidateListID=" + candidateListID +
+            "user=" + user +
+            ", election=" + election +
+            ", candidateList=" + candidateList +
             '}';
   }
 }

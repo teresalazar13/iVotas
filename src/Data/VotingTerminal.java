@@ -1,21 +1,12 @@
 package Data;
 
 public class VotingTerminal {
-  private int ID;
   private int status;
 
   public VotingTerminal() {}
 
-  public VotingTerminal(int ID, int status) {
-    this.ID = ID;
+  public VotingTerminal(int status) {
     this.status = status;
-  }
-
-  public int getID() {
-      return ID;
-  }
-  public void setID(int ID) {
-      this.ID = ID;
   }
 
   public int getStatus() {
@@ -28,8 +19,7 @@ public class VotingTerminal {
   @Override
   public String toString() {
     return "Data.VotingTerminal{" +
-            "ID=" + ID +
-            ", status=" + status +
+            "Status=" + status +
             '}';
   }
 }

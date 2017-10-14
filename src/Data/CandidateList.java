@@ -3,46 +3,31 @@ package Data;
 import java.util.*;
 
 public class CandidateList {
+  private Election election;
+  private ArrayList<User> users;
 
-    private int ID;
-    private Election electionID;
-    private int[] candidatesIDs;
+  public CandidateList() {}
 
-    public CandidateList() {}
+  public CandidateList(Election election, ArrayList<User> users) {
+      this.election = election;
+      this.users = users;
+  }
 
-    public CandidateList(int ID, Election electionID, int[] candidatesIDs) {
-        this.ID = ID;
-        this.electionID = electionID;
-        this.candidatesIDs = candidatesIDs;
-    }
+  public Election getElection() {
+      return election;
+  }
+  public void setElection(Election election) {
+      this.election = election;
+  }
 
-    public int getID() {
-        return ID;
-    }
-    public void setID(int ID) {
-        this.ID = ID;
-    }
+  public ArrayList<User> getUsers() { return users; }
+  public void setUsers(ArrayList<User> users) { this.users = users; }
 
-    public Election getElectionID() {
-        return electionID;
-    }
-    public void setElectionID(Election electionID) {
-        this.electionID = electionID;
-    }
-
-    public int[] getCandidatesIDs() {
-        return candidatesIDs;
-    }
-    public void setCandidatesIDs(int[] candidatesIDs) {
-        this.candidatesIDs = candidatesIDs;
-    }
-
-    @Override
-    public String toString() {
-        return "Data.CandidateList{" +
-                "ID=" + ID +
-                ", electionID=" + electionID +
-                ", candidatesIDs=" + Arrays.toString(candidatesIDs) +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "CandidateList{" +
+            "election=" + election +
+            ", users=" + users +
+            '}';
+  }
 }

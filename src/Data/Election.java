@@ -1,33 +1,25 @@
 package Data;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Election {
-  private int ID;
   private String name;
   private String description;
   private Date startDate;
   private Date endDate;
   private int type;
-  private int[] votesIDs;
+  private ArrayList<Vote> votes;
 
   public Election() {}
 
-  public Election(int ID, String name, String description, Date startDate, Date endDate, int type, int[] votesIDs) {
-    this.ID = ID;
+  public Election(String name, String description, Date startDate, Date endDate, int type, ArrayList<Vote> votes) {
     this.name = name;
     this.description = description;
     this.startDate = startDate;
     this.endDate = endDate;
     this.type = type;
-    this.votesIDs = votesIDs;
-  }
-
-  public int getID() {
-      return ID;
-  }
-  public void setID(int ID) {
-      this.ID = ID;
+    this.votes = votes;
   }
 
   public String getName() {
@@ -65,24 +57,18 @@ public class Election {
       this.type = type;
   }
 
-  public int[] getVotesIDs() {
-      return votesIDs;
-  }
-  public void setVotesIDs(int[] votesIDs) {
-      this.votesIDs = votesIDs;
-  }
+  public ArrayList<Vote> getVotes() { return votes; }
+  public void setVotes(ArrayList<Vote> votes) { this.votes = votes; }
 
   @Override
   public String toString() {
-    return "Data.Election{" +
-            "ID=" + ID +
-            ", name='" + name + '\'' +
+    return "Election{" +
+            "name='" + name + '\'' +
             ", description='" + description + '\'' +
             ", startDate=" + startDate +
             ", endDate=" + endDate +
             ", type=" + type +
-            ", votesIDs=" + Arrays.toString(votesIDs) +
+            ", votes=" + votes +
             '}';
   }
-
 }
