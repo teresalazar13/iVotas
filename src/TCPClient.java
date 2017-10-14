@@ -38,6 +38,7 @@ class TCPClient {
       new Thread() {
         public void run() {
           Scanner keyboardScanner = new Scanner(System.in);
+
           while(!socket.isClosed()) {
             String readKeyboard = keyboardScanner.nextLine();
             outToServer.println(readKeyboard);
