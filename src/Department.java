@@ -1,22 +1,22 @@
 public class Department {
-    private int id;
+    private int ID;
     private String name;
     private int facultyID;
 
     public Department() {}
 
-    public Department(int id, String name, int facultyID) {
-        this.id = id;
+    public Department(int ID, String name, int facultyID) {
+        this.ID = ID;
         this.name = name;
         this.facultyID = facultyID;
     }
 
-    public int getId() {
-        return id;
+    public int getID() {
+        return ID;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public String getName() {
@@ -38,7 +38,7 @@ public class Department {
     @Override
     public String toString() {
         return "Department{" +
-                "id=" + id +
+                "ID=" + ID +
                 ", name='" + name + '\'' +
                 ", facultyID=" + facultyID +
                 '}';

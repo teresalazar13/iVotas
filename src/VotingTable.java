@@ -1,28 +1,28 @@
 import java.util.*;
 
 public class VotingTable {
-    private int id;
+    private int ID;
     private Election election;
     private int machineID;
-    private ArrayList<VotingTerminal> votingTerminals;
+    private int[] votingTerminalsIDs;
     private String location;
 
     public VotingTable() {}
 
-    public VotingTable(int id, Election election, int machineID, ArrayList<VotingTerminal> votingTerminals, String location) {
-        this.id = id;
+    public VotingTable(int ID, Election election, int machineID, int[] votingTerminalsIDs, String location) {
+        this.ID = ID;
         this.election = election;
         this.machineID = machineID;
-        this.votingTerminals = votingTerminals;
+        this.votingTerminalsIDs = votingTerminalsIDs;
         this.location = location;
     }
 
-    public int getId() {
-        return id;
+    public int getID() {
+        return ID;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public Election getElection() {
@@ -41,12 +41,12 @@ public class VotingTable {
         this.machineID = machineID;
     }
 
-    public ArrayList<VotingTerminal> getVotingTerminals() {
-        return votingTerminals;
+    public int[] getVotingTerminalsIDs() {
+        return votingTerminalsIDs;
     }
 
-    public void setVotingTerminals(ArrayList<VotingTerminal> votingTerminals) {
-        this.votingTerminals = votingTerminals;
+    public void setVotingTerminalsIDs(int[] votingTerminalsIDs) {
+        this.votingTerminalsIDs = votingTerminalsIDs;
     }
 
     public String getLocation() {
@@ -60,10 +60,10 @@ public class VotingTable {
     @Override
     public String toString() {
         return "VotingTable{" +
-                "id=" + id +
+                "ID=" + ID +
                 ", election=" + election +
                 ", machineID=" + machineID +
-                ", votingTerminals=" + votingTerminals +
+                ", votingTerminalsIDs=" + Arrays.toString(votingTerminalsIDs) +
                 ", location='" + location + '\'' +
                 '}';
     }

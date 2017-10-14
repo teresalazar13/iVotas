@@ -1,20 +1,20 @@
 public class VotingTerminal {
-    private int id;
+    private int ID;
     private int status;
 
     public VotingTerminal() {}
 
-    public VotingTerminal(int id, int status) {
-        this.id = id;
+    public VotingTerminal(int ID, int status) {
+        this.ID = ID;
         this.status = status;
     }
 
-    public int getId() {
-        return id;
+    public int getID() {
+        return ID;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public int getStatus() {
@@ -28,7 +28,7 @@ public class VotingTerminal {
     @Override
     public String toString() {
         return "VotingTerminal{" +
-                "id=" + id +
+                "ID=" + ID +
                 ", status=" + status +
                 '}';
     }

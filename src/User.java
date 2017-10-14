@@ -1,36 +1,36 @@
 public class User {
-    private int id;
+    private int ID;
     private String name;
     private String password;
     private int departmentID;
     private int facultyID;
     private String contact;
     private String address;
-    private String ccID;
+    private String cc;
     private String expireDate;
     private int type;
 
     public User() {}
 
-    public User(int id, String name, String password, int departmentID, int facultyID, String contact, String address, String ccID, String expireDate, int type) {
-        this.id = id;
+    public User(int ID, String name, String password, int departmentID, int facultyID, String contact, String address, String cc, String expireDate, int type) {
+        this.ID = ID;
         this.name = name;
         this.password = password;
         this.departmentID = departmentID;
         this.facultyID = facultyID;
         this.contact = contact;
         this.address = address;
-        this.ccID = ccID;
+        this.cc = cc;
         this.expireDate = expireDate;
         this.type = type;
     }
 
-    public int getId() {
-        return id;
+    public int getID() {
+        return ID;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public String getName() {
@@ -81,12 +81,12 @@ public class User {
         this.address = address;
     }
 
-    public String getCcID() {
-        return ccID;
+    public String getCc() {
+        return cc;
     }
 
-    public void setCcID(String ccID) {
-        this.ccID = ccID;
+    public void setCc(String cc) {
+        this.cc = cc;
     }
 
     public String getExpireDate() {
@@ -108,14 +108,14 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
+                "ID=" + ID +
                 ", name='" + name + '\'' +
                 ", password='" + password + '\'' +
                 ", departmentID=" + departmentID +
                 ", facultyID=" + facultyID +
                 ", contact='" + contact + '\'' +
                 ", address='" + address + '\'' +
-                ", ccID='" + ccID + '\'' +
+                ", cc='" + cc + '\'' +
                 ", expireDate='" + expireDate + '\'' +
                 ", type=" + type +
                 '}';

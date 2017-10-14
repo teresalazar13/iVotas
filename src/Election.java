@@ -1,28 +1,32 @@
+import java.util.Arrays;
+
 public class Election {
-    private int id;
+    private int ID;
     private String name;
     private String description;
     private Date startDate;
     private Date endDate;
     private int type;
+    private int[] votesIDs;
 
     public Election() {}
 
-    public Election(int id, String name, String description, Date startDate, Date endDate, int type) {
-        this.id = id;
+    public Election(int ID, String name, String description, Date startDate, Date endDate, int type, int[] votesIDs) {
+        this.ID = ID;
         this.name = name;
         this.description = description;
         this.startDate = startDate;
         this.endDate = endDate;
         this.type = type;
+        this.votesIDs = votesIDs;
     }
 
-    public int getId() {
-        return id;
+    public int getID() {
+        return ID;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public String getName() {
@@ -65,15 +69,24 @@ public class Election {
         this.type = type;
     }
 
+    public int[] getVotesIDs() {
+        return votesIDs;
+    }
+
+    public void setVotesIDs(int[] votesIDs) {
+        this.votesIDs = votesIDs;
+    }
+
     @Override
     public String toString() {
         return "Election{" +
-                "id=" + id +
+                "ID=" + ID +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", type=" + type +
+                ", votesIDs=" + Arrays.toString(votesIDs) +
                 '}';
     }
 }

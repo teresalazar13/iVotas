@@ -4,8 +4,8 @@ import java.util.*;
 
 public interface RMIInterface extends Remote {
 
-    void createUser(String name, String password, int departmentID, int facultyID, String contact,
-                           String address, String ccID, String expireDate, int type) throws RemoteException;
+    void createUser(String name, String password, int departmentID, int facultyID, String contact, String address,
+                    String cc, String expireDate, int type) throws RemoteException;
 
     void createFaculty(String name) throws RemoteException;
     void createDepartment(String name, int facultyID) throws RemoteException;
@@ -19,11 +19,11 @@ public interface RMIInterface extends Remote {
     void createElection(String name, String description, Date startDate, Date endDate, int type) throws RemoteException;
     void updateElection(Election election) throws RemoteException;
 
-    void createList(Election election) throws RemoteException;
-    void updateList(Election election, CandidateList candidateList) throws RemoteException;
+    void createList(Election electionID, int[] candidatesIDs) throws RemoteException;
+    void updateList(Election electionID, int[] candidatesIDs) throws RemoteException;
     List removeList(CandidateList candidateList) throws RemoteException;
 
-    void addVotingTable(Election election, int machineID, ArrayList<VotingTerminal> votingTerminals, String location) throws RemoteException;
+    void createVotingTable(Election election, int machineID, int[] votingTerminalsIDs, String location) throws RemoteException;
     VotingTable removeVotingTable() throws RemoteException;
 
     void createVotingTerminal(int status);
@@ -32,7 +32,7 @@ public interface RMIInterface extends Remote {
 
     void authenticateUser(String name, String password);
 
-    void vote(User user, CandidateList candidateList, Election election);
+    void vote(int userID, int electionID, int candidateListID);
 
     List getVotingInfo(User user, Election election) throws RemoteException;
     void getElectionResults();

@@ -1,20 +1,20 @@
 public class Faculty {
-    private int id;
+    private int ID;
     private String name;
 
     public Faculty() {}
 
-    public Faculty(int id, String name) {
-        this.id = id;
+    public Faculty(int ID, String name) {
+        this.ID = ID;
         this.name = name;
     }
 
-    public int getId() {
-        return id;
+    public int getID() {
+        return ID;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public String getName() {
@@ -28,7 +28,7 @@ public class Faculty {
     @Override
     public String toString() {
         return "Faculty{" +
-                "id=" + id +
+                "ID=" + ID +
                 ", name='" + name + '\'' +
                 '}';
     }

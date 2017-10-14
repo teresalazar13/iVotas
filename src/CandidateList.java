@@ -1,49 +1,48 @@
 import java.util.*;
 
 public class CandidateList {
-    private int id;
-    private Election election;
-    private ArrayList<User> candidates;
+    private int ID;
+    private Election electionID;
+    private int[] candidatesIDs;
 
     public CandidateList() {}
 
-    public CandidateList(int id, Election election, ArrayList<User> candidates) {
-        this.id = id;
-        this.election = election;
-        this.candidates = candidates;
+    public CandidateList(int ID, Election electionID, int[] candidatesIDs) {
+        this.ID = ID;
+        this.electionID = electionID;
+        this.candidatesIDs = candidatesIDs;
     }
 
-    public int getId() {
-
-        return id;
+    public int getID() {
+        return ID;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
-    public Election getElection() {
-        return election;
+    public Election getElectionID() {
+        return electionID;
     }
 
-    public void setElection(Election election) {
-        this.election = election;
+    public void setElectionID(Election electionID) {
+        this.electionID = electionID;
     }
 
-    public ArrayList<User> getCandidates() {
-        return candidates;
+    public int[] getCandidatesIDs() {
+        return candidatesIDs;
     }
 
-    public void setCandidates(ArrayList<User> candidates) {
-        this.candidates = candidates;
+    public void setCandidatesIDs(int[] candidatesIDs) {
+        this.candidatesIDs = candidatesIDs;
     }
 
     @Override
     public String toString() {
         return "CandidateList{" +
-                "id=" + id +
-                ", election=" + election +
-                ", candidates=" + candidates +
+                "ID=" + ID +
+                ", electionID=" + electionID +
+                ", candidatesIDs=" + Arrays.toString(candidatesIDs) +
                 '}';
     }
 }
