@@ -5,9 +5,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class File {
-  // Com esta abordagem vamos ter que guardar todos os objects como array list nalguma classe
-  // Parece-me melhor guardar essas arrays list no RMI assim implementas logo tudo
-
   /*
   *  Como ler users do file:
   *  ObjectInputStream iS = new ObjectInputStream(new FileInputStream("users"));

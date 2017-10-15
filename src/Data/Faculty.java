@@ -6,7 +6,7 @@ public class Faculty {
   private String name;
   private ArrayList<Department> departments;
 
-  public Faculty() {} 
+  public Faculty() {}
 
   public Faculty(String name, ArrayList<Department> departments) {
     this.name = name;

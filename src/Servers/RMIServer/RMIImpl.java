@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
+  // para escrever e ler de ficherios de objectos temos aqui as array lists que vao ter tudo
   ArrayList<CandidateList> candidateLists;
   ArrayList<Faculty> faculties;
   ArrayList<Election> elections;
