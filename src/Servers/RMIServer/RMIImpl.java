@@ -6,7 +6,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
-import java.net.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -22,29 +21,25 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   protected RMIImpl() throws RemoteException {
     super();
     try {
+
       GetData data = new GetData();
       users = data.users;
       faculties = data.faculties;
       departments = data.departments;
+
     } catch (ClassNotFoundException e) {
       System.out.println("Class Not Found Exception " + e);
-
     } catch (java.io.IOException e) {
       System.out.println("java.io.IOException " + e);
     }
   }
 
-  public String sayHello() throws RemoteException {
-    System.out.println("Printing on server...");
-    return "ACK";
-  }
-
   public void remote_print(String s) throws RemoteException {
-    System.out.println("Server:" + s);
+    System.out.println("Server: " + s);
   }
 
-  public void createUser(String name, String password, int departmentID, int facultyID, String contact, String address, String cc, String expireDate, int type) throws RemoteException {
-
+  public void createUser(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) {
+    User user = new User(name, password, department, faculty, contact, address, cc, expireDate, type);
   }
 
   public void createFaculty(String name) throws RemoteException {
@@ -121,6 +116,24 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
   public void getElectionResults() throws RemoteException {
 
+  }
+
+  public Department getDepartmentByName(String departmentName) {
+    for (int i = 0; i < departments.size(); i++) {
+      if (departments.get(i).getName().equals(departmentName)) {
+        return departments.get(i);
+      }
+    }
+    return null;
+  }
+
+  public Faculty getFacultyByName(String facultyName) {
+    for (int i = 0; i < faculties.size(); i++) {
+      if (faculties.get(i).getName().equals(facultyName)) {
+        return faculties.get(i);
+      }
+    }
+    return null;
   }
 
   public static void main(String args[]) {
