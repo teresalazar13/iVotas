@@ -9,16 +9,18 @@ public class Election {
   private Date startDate;
   private Date endDate;
   private int type;
+  private ArrayList<CandidateList> candidateLists;
   private ArrayList<Vote> votes;
 
   public Election() {}
 
-  public Election(String name, String description, Date startDate, Date endDate, int type, ArrayList<Vote> votes) {
+  public Election(String name, String description, Date startDate, Date endDate, int type, ArrayList<CandidateList> candidateLists, ArrayList<Vote> votes) {
     this.name = name;
     this.description = description;
     this.startDate = startDate;
     this.endDate = endDate;
     this.type = type;
+    this.candidateLists = candidateLists;
     this.votes = votes;
   }
 
@@ -57,6 +59,9 @@ public class Election {
       this.type = type;
   }
 
+  public ArrayList<CandidateList> getCandidateLists() { return candidateLists; }
+  public void setCandidateLists(ArrayList<CandidateList> candidateLists) { this.candidateLists = candidateLists; }
+
   public ArrayList<Vote> getVotes() { return votes; }
   public void setVotes(ArrayList<Vote> votes) { this.votes = votes; }
 
@@ -68,6 +73,7 @@ public class Election {
             ", startDate=" + startDate +
             ", endDate=" + endDate +
             ", type=" + type +
+            ", candidateLists=" + candidateLists +
             ", votes=" + votes +
             '}';
   }
