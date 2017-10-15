@@ -15,7 +15,7 @@ public class GetData {
     ArrayList<VotingTable> votingTables;
 
     public GetData() throws IOException, ClassNotFoundException {
-        Department department1 = new Department("Engenharia Informatica");
+        Department department1 = new Department("EngenhariaInformatica");
         ArrayList<Department> departments = new ArrayList<Department>();
         departments.add(department1);
 
