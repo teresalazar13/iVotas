@@ -1,8 +1,9 @@
 package Models;
 
 import Data.*;
-
 import java.sql.*;
+import java.lang.reflect.Field;
+
 
 public class Database {
   // Connects to a postgres DB
@@ -104,5 +105,47 @@ public class Database {
     } catch (SQLException e) {
       e.printStackTrace();
     }
+  }
+
+
+  // Search user by username TODO: serach by any field
+  public User searchUser(String name) {
+    User user = null;
+    Connection dbConn = null;
+    PreparedStatement preparedStatement = null;
+
+    try {
+      // Query to be executed
+      String command = "SELECT * FROM users " +
+              "WHERE name=?";
+
+      dbConn = connectToDB();
+
+      preparedStatement = dbConn.prepareStatement(command);
+      preparedStatement.setString(1, name);
+
+      ResultSet results = preparedStatement.executeQuery();
+      while (results.next()) {
+        // build user from data, this still needs the info from dep and faculty
+        user = new User(
+                results.getString("name"),
+                results.getString("password"),
+                null,
+                null,
+                results.getString("contact"),
+                results.getString("address"),
+                results.getString("cc"),
+                results.getString("expireDate"),
+                results.getInt("type")
+        );
+      }
+
+      preparedStatement.close();
+      dbConn.close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+
+    return user;
   }
 }
