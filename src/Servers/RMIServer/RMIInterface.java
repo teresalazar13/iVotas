@@ -9,8 +9,6 @@ import java.util.List;
 
 public interface RMIInterface extends Remote {
 
-    String sayHello() throws RemoteException;
-
     void remote_print(String s) throws RemoteException;
 
     void createUser(String name, String password, int departmentID, int facultyID, String contact, String address,

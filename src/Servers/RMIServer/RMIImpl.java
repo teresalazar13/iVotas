@@ -6,7 +6,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
-import java.net.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -32,11 +31,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     } catch (java.io.IOException e) {
       System.out.println("java.io.IOException " + e);
     }
-  }
-
-  public String sayHello() throws RemoteException {
-    System.out.println("Printing on server...");
-    return "ACK";
   }
 
   public void remote_print(String s) throws RemoteException {
