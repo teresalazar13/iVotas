@@ -4,9 +4,15 @@ import Data.*;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
+  ArrayList<CandidateList> candidateLists;
+  ArrayList<Faculty> faculties;
+  ArrayList<Election> elections;
+  ArrayList<User> users;
+  ArrayList<VotingTable> votingTables;
 
   protected RMIImpl() throws RemoteException {
     super();
