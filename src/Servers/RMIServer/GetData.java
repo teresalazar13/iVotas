@@ -1,10 +1,20 @@
-import java.io.IOException;
-import java.util.ArrayList;
+package Servers.RMIServer;
+
 import Data.*;
 
-public class Data {
+import java.io.IOException;
+import java.util.ArrayList;
 
-    public static void main(String args[]) throws IOException, ClassNotFoundException {
+public class GetData {
+
+    ArrayList<User> users;
+    ArrayList<Faculty> faculties;
+    ArrayList<Department> departments;
+    ArrayList<Election> elections;
+    ArrayList<CandidateList> candidateLists;
+    ArrayList<VotingTable> votingTables;
+
+    public GetData() throws IOException, ClassNotFoundException {
         Department department1 = new Department("Engenharia Informatica");
         ArrayList<Department> departments = new ArrayList<Department>();
         departments.add(department1);
@@ -27,9 +37,9 @@ public class Data {
         writeFile(faculties,"Faculties");
         ArrayList<Faculty> facultiesFromFile = (ArrayList<Faculty>) readFile("Faculty");
 
-        System.out.println(usersFromFile);
-        System.out.println(departmentsFromFile);
-        System.out.println(facultiesFromFile);
+        this.users = usersFromFile;
+        this.departments = departmentsFromFile;
+        this.faculties = facultiesFromFile;
     }
 
     private static void writeFile(Object classe, String className) throws IOException, ClassNotFoundException {
@@ -40,7 +50,7 @@ public class Data {
         file.closeWrite();
     }
 
-    public static ArrayList readFile(String className) throws IOException, ClassNotFoundException {
+    private static ArrayList readFile(String className) throws IOException, ClassNotFoundException {
         String filename;
         if (className.substring(className.length() - 1).equals("y")) {
             filename = "ObjectFiles/" + className.substring(0, className.length() - 1) + "ies" + ".dat";
