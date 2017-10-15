@@ -1,8 +1,7 @@
 import Servers.RMIServer.*;
+import java.rmi.registry.LocateRegistry;
 
-import java.rmi.*;
-
-public class RMIClient {
+public class Admin {
 
   public static void main(String args[]) {
 
@@ -10,7 +9,7 @@ public class RMIClient {
     //System.setSecurityManager(new RMISecurityManager());
 
     try {
-      RMIInterface r = (RMIInterface) Naming.lookup("project");
+      RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(7000).lookup("ivotas");
       String a = r.sayHello();
       System.out.println(a);
       r.remote_print("print do client para o servidor...");
