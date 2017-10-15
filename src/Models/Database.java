@@ -2,7 +2,6 @@ package Models;
 
 import Data.*;
 import java.sql.*;
-import java.lang.reflect.Field;
 
 
 public class Database {
@@ -125,6 +124,7 @@ public class Database {
       preparedStatement.setString(1, name);
 
       ResultSet results = preparedStatement.executeQuery();
+
       while (results.next()) {
         // build user from data, this still needs the info from dep and faculty
         user = new User(
