@@ -17,6 +17,7 @@ import java.util.*;
  * @author Alcides Fonseca
  * @version 1.1
  */
+
 class TCPClient {
   public static void main(String[] args) {
     Socket socket;
@@ -34,14 +35,13 @@ class TCPClient {
       inFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
       outToServer = new PrintWriter(socket.getOutputStream(), true);
 
-      // create a thread for reading from the keyboard and writing to the server
+      // read from keyboard and write to the server
       new Thread() {
         public void run() {
-          Scanner keyboardScanner = new Scanner(System.in);
-
           while(!socket.isClosed()) {
-            String readKeyboard = keyboardScanner.nextLine();
-            outToServer.println(readKeyboard);
+            String searchString = votingTableMenu();
+            System.out.println(searchString);
+            outToServer.println(searchString);
           }
         }
       }.start();
@@ -56,6 +56,83 @@ class TCPClient {
       System.out.println(e.getMessage());
     } finally {
       try { inFromServer.close(); } catch (Exception e) {}
+    }
+  }
+
+  private static int getValidInteger(int maximum) {
+    Scanner sc = new Scanner(System.in);
+    System.out.println("Option: ");
+    while (true) {
+      while (!sc.hasNextInt()) {
+        System.out.println("Please write an integer");
+        sc.next();
+      }
+      int option = sc.nextInt();
+      if (maximum < option || option <= 0) {
+        System.out.println("Please write an integer between 1 and " + maximum);
+      }
+      else {
+        return option;
+      }
+    }
+  }
+
+  public static String votingTableMenu() {
+    Scanner sc = new Scanner(System.in);
+    String toSearch;
+    String tcpString = "type | search ; ";
+
+    while(true) {
+      System.out.println("Identify user by:\n" +
+              "1 - Name\n" +
+              "2 - Department\n" +
+              "3 - Faculty \n" +
+              "4 - Contact\n" +
+              "5 - Address\n" +
+              "6 - cc\n" +
+              "7 - expireDate\n" +
+              "8 to quit");
+
+      int option = getValidInteger(9);
+      switch (option) {
+        case 1:
+          tcpString += "name | ";
+          System.out.println("Name: ");
+          break;
+        case 2:
+          tcpString += "department | ";
+          System.out.println("Department: ");
+          break;
+        case 3:
+          tcpString += "faculty | ";
+          System.out.println("Faculty: ");
+          break;
+        case 4:
+          tcpString += "contact | ";
+          System.out.println("Contact: ");
+          break;
+        case 5:
+          tcpString += "address| ";
+          System.out.println("Address: ");
+          break;
+        case 6:
+          tcpString += "cc | ";
+          System.out.println("CC: ");
+          break;
+        case 7:
+          tcpString += "expireDate | ";
+          System.out.println("Expire Date: ");
+          break;
+        case 8:
+          return "Terminate";
+        default:
+          break;
+      }
+
+      toSearch = sc.nextLine();
+      tcpString += toSearch + " ; ";
+
+      return tcpString;
     }
   }
 }

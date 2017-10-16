@@ -12,7 +12,7 @@ public class TCPServer {
 
     try {
       int serverPort = 6000;
-      System.out.println("A Escuta no Porto 6000");
+      System.out.println("Listening on port 6000");
 
       ServerSocket listenSocket = new ServerSocket(serverPort);
       System.out.println("LISTEN SOCKET = " + listenSocket);
@@ -30,16 +30,13 @@ public class TCPServer {
   }
 }
 
-// Thread para tratar de cada canal de comunicacao com um cliente
+// Thread to handle comm with client
 class Connection extends Thread {
-  private DataInputStream in;
-  public DataOutputStream out;
+  private InputStreamReader inReader;
+  private BufferedReader bufferedReader;
+  private DataOutputStream out;
   private int thread_number;
   private CopyOnWriteArrayList<Connection> threads;
-
-  public DataOutputStream getOut() {
-    return out;
-  }
 
   public Connection (Socket aClientSocket, int number, CopyOnWriteArrayList<Connection> threads) {
     thread_number = number;
@@ -47,7 +44,8 @@ class Connection extends Thread {
 
     try {
       Socket clientSocket = aClientSocket;
-      in = new DataInputStream(clientSocket.getInputStream());
+      inReader = new InputStreamReader(clientSocket.getInputStream());
+      bufferedReader = new BufferedReader(inReader);
       out = new DataOutputStream(clientSocket.getOutputStream());
       this.start();
     } catch(IOException e){
@@ -58,8 +56,8 @@ class Connection extends Thread {
   public void run(){
     try {
       while(true){
-        String data = in.readUTF();
-        System.out.println("T[" + thread_number + "] Recebeu: " + data);
+        String data = bufferedReader.readLine();
+        System.out.println("T[" + thread_number + "] Received: " + data);
 
         for (int i = 0; i < threads.size(); i++) {
           System.out.println("thread " + i);
@@ -71,5 +69,9 @@ class Connection extends Thread {
     } catch(IOException e){
       System.out.println("IO: " + e);
     }
+  }
+
+  public DataOutputStream getOut() {
+    return out;
   }
 }
