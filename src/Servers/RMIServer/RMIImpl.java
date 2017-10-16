@@ -21,15 +21,14 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   ArrayList<CandidateList> candidateLists;
   ArrayList<VotingTable> votingTables;
 
-  protected RMIImpl() throws RemoteException {
+  public RMIImpl() throws RemoteException {
     super();
-    try {
 
+    try {
       GetData data = new GetData();
       users = data.users;
       faculties = data.faculties;
       departments = data.departments;
-
     } catch (ClassNotFoundException e) {
       System.out.println("Class Not Found Exception " + e);
     } catch (java.io.IOException e) {
@@ -139,6 +138,9 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return null;
   }
 
+  // args server => 1
+  // args backup => 0 localhost
+
   public static void main(String args[]) {
     int isMainServer = Integer.parseInt(args[0]);
 
@@ -151,9 +153,9 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         System.out.println(server.faculties);
         System.out.println(server.departments);
 
-        Registry reg = LocateRegistry.createRegistry(7000); // falta criar para o backup
+        Registry reg = LocateRegistry.createRegistry(7000);
         reg.rebind("ivotas", server);
-        System.out.println("Project Server ready.");
+        System.out.println("RMI Server ready.");
       } catch (RemoteException re) {
         System.out.println("Exception in RMIImpl.main: " + re);
       }
@@ -164,17 +166,17 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
   }
 
-  // Sempre que backup entra vai ler o ficheiro de objetos.
-
-  // backupServer (cliente) envia mensagem ao server(server) de 5 em 5 segundos. Este recebe (pela thread que esta a correr) e envia mensagem
-  // ao cliente (backupserver) para mostrar que esta ativo
-
-  // args server = 1
-  // args backup = 0 localhost
+  // The backup server will be a client that will send a message to the main server every 5 seconds. The main server has
+  // 1 second to reply to the backup server. If it doesn't reply we have to turn the backup server into the main server.
+  // The backup server then has to read the object files to get the updated data.
 
   public static void backupServer(String args[]) {
     try {
       RMIImpl backupServer = new RMIImpl();
+      Registry reg = LocateRegistry.createRegistry(8000);
+      reg.rebind("ivotas", backupServer);
+      System.out.println("RMI Backup Server ready.");
+
 
       if(args.length == 0){
         System.out.println("java UDPClient hostname");
@@ -217,14 +219,14 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
             }
 
             catch (SocketTimeoutException e) {
-              System.out.println("Main Server no OK. I will replace it.");
+              System.out.println("Main Server not OK. I will replace it.");
               aSocket.close();
               return;
             }
           }
         }
       }
-      
+
       catch (SocketException e) {
         System.out.println("Socket: " + e.getMessage());
       }
