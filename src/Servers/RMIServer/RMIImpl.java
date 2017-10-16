@@ -8,12 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.net.*;
+import java.io.*;
+import java.util.concurrent.TimeUnit;
 
 public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
-  private static ArrayList<User> users;
-  private static ArrayList<Faculty> faculties;
-  private static ArrayList<Department> departments;
+  private ArrayList<User> users;
+  private ArrayList<Faculty> faculties;
+  private ArrayList<Department> departments;
   ArrayList<Election> elections;
   ArrayList<CandidateList> candidateLists;
   ArrayList<VotingTable> votingTables;
@@ -137,20 +140,153 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   }
 
   public static void main(String args[]) {
+    int isMainServer = Integer.parseInt(args[0]);
 
-    try {
-      RMIImpl server = new RMIImpl();
+    if (isMainServer == 1) {
+      try {
+        RMIImpl server = new RMIImpl();
+        NewThread thread = new NewThread("CheckRMIServerStatus");
 
-      System.out.println(users);
-      System.out.println(faculties);
-      System.out.println(departments);
+        System.out.println(server.users);
+        System.out.println(server.faculties);
+        System.out.println(server.departments);
 
-      Registry reg = LocateRegistry.createRegistry(7000);
-      reg.rebind("ivotas", server);
-      System.out.println("Project Server ready.");
-    } catch (RemoteException re) {
-      System.out.println("Exception in RMIImpl.main: " + re);
+        Registry reg = LocateRegistry.createRegistry(7000); // falta criar para o backup
+        reg.rebind("ivotas", server);
+        System.out.println("Project Server ready.");
+      } catch (RemoteException re) {
+        System.out.println("Exception in RMIImpl.main: " + re);
+      }
+    }
+
+    else {
+      backupServer(args);
     }
   }
 
+  // Sempre que backup entra vai ler o ficheiro de objetos.
+
+  // backupServer (cliente) envia mensagem ao server(server) de 5 em 5 segundos. Este recebe (pela thread que esta a correr) e envia mensagem
+  // ao cliente (backupserver) para mostrar que esta ativo
+
+  // args server = 1
+  // args backup = 0 localhost
+
+  public static void backupServer(String args[]) {
+    try {
+      RMIImpl backupServer = new RMIImpl();
+
+      if(args.length == 0){
+        System.out.println("java UDPClient hostname");
+        System.exit(0);
+      }
+      DatagramSocket aSocket = null;
+
+      try {
+        aSocket = new DatagramSocket();
+        String text = "Server Status OK";
+
+        while (true) {
+          byte[] m = text.getBytes();
+          InetAddress aHost = InetAddress.getByName(args[1]);
+          int serverPort = 6789;
+
+          DatagramPacket request = new DatagramPacket(m, m.length, aHost, serverPort);
+          aSocket.send(request);
+
+          byte[] buffer = new byte[1000];
+          DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
+
+          aSocket.setSoTimeout(1000);
+
+          while(true) {
+
+            try {
+              aSocket.receive(reply);
+              String replyMessage = new String(reply.getData(), 0, reply.getLength());
+
+              if (replyMessage.equals("Server Status OK")) {
+                System.out.println("Received: " + replyMessage);
+                try {
+                  TimeUnit.SECONDS.sleep(3);
+                  break;
+                } catch (InterruptedException e) {
+                  System.out.println("Error sleep: " + e.getMessage());
+                }
+              }
+            }
+
+            catch (SocketTimeoutException e) {
+              System.out.println("Main Server no OK. I will replace it.");
+              aSocket.close();
+              return;
+            }
+          }
+        }
+      }
+      
+      catch (SocketException e) {
+        System.out.println("Socket: " + e.getMessage());
+      }
+      catch (IOException e){
+        System.out.println("IO: " + e.getMessage());
+      }
+      finally {
+        if(aSocket != null) {
+          aSocket.close();
+        }
+      }
+
+    } catch (RemoteException re) {
+      System.out.println("Exception in RMIImpl.backupServer: " + re);
+    }
+  }
+}
+
+class NewThread implements Runnable {
+  private String threadName;
+  private Thread t;
+
+  NewThread(String threadName) {
+    this.threadName = threadName;
+    t = new Thread(this, threadName);
+    System.out.println("New thread: " + t);
+    t.start();
+  }
+
+  public void run() {
+    DatagramSocket aSocket = null;
+    String s;
+
+    System.out.println("Thread " + this.threadName + " started.");
+
+    try {
+      aSocket = new DatagramSocket(6789);
+      System.out.println("Socket Datagram listening.");
+
+      while(true) {
+        byte[] buffer = new byte[1000];
+        DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+
+        aSocket.receive(request);
+        s = new String(request.getData(), 0, request.getLength());
+        if (s.equals("Server Status OK")) {
+          DatagramPacket reply = new DatagramPacket(request.getData(), request.getLength(), request.getAddress(), request.getPort());
+          aSocket.send(reply);
+        }
+      }
+
+    }
+    catch (SocketException e) {
+      System.out.println("Socket: " + e.getMessage());
+    }
+    catch (IOException e) {
+      System.out.println("IO: " + e.getMessage());
+    }
+    finally {
+      if(aSocket != null) {
+        aSocket.close();
+      }
+    }
+  }
 }
