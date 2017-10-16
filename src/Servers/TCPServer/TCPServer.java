@@ -32,7 +32,6 @@ public class TCPServer {
 
 // Thread to handle comm with client
 class Connection extends Thread {
-  private InputStreamReader inReader;
   private BufferedReader bufferedReader;
   private DataOutputStream out;
   private int thread_number;
@@ -44,8 +43,7 @@ class Connection extends Thread {
 
     try {
       Socket clientSocket = aClientSocket;
-      inReader = new InputStreamReader(clientSocket.getInputStream());
-      bufferedReader = new BufferedReader(inReader);
+      bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
       out = new DataOutputStream(clientSocket.getOutputStream());
       this.start();
     } catch(IOException e){
