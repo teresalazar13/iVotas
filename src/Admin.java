@@ -5,21 +5,27 @@ import java.util.Scanner;
 
 public class Admin {
 
+  // E suposto ter uma thread na consola admin para verificar o estado do servidor?
+  // Ou/E e suposto ter uma thread na consola admin que verifica quando o main server esta a funcionar outra vez?
+
+  private int port;
+
+  public Admin() {}
+
+  public Admin(int port) {
+    this.port = port;
+  }
+
   public static void main(String args[]) {
 
     //System.getProperties().put("java.security.policy", "policy.all");
     //System.setSecurityManager(new RMISecurityManager());
 
-    try {
-      RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(7000).lookup("ivotas");
-      r.remote_print("New client");
-      menu(r);
-    } catch (Exception e) {
-      System.out.println("Exception in main: " + e);
-    }
+    Admin a = new Admin(7000);
+    connectRMIInterface(a);
   }
 
-  public static void menu(RMIInterface r) {
+  public static void menu(RMIInterface r, Admin a) {
     while(true) {
       System.out.println("Please choose an option:\n" +
               "1 - Register Person\n" +
@@ -34,9 +40,15 @@ public class Admin {
       int option = getValidInteger(9);
       switch (option) {
         case 1:
-          registerPerson(r);
+          registerPerson(r, a);
           break;
         case 2:
+          // TEST
+          try {
+            r.remote_print("XXXXXXXX");
+          } catch (Exception e) {
+            changeServer(a);
+          }
           break;
         case 3:
           break;
@@ -56,7 +68,7 @@ public class Admin {
     }
   }
 
-  public static void registerPerson(RMIInterface r) {
+  public static void registerPerson(RMIInterface r, Admin a) {
     System.out.println("What type of person do you want to Register?\n" +
             "1 - Student\n" +
             "2 - Teacher\n" +
@@ -85,7 +97,7 @@ public class Admin {
     }
     catch (Exception e) {
       System.out.println("Main Server crashed. Connecting to Backup Server..." );
-      connectBackupServer();
+      changeServer(a);
       return;
     }
 
@@ -126,11 +138,18 @@ public class Admin {
     }
   }
 
-  public static void connectBackupServer() {
+  public static void changeServer(Admin a) {
+    if (a.port == 7000) a.port = 8000;
+    else a.setPort(7000);
+    connectRMIInterface(a);
+  }
+
+  public static void connectRMIInterface(Admin a) {
+    System.out.println(a.port);
     try {
-      RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(8000).lookup("ivotas");
+      RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(a.port).lookup("ivotas");
       r.remote_print("New client");
-      menu(r);
+      menu(r, a);
     } catch (Exception e) {
       System.out.println("Exception in main: " + e);
     }
@@ -143,4 +162,11 @@ public class Admin {
     return res;
   }
 
+  public int getPort() {
+    return port;
+  }
+
+  public void setPort(int port) {
+    this.port = port;
+  }
 }

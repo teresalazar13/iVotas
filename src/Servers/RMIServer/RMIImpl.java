@@ -149,9 +149,10 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         RMIImpl server = new RMIImpl();
         NewThread thread = new NewThread("CheckRMIServerStatus");
 
+        /*
         System.out.println(server.users);
         System.out.println(server.faculties);
-        System.out.println(server.departments);
+        System.out.println(server.departments); */
 
         Registry reg = LocateRegistry.createRegistry(7000);
         reg.rebind("ivotas", server);
@@ -176,7 +177,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       Registry reg = LocateRegistry.createRegistry(8000);
       reg.rebind("ivotas", backupServer);
       System.out.println("RMI Backup Server ready.");
-
 
       if(args.length == 0){
         System.out.println("java UDPClient hostname");
@@ -220,6 +220,20 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
             catch (SocketTimeoutException e) {
               System.out.println("Main Server not OK. I am replacing it.");
+
+              DatagramSocket aSocket2 = new DatagramSocket();
+
+              byte[] m2 = text.getBytes();
+              InetAddress aHost2 = InetAddress.getByName(args[1]);
+              int serverPort2 = 6789;
+
+              DatagramPacket request2 = new DatagramPacket(m2, m2.length, aHost2, serverPort2);
+              aSocket.send(request);
+
+              byte[] buffer2 = new byte[1000];
+              DatagramPacket reply2 = new DatagramPacket(buffer2, buffer2.length);
+
+              aSocket2.setSoTimeout(1000);
               // aSocket.close();
               // return;
             }
