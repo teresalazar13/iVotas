@@ -2,6 +2,8 @@ package Servers.RMIServer;
 
 import Data.*;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -22,7 +24,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     super();
     try {
 
-      GetData data = new GetData();
+      FileWrapper data = new FileWrapper();
       users = data.users;
       faculties = data.faculties;
       departments = data.departments;
@@ -98,8 +100,67 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
   }
 
-  public void identifyUser(String field, String res) throws RemoteException {
+  private ArrayList<String> fieldValues(String field, ArrayList<User> users) {
+    ArrayList<String> values = new ArrayList<>();
 
+    switch (field) {
+      case "name":
+        for (User user : users) {
+          values.add(user.getName());
+        }
+        break;
+      case "department":
+        for (User user : users) {
+          values.add(user.getDepartment().getName());
+        }
+        break;
+      case "faculty":
+        for (User user : users) {
+          values.add(user.getFaculty().getName());
+        }
+        break;
+      case "contact":
+        for (User user : users) {
+          values.add(user.getContact());
+        }
+        break;
+      case "address":
+        for (User user : users) {
+          values.add(user.getAddress());
+        }
+        break;
+      case "cc":
+        for (User user : users) {
+          values.add(user.getCc());
+        }
+        break;
+      case "expireDate":
+        for (User user : users) {
+          values.add(user.getExpireDate());
+        }
+        break;
+    }
+
+    return values;
+  }
+
+  public User identifyUser(String field, String value) throws RemoteException {
+    try {
+      FileWrapper fw = new FileWrapper();
+      ArrayList<User> users = fw.users;
+      ArrayList<String> values = fieldValues(field, users);
+
+      for (int i = 0; i < values.size(); i++) {
+        if (values.get(i) == value) {
+          return users.get(i);
+        }
+      }
+
+    } catch (IOException | ClassNotFoundException e) {
+      e.printStackTrace();
+    }
+
+    return null;
   }
 
   public void authenticateUser(String name, String password) throws RemoteException {

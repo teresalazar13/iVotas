@@ -41,7 +41,7 @@ public interface RMIInterface extends Remote {
 
   void createVotingTerminal(int status) throws RemoteException;
 
-  void identifyUser(String field, String res) throws RemoteException;
+  User identifyUser(String field, String res) throws RemoteException;
 
   void authenticateUser(String name, String password) throws RemoteException;
 
