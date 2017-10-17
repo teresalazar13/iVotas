@@ -12,7 +12,7 @@ public class Admin {
 
     try {
       RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(7000).lookup("ivotas");
-      // r.remote_print("print do client para o servidor...");
+      r.remote_print("New client");
       menu(r);
     } catch (Exception e) {
       System.out.println("Exception in main: " + e);
@@ -23,7 +23,7 @@ public class Admin {
     while(true) {
       System.out.println("Please choose an option:\n" +
               "1 - Register Person\n" +
-              "2 - Manage Departament or Faculty\n" +
+              "2 - Manage Department or Faculty\n" +
               "3 - Create Election\n" +
               "4 - Manage Candidate List of an Election\n" +
               "5 - Manage Voting Table\n" +
@@ -84,7 +84,9 @@ public class Admin {
       }
     }
     catch (Exception e) {
-      System.out.println("Exception, " + e);
+      System.out.println("Main Server crashed. Connecting to Backup Server..." );
+      connectBackupServer();
+      return;
     }
 
     try {
@@ -121,6 +123,16 @@ public class Admin {
       else {
         return option;
       }
+    }
+  }
+
+  public static void connectBackupServer() {
+    try {
+      RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(8000).lookup("ivotas");
+      r.remote_print("New client");
+      menu(r);
+    } catch (Exception e) {
+      System.out.println("Exception in main: " + e);
     }
   }
 

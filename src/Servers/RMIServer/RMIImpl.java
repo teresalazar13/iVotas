@@ -219,9 +219,9 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
             }
 
             catch (SocketTimeoutException e) {
-              System.out.println("Main Server not OK. I will replace it.");
-              aSocket.close();
-              return;
+              System.out.println("Main Server not OK. I am replacing it.");
+              // aSocket.close();
+              // return;
             }
           }
         }
