@@ -1,14 +1,18 @@
 package Servers.TCPServer;
 
+import Servers.RMIServer.RMIInterface;
+
 import java.net.*;
 import java.io.*;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TCPServer {
   public static void main(String args[]){
     int number = 0;
-    CopyOnWriteArrayList <Connection> threads = new CopyOnWriteArrayList<Connection>();
+    CopyOnWriteArrayList <Connection> threads = new CopyOnWriteArrayList<>();
 
     try {
       int serverPort = 6000;
@@ -53,9 +57,12 @@ class Connection extends Thread {
 
   public void run(){
     try {
+      //RMIInterface rmi = (RMIInterface) Naming.lookup("ivotas");
+
       while(true){
         String data = bufferedReader.readLine();
         System.out.println("T[" + thread_number + "] Received: " + data);
+        Map<String, String> cleanData = parseProtocolMessage(data);
 
         for (int i = 0; i < threads.size(); i++) {
           System.out.println("thread " + i);
@@ -67,6 +74,21 @@ class Connection extends Thread {
     } catch(IOException e){
       System.out.println("IO: " + e);
     }
+  }
+
+  private Map<String, String> parseProtocolMessage(String protocolMessage) {
+    // The protocol message is going to be parsed into key-value map
+    Map<String, String> protocolValues = new LinkedHashMap<>();
+
+    // Clean protocol message of whitespaces
+    String cleanProtocolMessage = protocolMessage.replaceAll("\\s+", "");
+    String [] cleanProtocolWords = cleanProtocolMessage.split("\\||[;]");
+
+    for (int i = 0; i < cleanProtocolWords.length; i+=2) {
+      protocolValues.put(cleanProtocolWords[i], cleanProtocolWords[i+1]);
+    }
+
+    return protocolValues;
   }
 
   public DataOutputStream getOut() {

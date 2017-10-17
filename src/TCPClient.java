@@ -36,20 +36,24 @@ class TCPClient {
       outToServer = new PrintWriter(socket.getOutputStream(), true);
 
       // read from keyboard and write to the server
-      new Thread() {
+      Thread reader = new Thread() {
         public void run() {
           while(!socket.isClosed()) {
             String searchString = votingTableMenu();
+
             System.out.println(searchString);
             outToServer.println(searchString);
           }
         }
-      }.start();
+      };
+
+      reader.start();
 
       // the main thread loops reading from the server and writing to System.out
       String messageFromServer;
-      while((messageFromServer = inFromServer.readLine()) != null)
+      while((messageFromServer = inFromServer.readLine()) != null) {
         System.out.println(messageFromServer);
+      }
     } catch (IOException e) {
       if(inFromServer == null)
         System.out.println("\nUsage: java TCPClient <host> <port>\n");
