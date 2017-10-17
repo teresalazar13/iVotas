@@ -5,7 +5,7 @@ import Data.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class GetData {
+public class FileWrapper {
 
     ArrayList<User> users;
     ArrayList<Faculty> faculties;
@@ -14,7 +14,7 @@ public class GetData {
     ArrayList<CandidateList> candidateLists;
     ArrayList<VotingTable> votingTables;
 
-    public GetData() throws IOException, ClassNotFoundException {
+    public FileWrapper() throws IOException, ClassNotFoundException {
         Department department1 = new Department("EngenhariaInformatica");
         ArrayList<Department> departments = new ArrayList<Department>();
         departments.add(department1);
