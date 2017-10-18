@@ -6,10 +6,10 @@ import java.util.concurrent.TimeUnit;
 
 public class Admin {
 
-  // Funcoes synchronized?
-  // Terminal
-  // votar nao pode ser perdido com excecao -> votar mais que uma vez nao
-  // Mudar portos fixos
+  // TODO - Funcoes synchronized
+  // TODO - Terminal
+  // TODO - votar nao pode ser perdido com excecao -> votar mais que uma vez nao
+  // TODO - Mudar portos fixos
 
   private int port;
 
@@ -21,8 +21,8 @@ public class Admin {
 
   public static void main(String args[]) {
 
-    //System.getProperties().put("java.security.policy", "policy.all");
-    //System.setSecurityManager(new RMISecurityManager());
+    // System.getProperties().put("java.security.policy", "policy.all");
+    // System.setSecurityManager(new RMISecurityManager());
 
     Admin a = new Admin(7000);
     connectRMIInterface(a);
@@ -43,7 +43,7 @@ public class Admin {
       int option = getValidInteger(9);
       switch (option) {
         case 1:
-          registerPerson(r, a);
+          createUser(r, a);
           break;
         case 2:
           try {
@@ -71,8 +71,8 @@ public class Admin {
     }
   }
 
-  public static void registerPerson(RMIInterface r, Admin a) {
-    System.out.println("What type of person do you want to Register?\n" +
+  public static void createUser(RMIInterface r, Admin a) {
+    System.out.println("What type of User do you want to Create?\n" +
             "1 - Student\n" +
             "2 - Teacher\n" +
             "3 - Staff\n" +
@@ -100,7 +100,7 @@ public class Admin {
     }
     catch (Exception e) {
       System.out.println("Main Server crashed. Connecting to Backup Server..." );
-      changeServer(a);
+      updatePort(a);
       return;
     }
 
@@ -123,25 +123,7 @@ public class Admin {
     }
   }
 
-  public static int getValidInteger(int maximum) {
-    Scanner sc = new Scanner(System.in);
-    System.out.println("Option: ");
-    while (true) {
-      while (!sc.hasNextInt()) {
-        System.out.println("Please write an integer");
-        sc.next();
-      }
-      int option = sc.nextInt();
-      if (maximum < option || option <= 0) {
-        System.out.println("Please write an integer between 1 and " + maximum);
-      }
-      else {
-        return option;
-      }
-    }
-  }
-
-  public static void changeServer(Admin a) {
+  public static void updatePort(Admin a) {
     if (a.getPort() == 7000) a.setPort(8000);
     else a.setPort(7000);
   }
@@ -160,8 +142,26 @@ public class Admin {
       } catch (InterruptedException es) {
         System.out.println("Error sleep: " + es.getMessage());
       }
-      changeServer(a);
+      updatePort(a);
       connectRMIInterface(a);
+    }
+  }
+
+  public static int getValidInteger(int maximum) {
+    Scanner sc = new Scanner(System.in);
+    System.out.println("Option: ");
+    while (true) {
+      while (!sc.hasNextInt()) {
+        System.out.println("Please write an integer");
+        sc.next();
+      }
+      int option = sc.nextInt();
+      if (maximum < option || option <= 0) {
+        System.out.println("Please write an integer between 1 and " + maximum);
+      }
+      else {
+        return option;
+      }
     }
   }
 
