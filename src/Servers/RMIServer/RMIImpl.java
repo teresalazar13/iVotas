@@ -201,42 +201,24 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
           aSocket.setSoTimeout(1000);
 
-          while(true) {
+          try {
+            aSocket.receive(reply);
+            String replyMessage = new String(reply.getData(), 0, reply.getLength());
 
-            try {
-              aSocket.receive(reply);
-              String replyMessage = new String(reply.getData(), 0, reply.getLength());
-
-              if (replyMessage.equals("Server Status OK")) {
-                System.out.println("Received: " + replyMessage);
-                try {
-                  TimeUnit.SECONDS.sleep(3);
-                  break;
-                } catch (InterruptedException e) {
-                  System.out.println("Error sleep: " + e.getMessage());
-                }
+            if (replyMessage.equals("Server Status OK")) {
+              System.out.println("Received: " + replyMessage);
+              try {
+                TimeUnit.SECONDS.sleep(3);
+              } catch (InterruptedException e) {
+                System.out.println("Error sleep: " + e.getMessage());
               }
             }
+          }
 
-            catch (SocketTimeoutException e) {
-              System.out.println("Main Server not OK. I am replacing it.");
-
-              DatagramSocket aSocket2 = new DatagramSocket();
-
-              byte[] m2 = text.getBytes();
-              InetAddress aHost2 = InetAddress.getByName(args[1]);
-              int serverPort2 = 6789;
-
-              DatagramPacket request2 = new DatagramPacket(m2, m2.length, aHost2, serverPort2);
-              aSocket.send(request);
-
-              byte[] buffer2 = new byte[1000];
-              DatagramPacket reply2 = new DatagramPacket(buffer2, buffer2.length);
-
-              aSocket2.setSoTimeout(1000);
-              // aSocket.close();
-              // return;
-            }
+          catch (SocketTimeoutException e) {
+            System.out.println("Main Server not OK. I am replacing it.");
+            aSocket.send(request);
+            aSocket.setSoTimeout(1000);
           }
         }
       }
