@@ -172,71 +172,85 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   // The backup server then has to read the object files to get the updated data.
 
   public static void backupServer(String args[]) {
+
+    if(args.length == 0) {
+      System.out.println("java UDPClient hostname");
+      System.exit(0);
+    }
+    DatagramSocket aSocket = null;
+
     try {
-      RMIImpl backupServer = new RMIImpl();
-      Registry reg = LocateRegistry.createRegistry(8000);
-      reg.rebind("ivotas", backupServer);
-      System.out.println("RMI Backup Server ready.");
+      aSocket = new DatagramSocket();
+      String text = "Server Status OK";
+      int numberOfFails = 0;
 
-      if(args.length == 0){
-        System.out.println("java UDPClient hostname");
-        System.exit(0);
-      }
-      DatagramSocket aSocket = null;
+      while (true) {
+        byte[] m = text.getBytes();
+        InetAddress aHost = InetAddress.getByName(args[1]);
+        int serverPort = 6789;
 
-      try {
-        aSocket = new DatagramSocket();
-        String text = "Server Status OK";
+        DatagramPacket request = new DatagramPacket(m, m.length, aHost, serverPort);
+        aSocket.send(request);
 
-        while (true) {
-          byte[] m = text.getBytes();
-          InetAddress aHost = InetAddress.getByName(args[1]);
-          int serverPort = 6789;
+        byte[] buffer = new byte[1000];
+        DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
 
-          DatagramPacket request = new DatagramPacket(m, m.length, aHost, serverPort);
-          aSocket.send(request);
+        aSocket.setSoTimeout(1000);
 
-          byte[] buffer = new byte[1000];
-          DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
+        try {
+          aSocket.receive(reply);
+          String replyMessage = new String(reply.getData(), 0, reply.getLength());
 
-          aSocket.setSoTimeout(1000);
+          if (replyMessage.equals("Server Status OK")) {
+            System.out.println("Received: " + replyMessage);
+            numberOfFails = 0;
+            try {
+              TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+              System.out.println("Error sleep: " + e.getMessage());
+            }
+          }
+        }
 
-          try {
-            aSocket.receive(reply);
-            String replyMessage = new String(reply.getData(), 0, reply.getLength());
+        catch (SocketTimeoutException e) {
+          numberOfFails += 1;
 
-            if (replyMessage.equals("Server Status OK")) {
-              System.out.println("Received: " + replyMessage);
-              try {
-                TimeUnit.SECONDS.sleep(3);
-              } catch (InterruptedException e) {
-                System.out.println("Error sleep: " + e.getMessage());
-              }
+          if (numberOfFails < 5) {
+            System.out.println("Number of fails: " + numberOfFails);
+          }
+
+          else if (numberOfFails == 5) {
+            try {
+              RMIImpl backupServer = new RMIImpl();
+              Registry reg = LocateRegistry.createRegistry(8000);
+              reg.rebind("ivotas", backupServer);
+              System.out.println("RMI Backup Server ready.");
+            }
+            catch (RemoteException re) {
+              System.out.println("Exception in RMIImpl.backupServer: " + re);
             }
           }
 
-          catch (SocketTimeoutException e) {
+          else {
             System.out.println("Main Server not OK. I am replacing it.");
             aSocket.send(request);
             aSocket.setSoTimeout(1000);
           }
+
         }
       }
+    }
 
-      catch (SocketException e) {
-        System.out.println("Socket: " + e.getMessage());
+    catch (SocketException e) {
+      System.out.println("Socket: " + e.getMessage());
+    }
+    catch (IOException e){
+      System.out.println("IO: " + e.getMessage());
+    }
+    finally {
+      if(aSocket != null) {
+        aSocket.close();
       }
-      catch (IOException e){
-        System.out.println("IO: " + e.getMessage());
-      }
-      finally {
-        if(aSocket != null) {
-          aSocket.close();
-        }
-      }
-
-    } catch (RemoteException re) {
-      System.out.println("Exception in RMIImpl.backupServer: " + re);
     }
   }
 }

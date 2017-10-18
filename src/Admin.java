@@ -2,11 +2,14 @@ import Data.*;
 import Servers.RMIServer.*;
 import java.rmi.registry.LocateRegistry;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class Admin {
 
-  // E suposto ter uma thread na consola admin para verificar o estado do servidor?
-  // Ou/E e suposto ter uma thread na consola admin que verifica quando o main server esta a funcionar outra vez?
+  // Funcoes synchronized?
+  // Terminal
+  // votar nao pode ser perdido com excecao -> votar mais que uma vez nao
+  // Mudar portos fixos
 
   private int port;
 
@@ -43,11 +46,11 @@ public class Admin {
           registerPerson(r, a);
           break;
         case 2:
-          // TEST
           try {
             r.remote_print("XXXXXXXX");
           } catch (Exception e) {
-            changeServer(a);
+            System.out.println("Fail on Server");
+            connectRMIInterface(a);
           }
           break;
         case 3:
@@ -139,19 +142,26 @@ public class Admin {
   }
 
   public static void changeServer(Admin a) {
-    if (a.port == 7000) a.port = 8000;
+    if (a.getPort() == 7000) a.setPort(8000);
     else a.setPort(7000);
-    connectRMIInterface(a);
   }
 
   public static void connectRMIInterface(Admin a) {
-    System.out.println(a.port);
+    System.out.println("Trying to connect to port " + a.port);
     try {
       RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(a.port).lookup("ivotas");
       r.remote_print("New client");
+      System.out.println("Successfully connected to port " + a.port);
       menu(r, a);
     } catch (Exception e) {
-      System.out.println("Exception in main: " + e);
+      System.out.println("Failed to connect to port " + a.port);
+      try {
+        TimeUnit.SECONDS.sleep(1);
+      } catch (InterruptedException es) {
+        System.out.println("Error sleep: " + es.getMessage());
+      }
+      changeServer(a);
+      connectRMIInterface(a);
     }
   }
 
