@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
+
+  private GetData data;
   private ArrayList<User> users;
   private ArrayList<Faculty> faculties;
   private ArrayList<Department> departments;
@@ -26,6 +28,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
     try {
       GetData data = new GetData();
+      this.data = data;
       users = data.users;
       faculties = data.faculties;
       departments = data.departments;
@@ -40,8 +43,11 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     System.out.println("Server: " + s);
   }
 
-  public void createUser(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) {
+  public void createUser(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) throws IOException, ClassNotFoundException {
     User user = new User(name, password, department, faculty, contact, address, cc, expireDate, type);
+    this.users.add(user);
+    this.data.writeFile(this.users, "Users");
+    System.out.println(this.users);
   }
 
   public void createFaculty(String name) throws RemoteException {
@@ -149,10 +155,10 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         RMIImpl server = new RMIImpl();
         NewThread thread = new NewThread("CheckRMIServerStatus");
 
-        /*
+
         System.out.println(server.users);
         System.out.println(server.faculties);
-        System.out.println(server.departments); */
+        System.out.println(server.departments);
 
         Registry reg = LocateRegistry.createRegistry(7000);
         reg.rebind("ivotas", server);

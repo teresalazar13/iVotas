@@ -15,6 +15,7 @@ public class GetData {
     ArrayList<VotingTable> votingTables;
 
     public GetData() throws IOException, ClassNotFoundException {
+        /*
         Department department1 = new Department("EngenhariaInformatica");
         ArrayList<Department> departments = new ArrayList<Department>();
         departments.add(department1);
@@ -29,12 +30,13 @@ public class GetData {
         users.add(user1);
 
         writeFile(users,"Users");
-        ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
 
         writeFile(departments,"Departments");
-        ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");
 
-        writeFile(faculties,"Faculties");
+        writeFile(faculties,"Faculties"); */
+
+        ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
+        ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");
         ArrayList<Faculty> facultiesFromFile = (ArrayList<Faculty>) readFile("Faculty");
 
         this.users = usersFromFile;
@@ -42,7 +44,7 @@ public class GetData {
         this.faculties = facultiesFromFile;
     }
 
-    private static void writeFile(Object classe, String className) throws IOException, ClassNotFoundException {
+    public void writeFile(Object classe, String className) throws IOException, ClassNotFoundException {
         String filename = "ObjectFiles/" + className + ".dat";
         File file = new File();
         file.openWrite(filename);
