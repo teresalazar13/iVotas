@@ -2,28 +2,37 @@ import Data.*;
 import Servers.RMIServer.*;
 import java.rmi.registry.LocateRegistry;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class Admin {
 
-  public static void main(String args[]) {
+  // TODO - Funcoes synchronized
+  // TODO - Terminal
+  // TODO - votar nao pode ser perdido com excecao -> votar mais que uma vez nao
+  // TODO - Mudar portos fixos
 
-    //System.getProperties().put("java.security.policy", "policy.all");
-    //System.setSecurityManager(new RMISecurityManager());
+  private int port;
 
-    try {
-      RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(7000).lookup("ivotas");
-      // r.remote_print("print do client para o servidor...");
-      menu(r);
-    } catch (Exception e) {
-      System.out.println("Exception in main: " + e);
-    }
+  public Admin() {}
+
+  public Admin(int port) {
+    this.port = port;
   }
 
-  public static void menu(RMIInterface r) {
+  public static void main(String args[]) {
+
+    // System.getProperties().put("java.security.policy", "policy.all");
+    // System.setSecurityManager(new RMISecurityManager());
+
+    Admin a = new Admin(7000);
+    connectRMIInterface(a);
+  }
+
+  public static void menu(RMIInterface r, Admin a) {
     while(true) {
       System.out.println("Please choose an option:\n" +
               "1 - Register Person\n" +
-              "2 - Manage Departament or Faculty\n" +
+              "2 - Manage Department or Faculty\n" +
               "3 - Create Election\n" +
               "4 - Manage Candidate List of an Election\n" +
               "5 - Manage Voting Table\n" +
@@ -34,9 +43,15 @@ public class Admin {
       int option = getValidInteger(9);
       switch (option) {
         case 1:
-          registerPerson(r);
+          createUser(r, a);
           break;
         case 2:
+          try {
+            r.remote_print("XXXXXXXX");
+          } catch (Exception e) {
+            System.out.println("Fail on Server");
+            connectRMIInterface(a);
+          }
           break;
         case 3:
           break;
@@ -56,8 +71,8 @@ public class Admin {
     }
   }
 
-  public static void registerPerson(RMIInterface r) {
-    System.out.println("What type of person do you want to Register?\n" +
+  public static void createUser(RMIInterface r, Admin a) {
+    System.out.println("What type of User do you want to Create?\n" +
             "1 - Student\n" +
             "2 - Teacher\n" +
             "3 - Staff\n" +
@@ -84,7 +99,9 @@ public class Admin {
       }
     }
     catch (Exception e) {
-      System.out.println("Exception, " + e);
+      System.out.println("Main Server crashed. Connecting to Backup Server..." );
+      updatePort(a);
+      return;
     }
 
     try {
@@ -103,6 +120,30 @@ public class Admin {
     }
     catch (Exception e) {
       System.out.println("Exception, " + e);
+    }
+  }
+
+  public static void updatePort(Admin a) {
+    if (a.getPort() == 7000) a.setPort(8000);
+    else a.setPort(7000);
+  }
+
+  public static void connectRMIInterface(Admin a) {
+    System.out.println("Trying to connect to port " + a.port);
+    try {
+      RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(a.port).lookup("ivotas");
+      r.remote_print("New client");
+      System.out.println("Successfully connected to port " + a.port);
+      menu(r, a);
+    } catch (Exception e) {
+      System.out.println("Failed to connect to port " + a.port);
+      try {
+        TimeUnit.SECONDS.sleep(1);
+      } catch (InterruptedException es) {
+        System.out.println("Error sleep: " + es.getMessage());
+      }
+      updatePort(a);
+      connectRMIInterface(a);
     }
   }
 
@@ -131,4 +172,11 @@ public class Admin {
     return res;
   }
 
+  public int getPort() {
+    return port;
+  }
+
+  public void setPort(int port) {
+    this.port = port;
+  }
 }
