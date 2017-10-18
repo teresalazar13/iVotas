@@ -1,11 +1,13 @@
 package Servers.TCPServer;
 
+import Data.User;
 import Servers.RMIServer.RMIInterface;
 
 import java.net.*;
 import java.io.*;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -57,12 +59,24 @@ class Connection extends Thread {
 
   public void run(){
     try {
-      //RMIInterface rmi = (RMIInterface) Naming.lookup("ivotas");
+      RMIInterface rmi = (RMIInterface) Naming.lookup("ivotas");
 
       while(true){
         String data = bufferedReader.readLine();
         System.out.println("T[" + thread_number + "] Received: " + data);
+
+        // Protocol message as a key-value map
         Map<String, String> cleanData = parseProtocolMessage(data);
+
+        // Get all key values
+        ArrayList<String> keys = new ArrayList<>();
+        Set<String> setKeys = cleanData.keySet();
+        keys.addAll(setKeys);
+
+        // Build response string
+        String response = identifyAction(rmi, cleanData.get(keys.get(0)), keys.get(1), cleanData.get(keys.get(1)));
+        System.out.println(response);
+
 
         for (int i = 0; i < threads.size(); i++) {
           System.out.println("thread " + i);
@@ -73,6 +87,8 @@ class Connection extends Thread {
       System.out.println("EOF: " + e);
     } catch(IOException e){
       System.out.println("IO: " + e);
+    } catch (NotBoundException e) {
+      e.printStackTrace();
     }
   }
 
@@ -89,6 +105,28 @@ class Connection extends Thread {
     }
 
     return protocolValues;
+  }
+
+  private String identifyAction(RMIInterface rmi, String key, String field, String value) {
+    // response will always return the status of the pretended action
+    String response = "type | status ; ";
+
+    if ("search".equals(key)) {
+      response += "search | ";
+
+      try {
+        User user = rmi.searchUser(field, value);
+        if (user != null) {
+          response += "success ; value | " + user.toString() + " ; ";
+        } else {
+          response += "failure ; ";
+        }
+      } catch (RemoteException e) {
+        e.printStackTrace();
+      }
+    }
+
+    return response;
   }
 
   public DataOutputStream getOut() {

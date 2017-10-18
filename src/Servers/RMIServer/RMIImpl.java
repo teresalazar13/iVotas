@@ -146,14 +146,14 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return values;
   }
 
-  public User identifyUser(String field, String value) throws RemoteException {
+  public User searchUser(String field, String value) throws RemoteException {
     try {
       FileWrapper fw = new FileWrapper();
       ArrayList<User> users = fw.users;
       ArrayList<String> values = fieldValues(field, users);
 
       for (int i = 0; i < values.size(); i++) {
-        if (values.get(i) == value) {
+        if (values.get(i).equals(value)) {
           return users.get(i);
         }
       }
@@ -215,7 +215,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         System.out.println(server.faculties);
         System.out.println(server.departments); */
 
-        Registry reg = LocateRegistry.createRegistry(7000);
+        Registry reg = LocateRegistry.createRegistry(1099);
         reg.rebind("ivotas", server);
         System.out.println("RMI Server ready.");
       } catch (RemoteException re) {
