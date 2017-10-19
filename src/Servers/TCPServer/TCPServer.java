@@ -118,7 +118,7 @@ class Connection extends Thread {
       try {
         User user = rmi.searchUser(field, value);
         if (user != null) {
-          response += "success ; user | " + user.toString() + " ; ";
+          response += "success ; user | " + user.getName() + " ; ";
         } else {
           response += "failure ; ";
         }
