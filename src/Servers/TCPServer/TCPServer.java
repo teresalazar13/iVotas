@@ -39,7 +39,7 @@ public class TCPServer {
 // Thread to handle comm with client
 class Connection extends Thread {
   private BufferedReader bufferedReader;
-  private DataOutputStream out;
+  PrintWriter outToServer;
   private int thread_number;
   private CopyOnWriteArrayList<Connection> threads;
 
@@ -50,7 +50,7 @@ class Connection extends Thread {
     try {
       Socket clientSocket = aClientSocket;
       bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-      out = new DataOutputStream(clientSocket.getOutputStream());
+      outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
       this.start();
     } catch(IOException e){
       System.out.println("Connection: " + e.getMessage());
@@ -80,7 +80,8 @@ class Connection extends Thread {
 
         for (int i = 0; i < threads.size(); i++) {
           System.out.println("thread " + i);
-          threads.get(i).getOut().writeUTF(data);
+          System.out.println(response);
+          threads.get(i).getOut().println(response);
         }
       }
     } catch(EOFException e){
@@ -117,7 +118,7 @@ class Connection extends Thread {
       try {
         User user = rmi.searchUser(field, value);
         if (user != null) {
-          response += "success ; value | " + user.toString() + " ; ";
+          response += "success ; user | " + user.toString() + " ; ";
         } else {
           response += "failure ; ";
         }
@@ -129,7 +130,7 @@ class Connection extends Thread {
     return response;
   }
 
-  public DataOutputStream getOut() {
-    return out;
+  public PrintWriter getOut() {
+    return outToServer;
   }
 }
