@@ -1,3 +1,7 @@
+import Data.Department;
+import Data.Faculty;
+import Data.User;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -23,6 +27,7 @@ class TCPClient {
     Socket socket;
     PrintWriter outToServer;
     BufferedReader inFromServer = null;
+    TCPClient client = new TCPClient();
 
     try {
       // connect to the specified address:port (default is localhost:12345)
@@ -36,23 +41,18 @@ class TCPClient {
       outToServer = new PrintWriter(socket.getOutputStream(), true);
 
       // read from keyboard and write to the server
-      Thread reader = new Thread() {
-        public void run() {
-          while(!socket.isClosed()) {
-            String searchString = votingTableMenu();
-
-            System.out.println(searchString);
-            outToServer.println(searchString);
-          }
-        }
-      };
-
-      reader.start();
+      Reader reader = new Reader("reader", socket);
 
       // the main thread loops reading from the server and writing to System.out
       String messageFromServer;
       while((messageFromServer = inFromServer.readLine()) != null) {
-        System.out.println(messageFromServer);
+        Map<String, String> response = client.parseProtocolMessage(messageFromServer);
+        User user = client.buildUser(response.get("user"));
+
+        Object lock = new Object();
+        synchronized (lock) {
+          lock.notify();
+        }
       }
     } catch (IOException e) {
       if(inFromServer == null)
@@ -63,7 +63,94 @@ class TCPClient {
     }
   }
 
-  private static int getValidInteger(int maximum) {
+  private Map<String, String> parseProtocolMessage(String protocolMessage) {
+    // The protocol message is going to be parsed into key-value map
+    Map<String, String> protocolValues = new LinkedHashMap<>();
+
+    // Clean protocol message of whitespaces
+    String cleanProtocolMessage = protocolMessage.replaceAll("\\s+", "");
+    // Clean user toString garbage
+    cleanProtocolMessage = cleanProtocolMessage.replace("User{", "");
+    cleanProtocolMessage = cleanProtocolMessage.replace("}", "");
+
+    // Split by | and ;
+    String [] cleanProtocolWords = cleanProtocolMessage.split("\\||[;]");
+
+    for (int i = 0; i < cleanProtocolWords.length; i+=2) {
+      protocolValues.put(cleanProtocolWords[i], cleanProtocolWords[i+1]);
+    }
+
+    return protocolValues;
+  }
+
+  private User buildUser(String userString) {
+    String [] userAttributes = userString.split("=|[,]");
+    Map<String, String> userMap = new HashMap<>();
+
+    // attributes in a map
+    for (int i = 0; i < userAttributes.length; i+=2) {
+      System.out.println(userAttributes[i]);
+      System.out.println(userAttributes[i+1]);
+      userMap.put(userAttributes[i], userAttributes[i+1]);
+    }
+
+    // build user
+    User user = new User(
+            userMap.get("name"),
+            userMap.get("password"),
+            new Department(userMap.get("department")),
+            new Faculty(userMap.get("faculty"), null),
+            userMap.get("contact"),
+            userMap.get("address"),
+            userMap.get("cc"),
+            userMap.get("expireDate"),
+            Integer.parseInt(userMap.get("type"))
+    );
+
+
+    return user;
+  }
+
+}
+
+class Reader implements Runnable {
+  private String threadName;
+  private PrintWriter outToServer;
+  private Socket clientSocket;
+  private Thread t;
+
+  public Reader(String threadName, Socket clientSocket) {
+    this.threadName = threadName;
+
+    try {
+      this.clientSocket = clientSocket;
+      this.outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    this.t = new Thread(this, threadName);
+    this.t.start();
+  }
+
+  public void run() {
+    while(!this.clientSocket.isClosed()) {
+      String searchString = this.votingTableMenu();
+      outToServer.println(searchString);
+
+      System.out.println("waiting");
+      Object lock = new Object();
+      try {
+        synchronized (lock) {
+          lock.wait();
+        }
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private int getValidInteger(int maximum) {
     Scanner sc = new Scanner(System.in);
     System.out.println("Option: ");
     while (true) {
@@ -81,7 +168,7 @@ class TCPClient {
     }
   }
 
-  public static String votingTableMenu() {
+  private String votingTableMenu() {
     Scanner sc = new Scanner(System.in);
     String toSearch;
     String tcpString = "type | search ; ";
@@ -139,4 +226,6 @@ class TCPClient {
       return tcpString;
     }
   }
+
+  public Thread getT() { return t; }
 }
