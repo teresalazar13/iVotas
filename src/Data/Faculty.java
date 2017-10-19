@@ -26,8 +26,8 @@ public class Faculty implements Serializable {
   @Override
   public String toString() {
     return "Faculty{" +
-            "name='" + name + '\'' +
-            ", departments=" + departments +
+            "name=" + name +
+            ",departments=" + departments +
             '}';
   }
 }

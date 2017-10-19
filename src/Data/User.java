@@ -57,14 +57,14 @@ public class User implements Serializable {
   @Override
   public String toString() {
     return "User{" +
-            "name='" + name +
-            ",password='" + password +
-            ",department=" + department +
-            ",faculty=" + faculty +
-            ",contact='" + contact +
-            ",address='" + address +
-            ",cc='" + cc +
-            ",expireDate='" + expireDate +
+            "name=" + name +
+            ",password=" + password +
+            ",department=" + department.getName() +
+            ",faculty=" + faculty.getName() +
+            ",contact=" + contact +
+            ",address=" + address +
+            ",cc=" + cc +
+            ",expireDate=" + expireDate +
             ",type=" + type +
             '}';
   }
