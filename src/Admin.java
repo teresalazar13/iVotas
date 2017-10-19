@@ -1,8 +1,5 @@
 import Data.*;
 import Servers.RMIServer.*;
-
-import javax.imageio.IIOException;
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.Scanner;
@@ -10,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Admin {
 
+  // ASK - Update faculty é so mudar o nome? ou mudar departamentos tambem?
   // TODO - Funcoes synchronized
   // TODO - Terminal
   // TODO - votar nao pode ser perdido com excecao -> votar mais que uma vez nao
@@ -156,31 +154,72 @@ public class Admin {
           connectRMIInterface(a);
         }
       }
+      else if (option2 == 2) {
+        Faculty faculty = null;
+        try {
+          faculty = r.getFacultyByName(name);
+        }
+        catch (RemoteException e) {
+          System.out.println("Remote Exception in updating Faculty, " + e);
+          connectRMIInterface(a);
+        }
+        String newName = getValidString("New name: ");
+        try {
+          r.updateFacultyName(faculty, newName);
+        }
+        catch (RemoteException e) {
+          System.out.println("Remote Exception in updating Faculty, " + e);
+          connectRMIInterface(a);
+        }
+      }
     }
 
     else {
-      String facultyName = getValidString("Faculty name: ");
-      Faculty faculty;
-
-      try {
-        faculty = r.getFacultyByName(facultyName);
-        if (faculty == null) {
-          System.out.println("There isn't a faculty with that name.");
-          return;
-        }
-      }
-      catch (RemoteException e) {
-        System.out.println("Remote Exception " + e);
-        connectRMIInterface(a);
-        return;
-      }
-
       if (option2 == 1) {
+        String facultyName = getValidString("Faculty name: ");
+        Faculty faculty;
         try {
-          r.createDepartment(name, faculty);
+          faculty = r.getFacultyByName(facultyName);
+          if (faculty != null) {
+            try {
+              r.createDepartment(name, faculty);
+            } catch (RemoteException e) {
+              System.out.println("Remote Exception " + e);
+              connectRMIInterface(a);
+            }
+          }
+          else {
+            System.out.println("There isn't a faculty with that name.");
+          }
         }
         catch (RemoteException e) {
-          System.out.println("Remote Exception " + e);
+          System.out.println("Error getting faculty by name " + e);
+          connectRMIInterface(a);
+        }
+      }
+
+      else if (option2 == 2) {
+        Department department = null;
+        try {
+          department = r.getDepartmentByName(name);
+          if(department != null) {
+            String newName = getValidString("New name: ");
+            try {
+              r.updateDepartmentName(department, newName);
+              r.updateFacultyDepartmentName(department, newName);
+            }
+
+            catch (RemoteException e) {
+              System.out.println("Remote Exception in updating Department, " + e);
+              connectRMIInterface(a);
+            }
+          }
+          else {
+            System.out.println("There isn't a department with that name");
+          }
+        }
+        catch (RemoteException e) {
+          System.out.println("Remote Exception in updating Department, " + e);
           connectRMIInterface(a);
         }
       }
