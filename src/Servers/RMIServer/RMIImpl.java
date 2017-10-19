@@ -43,27 +43,64 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     System.out.println("Server: " + s);
   }
 
-  public void createUser(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) throws IOException, ClassNotFoundException {
+  public void createUser(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) throws RemoteException {
     User user = new User(name, password, department, faculty, contact, address, cc, expireDate, type);
     this.users.add(user);
-    this.data.writeFile(this.users, "Users");
+    try {
+      this.data.writeFile(this.users, "Users");
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in users file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in users file");
+    }
     System.out.println(this.users);
   }
 
   public void createFaculty(String name) throws RemoteException {
+    ArrayList<Department> departments = new ArrayList<Department>();
+    Faculty faculty = new Faculty(name, departments);
+    this.faculties.add(faculty);
 
+    try {
+      this.data.writeFile(this.faculties, "Faculties");
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in faculties file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in faculties file");
+    }
+
+    System.out.println(this.faculties);
   }
 
-  public void createDepartment(String name, int facultyID) throws RemoteException {
+  public void createDepartment(String name, Faculty faculty) throws RemoteException {
+    Department department = new Department(name);
+    updateFacultyDepartment(faculty, department);
+    this.departments.add(department);
 
+    try {
+      this.data.writeFile(this.departments, "Departments");
+      this.data.writeFile(this.faculties, "Faculties");
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in departments file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in departments file");
+    }
+
+    System.out.println(this.departments);
+    System.out.println(this.faculties);
   }
 
   public void updateDepartment(Department department) throws RemoteException {
-
   }
 
-  public void updateFaculty(Faculty faculty) throws RemoteException {
+  public void updateFaculty(Faculty faculty) throws RemoteException {}
 
+  public void updateFacultyDepartment(Faculty faculty, Department department) throws RemoteException {
+    for (int i = 0; i < faculties.size(); i++) {
+      if (faculties.get(i).getName().equals(faculty.getName())) {
+        faculties.get(i).addDepartment(department);
+      }
+    }
   }
 
   public Department removeDepartment(Department department) throws RemoteException {

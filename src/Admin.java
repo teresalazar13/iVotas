@@ -1,5 +1,9 @@
 import Data.*;
 import Servers.RMIServer.*;
+
+import javax.imageio.IIOException;
+import java.io.IOException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -46,14 +50,15 @@ public class Admin {
           createUser(r, a);
           break;
         case 2:
+          management(r, a);
+          break;
+        case 3:
           try {
             r.remote_print("XXXXXXXX");
           } catch (Exception e) {
             System.out.println("Fail on Server");
             connectRMIInterface(a);
           }
-          break;
-        case 3:
           break;
         case 4:
           break;
@@ -98,9 +103,9 @@ public class Admin {
         return;
       }
     }
-    catch (Exception e) {
+    catch (RemoteException e) {
       System.out.println("Main Server crashed. Connecting to Backup Server..." );
-      updatePort(a);
+      connectRMIInterface(a);
       return;
     }
 
@@ -111,15 +116,74 @@ public class Admin {
         return;
       }
     }
-    catch (Exception e) {
-      System.out.println("Exception, " + e);
+    catch (RemoteException e) {
+      System.out.println("Remote Exception, " + e);
+      connectRMIInterface(a);
     }
 
     try {
       r.createUser(name, password, department, faculty, contact, address, cc, expireDate, type);
     }
-    catch (Exception e) {
-      System.out.println("Exception, " + e);
+    catch (RemoteException e) {
+      System.out.println("Remote Exception, " + e);
+      connectRMIInterface(a);
+    }
+  }
+
+  public static void management(RMIInterface r, Admin a) {
+    System.out.println("What do you want to manage?\n" +
+            "1 - Faculty\n" +
+            "2 - Department\n" +
+            "3 back");
+    int option = getValidInteger(3);
+    if (option == 3) return;
+    System.out.println("What do you do?\n" +
+            "1 - Create\n" +
+            "2 - Update\n" +
+            "3 - Remove\n" +
+            "4 back");
+    int option2 = getValidInteger(4);
+    if (option2 == 4) return;
+    String name = getValidString("Name: ");
+
+    if (option == 1) {
+      if (option2 == 1) {
+        try {
+          r.createFaculty(name);
+        }
+        catch (RemoteException e) {
+          System.out.println("Remote Exception, " + e);
+          connectRMIInterface(a);
+        }
+      }
+    }
+
+    else {
+      String facultyName = getValidString("Faculty name: ");
+      Faculty faculty;
+
+      try {
+        faculty = r.getFacultyByName(facultyName);
+        if (faculty == null) {
+          System.out.println("There isn't a faculty with that name.");
+          return;
+        }
+      }
+      catch (RemoteException e) {
+        System.out.println("Remote Exception " + e);
+        connectRMIInterface(a);
+        return;
+      }
+
+      if (option2 == 1) {
+        try {
+          r.createDepartment(name, faculty);
+        }
+        catch (RemoteException e) {
+          System.out.println("Remote Exception " + e);
+          connectRMIInterface(a);
+        }
+      }
     }
   }
 

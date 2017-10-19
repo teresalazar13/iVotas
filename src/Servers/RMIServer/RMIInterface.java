@@ -12,11 +12,11 @@ public interface RMIInterface extends Remote {
 
   void remote_print(String s) throws RemoteException;
 
-  void createUser(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) throws IOException, ClassNotFoundException;
+  void createUser(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) throws RemoteException;
 
   void createFaculty(String name) throws RemoteException;
 
-  void createDepartment(String name, int facultyID) throws RemoteException;
+  void createDepartment(String name, Faculty faculty) throws RemoteException;
 
   void updateDepartment(Department department) throws RemoteException;
 
