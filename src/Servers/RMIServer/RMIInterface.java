@@ -24,9 +24,9 @@ public interface RMIInterface extends Remote {
 
   void updateFacultyDepartmentName(Department department, String name) throws RemoteException;
 
-  Department removeDepartment(Department department) throws RemoteException;
+  void removeDepartment(Department department) throws RemoteException;
 
-  Faculty removeFaculty(Faculty faculty) throws RemoteException;
+  void removeFaculty(Faculty faculty) throws RemoteException;
 
   void createElection(String name, String description, Date startDate, Date endDate, int type) throws RemoteException;
 

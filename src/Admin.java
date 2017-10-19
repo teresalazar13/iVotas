@@ -158,17 +158,39 @@ public class Admin {
         Faculty faculty = null;
         try {
           faculty = r.getFacultyByName(name);
+          if (faculty != null) {
+            String newName = getValidString("New name: ");
+            try {
+              r.updateFacultyName(faculty, newName);
+            }
+            catch (RemoteException e) {
+              System.out.println("Remote Exception in updating Faculty, " + e);
+              connectRMIInterface(a);
+            }
+          }
+          else {
+            System.out.println("There isnt a faculty with that name.");
+          }
         }
         catch (RemoteException e) {
           System.out.println("Remote Exception in updating Faculty, " + e);
           connectRMIInterface(a);
         }
-        String newName = getValidString("New name: ");
+      }
+
+      else if (option2 == 3) {
+        Faculty faculty = null;
         try {
-          r.updateFacultyName(faculty, newName);
+          faculty = r.getFacultyByName(name);
+          if (faculty != null) {
+            r.removeFaculty(faculty);
+          }
+          else {
+            System.out.println("There isnt a faculty with that name.");
+          }
         }
         catch (RemoteException e) {
-          System.out.println("Remote Exception in updating Faculty, " + e);
+          System.out.println("Remote Exception in removing Faculty, " + e);
           connectRMIInterface(a);
         }
       }
@@ -220,6 +242,23 @@ public class Admin {
         }
         catch (RemoteException e) {
           System.out.println("Remote Exception in updating Department, " + e);
+          connectRMIInterface(a);
+        }
+      }
+
+      else if (option2 == 3) {
+        Department department = null;
+        try {
+          department = r.getDepartmentByName(name);
+          if (department != null) {
+            r.removeDepartment(department);
+          }
+          else {
+            System.out.println("There isnt a department with that name.");
+          }
+        }
+        catch (RemoteException e) {
+          System.out.println("Remote Exception in removing Department, " + e);
           connectRMIInterface(a);
         }
       }

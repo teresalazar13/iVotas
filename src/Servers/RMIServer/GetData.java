@@ -39,6 +39,7 @@ public class GetData {
         ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");
         ArrayList<Faculty> facultiesFromFile = (ArrayList<Faculty>) readFile("Faculty");
 
+
         this.users = usersFromFile;
         this.departments = departmentsFromFile;
         this.faculties = facultiesFromFile;

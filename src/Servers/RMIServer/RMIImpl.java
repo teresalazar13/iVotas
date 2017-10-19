@@ -103,12 +103,30 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     updateFacultiesFile();
   }
 
-  public Department removeDepartment(Department department) throws RemoteException {
-    return null;
+  public void removeDepartment(Department department) throws RemoteException {
+    for (int i = 0; i < departments.size(); i++) {
+      if (departments.get(i).getName().equals(department.getName())) {
+        departments.remove(departments.get(i));
+      }
+    }
+    updateDepartmentsFile();
   }
 
-  public Faculty removeFaculty(Faculty faculty) throws RemoteException {
-    return null;
+  public void removeFaculty(Faculty faculty) throws RemoteException {
+    for (int i = 0; i < faculty.getDepartments().size(); i++) {
+      for (int j = 0; j < this.departments.size(); j++) {
+        if (faculty.getDepartments().get(i).getName().equals(departments.get(j).getName())) {
+          departments.remove(departments.get(j));
+        }
+      }
+    }
+    updateDepartmentsFile();
+    for (int i = 0; i < faculties.size(); i++) {
+      if (faculties.get(i).getName().equals(faculty.getName())) {
+        faculties.remove(faculties.get(i));
+      }
+    }
+    updateFacultiesFile();
   }
 
   public void createElection(String name, String description, Date startDate, Date endDate, int type) throws RemoteException {
