@@ -46,18 +46,17 @@ class TCPClient {
       // the main thread loops reading from the server and writing to System.out
       String messageFromServer;
       while((messageFromServer = inFromServer.readLine()) != null) {
-        Map<String, String> response = client.parseProtocolMessage(messageFromServer);
-        User user = client.buildUser(response.get("user"));
-
-        Object lock = new Object();
-        synchronized (lock) {
-          lock.notify();
+        synchronized (reader.getT()) {
+          Map<String, String> response = client.parseProtocolMessage(messageFromServer);
+          System.out.println(reader.getT().getState());
+          reader.getT().notify();
+          System.out.println(reader.getT().getState());
         }
       }
     } catch (IOException e) {
       if(inFromServer == null)
         System.out.println("\nUsage: java TCPClient <host> <port>\n");
-      System.out.println(e.getMessage());
+        System.out.println(e.getMessage());
     } finally {
       try { inFromServer.close(); } catch (Exception e) {}
     }
@@ -82,37 +81,9 @@ class TCPClient {
 
     return protocolValues;
   }
-
-  private User buildUser(String userString) {
-    String [] userAttributes = userString.split("=|[,]");
-    Map<String, String> userMap = new HashMap<>();
-
-    // attributes in a map
-    for (int i = 0; i < userAttributes.length; i+=2) {
-      System.out.println(userAttributes[i]);
-      System.out.println(userAttributes[i+1]);
-      userMap.put(userAttributes[i], userAttributes[i+1]);
-    }
-
-    // build user
-    User user = new User(
-            userMap.get("name"),
-            userMap.get("password"),
-            new Department(userMap.get("department")),
-            new Faculty(userMap.get("faculty"), null),
-            userMap.get("contact"),
-            userMap.get("address"),
-            userMap.get("cc"),
-            userMap.get("expireDate"),
-            Integer.parseInt(userMap.get("type"))
-    );
-
-
-    return user;
-  }
-
 }
 
+// Thread responsible for reading from keyboard and writing to the server
 class Reader implements Runnable {
   private String threadName;
   private PrintWriter outToServer;
@@ -134,18 +105,19 @@ class Reader implements Runnable {
   }
 
   public void run() {
+    Object lock = new Object();
     while(!this.clientSocket.isClosed()) {
-      String searchString = this.votingTableMenu();
-      outToServer.println(searchString);
+      synchronized (this.getT()) {
+        String searchString = this.votingTableMenu();
+        outToServer.println(searchString);
 
-      System.out.println("waiting");
-      Object lock = new Object();
-      try {
-        synchronized (lock) {
-          lock.wait();
+        System.out.println("waiting");
+        try {
+          this.getT().wait();
+          System.out.println("resumed");
+        } catch (InterruptedException e) {
+          e.printStackTrace();
         }
-      } catch (InterruptedException e) {
-        e.printStackTrace();
       }
     }
   }
