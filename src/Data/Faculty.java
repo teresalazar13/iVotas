@@ -9,9 +9,9 @@ public class Faculty implements Serializable {
 
   public Faculty() {}
 
-  public Faculty(String name, ArrayList<Department> departments) {
+  public Faculty(String name) {
     this.name = name;
-    this.departments = departments;
+    this.departments = new ArrayList<Department>();
   }
 
   public String getName() {

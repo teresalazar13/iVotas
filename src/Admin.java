@@ -4,10 +4,13 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 public class Admin {
 
-  // ASK - Update faculty é so mudar o nome? ou mudar departamentos tambem?
+  // ASK - pode haver facs, deps ou users com nomes iguais?
+  // TODO - funcoes 1, 2 -> verificar do lado do servidor tudo com boolean de resposta
   // TODO - Funcoes synchronized
   // TODO - Terminal
   // TODO - votar nao pode ser perdido com excecao -> votar mais que uma vez nao
@@ -32,7 +35,8 @@ public class Admin {
 
   public static void menu(RMIInterface r, Admin a) {
     while(true) {
-      System.out.println("Please choose an option:\n" +
+      int option = getValidInteger(
+              "Please choose an option:\n" +
               "1 - Register Person\n" +
               "2 - Manage Department or Faculty\n" +
               "3 - Create Election\n" +
@@ -41,8 +45,7 @@ public class Admin {
               "6 - Change Election's properties\n" +
               "7 - Know where a User has voted\n" +
               "8 - See details of past elections\n" +
-              "9 to quit");
-      int option = getValidInteger(9);
+              "9 to quit", 1, 9);
       switch (option) {
         case 1:
           createUser(r, a);
@@ -51,14 +54,15 @@ public class Admin {
           management(r, a);
           break;
         case 3:
+          createElection(r, a);
+          break;
+        case 4:
           try {
             r.remote_print("XXXXXXXX");
           } catch (Exception e) {
             System.out.println("Fail on Server");
             connectRMIInterface(a);
           }
-          break;
-        case 4:
           break;
         case 5:
           break;
@@ -75,12 +79,12 @@ public class Admin {
   }
 
   public static void createUser(RMIInterface r, Admin a) {
-    System.out.println("What type of User do you want to Create?\n" +
-            "1 - Student\n" +
-            "2 - Teacher\n" +
-            "3 - Staff\n" +
-            "4 back");
-    int option = getValidInteger(4);
+    int option = getValidInteger(
+            "What type of User do you want to Create?\n" +
+                    "1 - Student\n" +
+                    "2 - Teacher\n" +
+                    "3 - Staff\n" +
+                    "4 back", 1,4);
     if (option == 4) return;
     String name = getValidString("Name: ");
     String password = getValidString("Password: ");
@@ -129,19 +133,19 @@ public class Admin {
   }
 
   public static void management(RMIInterface r, Admin a) {
-    System.out.println("What do you want to manage?\n" +
+    int option = getValidInteger("What do you want to manage?\n" +
             "1 - Faculty\n" +
             "2 - Department\n" +
-            "3 back");
-    int option = getValidInteger(3);
+            "3 back", 1, 3);
     if (option == 3) return;
-    System.out.println("What do you do?\n" +
+
+    int option2 = getValidInteger("What do you do?\n" +
             "1 - Create\n" +
             "2 - Update\n" +
             "3 - Remove\n" +
-            "4 back");
-    int option2 = getValidInteger(4);
+            "4 back", 1,4);
     if (option2 == 4) return;
+
     String name = getValidString("Name: ");
 
     if (option == 1) {
@@ -265,6 +269,30 @@ public class Admin {
     }
   }
 
+  public static void createElection(RMIInterface r, Admin a) {
+    String name = getValidString("Name: ");
+    String description = getValidString("Description: ");
+    System.out.println("Start date:");
+    long startDate = createDate();
+    System.out.println("End date:");
+    long endDate = createDate();
+    if (endDate < startDate) {
+      System.out.println("You can't end an election before it started. Error");
+      return;
+    }
+    int type = getValidInteger("What type of election do you want to create?\n" +
+            "1 - Nucleo de Estudantes\n" +
+            "2 - Conselho Geral\n" +
+            "3 back", 1, 2);
+    try {
+      r.createElection(name, description, startDate, endDate, type);
+      System.out.println("Election successfully created");
+    }
+    catch(RemoteException e) {
+      System.out.println("Remote Exception creating election");
+    }
+  }
+
   public static void updatePort(Admin a) {
     if (a.getPort() == 7000) a.setPort(8000);
     else a.setPort(7000);
@@ -289,9 +317,9 @@ public class Admin {
     }
   }
 
-  public static int getValidInteger(int maximum) {
+  public static int getValidInteger(String field, int minimum, int maximum) {
+    System.out.println(field);
     Scanner sc = new Scanner(System.in);
-    System.out.println("Option: ");
     while (true) {
       while (!sc.hasNextInt()) {
         System.out.println("Please write an integer");
@@ -299,12 +327,31 @@ public class Admin {
       }
       int option = sc.nextInt();
       if (maximum < option || option <= 0) {
-        System.out.println("Please write an integer between 1 and " + maximum);
+        System.out.println("Please write an integer between " + minimum + " and " + maximum);
       }
       else {
         return option;
       }
     }
+  }
+
+  public static long createDate() {
+    int day = getValidInteger("Day: ", 1,31);
+    int month = getValidInteger("Month: ", 1, 12);
+    int year = getValidInteger("Year: ", 2017, 2020);
+    int hour = getValidInteger("Hour: ", 0,23);
+    int minute = getValidInteger("Minute: ", 0,31);
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/M/yyyy hh:mm:ss");
+
+    long date = 0;
+    try {
+      date = simpleDateFormat.parse(day + "/" + month + "/" + year + " " +
+              hour + ":" + minute + ":00").getTime();
+      System.out.println(date);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    return date;
   }
 
   public static String getValidString(String field) {

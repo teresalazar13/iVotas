@@ -11,6 +11,8 @@ import java.rmi.registry.Registry;
 import java.net.*;
 import java.io.*;
 import java.util.concurrent.TimeUnit;
+import java.text.SimpleDateFormat;
+
 
 public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
@@ -19,7 +21,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   private ArrayList<User> users;
   private ArrayList<Faculty> faculties;
   private ArrayList<Department> departments;
-  ArrayList<Election> elections;
+  private ArrayList<Election> elections;
   ArrayList<CandidateList> candidateLists;
   ArrayList<VotingTable> votingTables;
 
@@ -32,6 +34,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       users = data.users;
       faculties = data.faculties;
       departments = data.departments;
+      elections = data.elections;
     } catch (ClassNotFoundException e) {
       System.out.println("Class Not Found Exception " + e);
     } catch (java.io.IOException e) {
@@ -50,11 +53,9 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   }
 
   public void createFaculty(String name) throws RemoteException {
-    ArrayList<Department> departments = new ArrayList<Department>();
-    Faculty faculty = new Faculty(name, departments);
+    Faculty faculty = new Faculty(name);
     this.faculties.add(faculty);
     updateFacultiesFile();
-
   }
 
   public void createDepartment(String name, Faculty faculty) throws RemoteException {
@@ -129,8 +130,10 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     updateFacultiesFile();
   }
 
-  public void createElection(String name, String description, Date startDate, Date endDate, int type) throws RemoteException {
-
+  public void createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException {
+    Election election = new Election(name, description, startDate, endDate, type);
+    this.elections.add(election);
+    this.updateElectionsFile();
   }
 
   public void updateElection(Election election) throws RemoteException {
@@ -222,10 +225,10 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         RMIImpl server = new RMIImpl();
         NewThread thread = new NewThread("CheckRMIServerStatus");
 
-
         System.out.println(server.users);
         System.out.println(server.faculties);
         System.out.println(server.departments);
+        System.out.println(server.elections);
 
         Registry reg = LocateRegistry.createRegistry(7000);
         reg.rebind("ivotas", server);
@@ -271,6 +274,17 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       System.out.println("ClassNotFoundException: Error writing in departments file");
     }
     System.out.println(this.departments);
+  }
+
+  public void updateElectionsFile() {
+    try {
+      this.data.writeFile(this.elections, "Elections");
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in elections file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in elections file");
+    }
+    System.out.println(this.elections);
   }
 
   // The backup server will be a client that will send a message to the main server every 5 seconds. The main server has
