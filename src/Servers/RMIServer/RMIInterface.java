@@ -1,7 +1,6 @@
 package Servers.RMIServer;
 
 import Data.*;
-
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
@@ -15,17 +14,21 @@ public interface RMIInterface extends Remote {
 
   void createFaculty(String name) throws RemoteException;
 
-  void createDepartment(String name, int facultyID) throws RemoteException;
+  void createDepartment(String name, Faculty faculty) throws RemoteException;
 
-  void updateDepartment(Department department) throws RemoteException;
+  void updateFacultyDepartment(Faculty faculty, Department department) throws RemoteException;
 
-  void updateFaculty(Faculty faculty) throws RemoteException;
+  void updateFacultyName(Faculty faculty, String name) throws RemoteException;
 
-  Department removeDepartment(Department department) throws RemoteException;
+  void updateDepartmentName(Department department, String name) throws RemoteException;
 
-  Faculty removeFaculty(Faculty faculty) throws RemoteException;
+  void updateFacultyDepartmentName(Department department, String name) throws RemoteException;
 
-  void createElection(String name, String description, Date startDate, Date endDate, int type) throws RemoteException;
+  void removeDepartment(Department department) throws RemoteException;
+
+  void removeFaculty(Faculty faculty) throws RemoteException;
+
+  void createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException;
 
   void updateElection(Election election) throws RemoteException;
 
@@ -55,4 +58,5 @@ public interface RMIInterface extends Remote {
 
   Faculty getFacultyByName(String facultyName) throws RemoteException;
 
+  Faculty getFacultyByDepartmentName(String department) throws RemoteException;
 }
