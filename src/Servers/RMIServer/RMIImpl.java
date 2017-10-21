@@ -93,6 +93,14 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     this.updateElectionsFile();
   }
 
+  public void createCandidateListCouncil(String name, ArrayList<User> users, Election election, int usersType) throws RemoteException {
+    CandidateList candidateList = new CandidateList(name, users, usersType);
+    this.candidateLists.add(candidateList);
+    election.addCandidateList(candidateList);
+    this.updateCandidateListsFile();
+    this.updateElectionsFile();
+  }
+
   public void updateDepartmentName(Department department, String name) throws RemoteException {
     for (int i = 0; i < departments.size(); i++) {
       if (departments.get(i).getName().equals(department.getName())) {

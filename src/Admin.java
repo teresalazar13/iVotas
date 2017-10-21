@@ -13,14 +13,16 @@ import java.text.SimpleDateFormat;
 public class Admin {
 
   // ASK - pode haver facs, deps ou users com nomes iguais?
-  // A lista de candidatos tem que ser composta por pessoas User ou basta Strings? ao criar assim a lista e necessario ir verificando se o user existe?
+  // ASK - A lista de candidatos tem que ser composta por pessoas User ou basta Strings? ao criar assim a lista e necessario ir verificando se o user existe?
   // ASK - o que e que deve ser possivel configurar
   // ASK - Que tipo de testes temos que ter?
+  // ASK - Pode haver listas de candidatos sem candidatos?
   // TODO - Funcoes 1, 2 -> verificar do lado do servidor tudo com boolean de resposta
   // TODO - Funcoes synchronized
   // TODO - Terminal
   // TODO - Votar nao pode ser perdido com excecao -> votar mais que uma vez nao
   // TODO - Mudar portos fixos
+  // TODO - Adicionar mais dados default a BD
 
   private int port;
 
@@ -332,6 +334,14 @@ public class Admin {
     }
 
     int electionType = election.getType();
+    int usersType = 0;
+
+    if (electionType == 2) {
+      usersType = getValidInteger("Candidate List for:\n" +
+              "1 - Students\n" +
+              "2 - Teachers\n" +
+              "3 - Staff\n", 1, 3);
+    }
 
     ArrayList<User> users = new ArrayList<>();
     while(true) {
@@ -360,7 +370,10 @@ public class Admin {
 
           // Conselho Geral
           else {
-            users.add(user);
+            if (usersType == user.getType())
+              users.add(user);
+            else
+              System.out.println("User has to be type " + usersType +  ". This user is type " + user.getType());
           }
         }
         else {
@@ -373,7 +386,10 @@ public class Admin {
       }
     }
     try {
-      r.createCandidateList(name, users, election);
+      if (electionType == 1)
+        r.createCandidateList(name, users, election);
+      else
+        r.createCandidateListCouncil(name, users, election, usersType);
       System.out.println("Candidate list successfully created.");
     }
     catch(RemoteException e) {

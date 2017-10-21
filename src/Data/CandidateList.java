@@ -7,12 +7,22 @@ public class CandidateList implements Serializable {
   private static final long serialVersionUID = -1967452776847494962L;
   private String name;
   private ArrayList<User> users;
+  private int usersType;
 
   public CandidateList() {}
 
+  // Nucleo de Estudantes
   public CandidateList(String name, ArrayList<User> users) {
     this.name = name;
     this.users = users;
+    this.usersType = 1;
+  }
+
+  // Conselho Geral
+  public CandidateList(String name, ArrayList<User> users, int usersType) {
+    this.name = name;
+    this.users = users;
+    this.usersType = usersType;
   }
 
   public String getName() {
@@ -29,6 +39,18 @@ public class CandidateList implements Serializable {
 
   public void setUsers(ArrayList<User> users) {
     this.users = users;
+  }
+
+  public static long getSerialVersionUID() {
+    return serialVersionUID;
+  }
+
+  public int getUsersType() {
+    return usersType;
+  }
+
+  public void setUsersType(int usersType) {
+    this.usersType = usersType;
   }
 
   @Override
