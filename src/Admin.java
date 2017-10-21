@@ -48,8 +48,8 @@ public class Admin {
               "1 - Register Person\n" +
               "2 - Manage Department or Faculty\n" +
               "3 - Create Election\n" +
-              "4 - Manage Candidate List of an Election\n" +
-              "5 - Manage Voting Table\n" +
+              "4 - Create Candidate List of an Election\n" +
+              "5 - Create Voting Table\n" +
               "6 - Change Election's properties\n" +
               "7 - Know where a User has voted\n" +
               "8 - See details of past elections\n" +
@@ -68,14 +68,15 @@ public class Admin {
           createCandidateList(r, a);
           break;
         case 5:
+          createVotingTable(r, a);
+          break;
+        case 6:
           try {
             r.remote_print("XXXXXXXX");
           } catch (Exception e) {
             System.out.println("Fail on Server");
             connectRMIInterface(a);
           }
-          break;
-        case 6:
           break;
         case 7:
           break;
@@ -394,6 +395,27 @@ public class Admin {
     }
     catch(RemoteException e) {
       System.out.println("Remote Exception creating candidate List");
+      connectRMIInterface(a);
+    }
+  }
+
+  public static void createVotingTable(RMIInterface r, Admin a) {
+    String election = getValidString("Election name: ");
+    String department = getValidString("Department name: ");
+    try {
+      int success = r.createVotingTable(election, department);
+      if (success == 1) {
+        System.out.println("Successfully created new Voting Table");
+      }
+      else if(success == 2) {
+        System.out.println("Error creating Voting Table. There isn't an Election with that name.");
+      }
+      else {
+        System.out.println("Error creating Voting Table. There isn't a Department with that name.");
+      }
+    }
+    catch(RemoteException e) {
+      System.out.println("Remote Exception creating voting Table");
       connectRMIInterface(a);
     }
   }

@@ -37,6 +37,8 @@ public interface RMIInterface extends Remote {
 
   void createCandidateListCouncil(String name, ArrayList<User> users, Election election, int usersType) throws RemoteException;
 
+  int createVotingTable(String electionName, String departmentName) throws RemoteException;
+
   void updateElection(Election election) throws RemoteException;
 
   void createList(Election electionID, int[] candidatesIDs) throws RemoteException;
@@ -44,8 +46,6 @@ public interface RMIInterface extends Remote {
   void updateList(Election electionID, int[] candidatesIDs) throws RemoteException;
 
   List removeList(CandidateList candidateList) throws RemoteException;
-
-  void createVotingTable(Election election, int machineID, int[] votingTerminalsIDs, String location) throws RemoteException;
 
   VotingTable removeVotingTable() throws RemoteException;
 

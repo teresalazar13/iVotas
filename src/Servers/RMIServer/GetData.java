@@ -42,31 +42,40 @@ public class GetData {
       e.printStackTrace();
     }
 
-    ArrayList<CandidateList> candidateLists = new ArrayList<CandidateList>();
-    CandidateList candidateList = new CandidateList("LISTA", users);
-    candidateLists.add(candidateList);
-
-    Election election1 = new Election("NEI", "Nucleo Estudante Informatica", startDate, endDate, 1, department1);
+    Election election1 = new Election("NEI", "Nucleo Estudantes Informatica", startDate, endDate, 1, department1);
     ArrayList<Election> elections = new ArrayList<Election>();
     elections.add(election1);
+
+    ArrayList<CandidateList> candidateLists = new ArrayList<CandidateList>();
+    CandidateList candidateList1 = new CandidateList("NEIlista1", users);
+    candidateLists.add(candidateList1);
+    election1.addCandidateList(candidateList1);
+
+    ArrayList<VotingTable> votingTables = new ArrayList<VotingTable>();
+    ArrayList<VotingTerminal> votingTerminals = new ArrayList<VotingTerminal>();
+    VotingTable votingTable = new VotingTable(election1, department1, votingTerminals);
+    votingTables.add(votingTable);
 
     writeFile(users,"Users");
     writeFile(departments,"Departments");
     writeFile(faculties,"Faculties");
     writeFile(elections,"Elections");
-    writeFile(candidateLists,"CandidateLists"); */
+    writeFile(candidateLists,"CandidateLists");
+    writeFile(candidateLists,"VotingTables"); */
 
     ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
     ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");
     ArrayList<Faculty> facultiesFromFile = (ArrayList<Faculty>) readFile("Faculty");
     ArrayList<Election> electionsFromFile = (ArrayList<Election>) readFile("Election");
     ArrayList<CandidateList> candidateListsFromFile = (ArrayList<CandidateList>) readFile("CandidateList");
+    ArrayList<VotingTable> votingTablesFromFile = (ArrayList<VotingTable>) readFile("VotingTable");
 
     this.users = usersFromFile;
     this.departments = departmentsFromFile;
     this.faculties = facultiesFromFile;
     this.elections = electionsFromFile;
     this.candidateLists = candidateListsFromFile;
+    this.votingTables = votingTablesFromFile;
   }
 
   public void writeFile(Object classe, String className) throws IOException, ClassNotFoundException {
