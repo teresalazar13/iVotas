@@ -101,22 +101,11 @@ class Connection extends Thread {
           // Read client login message
           String clientResponse = bufferedReader.readLine();
           Map<String, String> keyValues = parseProtocolMessage(clientResponse);
-          for (String key : keyValues.keySet()) {
-            System.out.println(key);
-            System.out.println(keyValues.get(key));
-          }
 
-          /*
-          // Check if login is valid9
-          boolean validLogin = rmi.authenticateUser(keyValues.get("name"), keyValues.get("password"));
+          // Check if login is valid
+          boolean validLogin = rmi.authenticateUser(keyValues.get("username"), keyValues.get("password"));
           message = "type | status ; logged | " + validLogin ;
           this.getOut().println(message);
-
-          for (String key : keyValues.keySet()) {
-            System.out.println(key);
-            System.out.println(keyValues.get(key));
-          }
-          */
         }
       }
     } catch (InterruptedException | IOException e) {
@@ -185,13 +174,10 @@ class Menu extends Thread {
 
       while (true) {
         ArrayList<String> search = this.votingTableMenu();
-        User user = null;
+        User user = rmi.searchUser(search.get(0), search.get(1));;
 
         // Check if user was found
-        if (search != null) {
-          user = rmi.searchUser(search.get(0), search.get(1));
-          System.out.println(user);
-
+        if (user != null) {
           int lockedTerminalIndex = this.getLockedTerminal();
 
           // send user to voting terminal

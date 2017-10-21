@@ -43,20 +43,23 @@ class TCPClient {
       // the main thread loops reading from the server and writing to System.out
       String messageFromServer;
       while((messageFromServer = inFromServer.readLine()) != null) {
+        // set current username to log in
         synchronized (votingTerminalMenu.getT()) {
-          System.out.println("Aqui");
-          // set current username to log in
           votingTerminalMenu.setCurrentUsername(messageFromServer);
           System.out.println(messageFromServer);
           System.out.println(votingTerminalMenu.getCurrentUsername());
           votingTerminalMenu.getT().notify();
+        }
 
-          /*
-          // check if login was sucessful
-          messageFromServer = inFromServer.readLine();
+        // check if login was sucessful
+        System.out.println("waiting");
+        messageFromServer = inFromServer.readLine();
+        System.out.println("Resumed");
+
+        synchronized (votingTerminalMenu.getT()) {
           Map<String, String> protocolValues = client.parseProcolMessage(messageFromServer);
           votingTerminalMenu.setLoginState(Boolean.parseBoolean(protocolValues.get("logged")));
-          votingTerminalMenu.getT().notify();*/
+          votingTerminalMenu.getT().notify();
         }
       }
     } catch (IOException e) {
@@ -113,28 +116,25 @@ class VotingTerminalMenu implements Runnable {
 
   public void run() {
     while(!this.clientSocket.isClosed()) {
-      synchronized (this.getT()) {
-        try {
-          System.out.println("waiting");
-          this.getT().wait();
-          System.out.println("resumed");
+      try {
+        synchronized (this.getT()) {
+            this.getT().wait();
 
-          // Ask or password and send it to the server
-          String messageToServer = this.menu();
-          this.outToServer.println(messageToServer);
-          /*
-          this.getT().wait();
+            // Ask or password and send it to the server
+            String messageToServer = this.menu();
+            this.outToServer.println(messageToServer);
+            this.getT().wait();
 
-          // Check login state
-          Boolean loginState = this.loginState;
-          System.out.println(loginState);
+            // Check login state
+            Boolean loginState = this.loginState;
+            System.out.println(loginState);
 
-          this.setLoginState(false);
-          */
-          this.setCurrentUsername(null);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
+            this.setLoginState(false);
+            this.setCurrentUsername(null);
+
         }
+      } catch (InterruptedException e) {
+        e.printStackTrace();
       }
     }
   }
