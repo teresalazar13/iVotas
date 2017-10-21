@@ -1,10 +1,10 @@
 package Servers.RMIServer;
 
 import Data.*;
-
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 public class FileWrapper {
 
@@ -16,70 +16,60 @@ public class FileWrapper {
   ArrayList<VotingTable> votingTables;
 
   public FileWrapper() throws IOException, ClassNotFoundException {
-    Department department1 = new Department("EngenhariaInformatica");
-    Department department2 = new Department("EngenhariaMecanica");
-    Department department3 = new Department("EngenhariaEletro");
+
+    /*Department department1 = new Department("EngenhariaInformatica");
     ArrayList<Department> departments = new ArrayList<Department>();
     departments.add(department1);
-    departments.add(department2);
-    departments.add(department3);
 
-    Faculty faculty1 = new Faculty("FCTUC", departments);
-    Faculty faculty2 = new Faculty("FMUC", departments);
-    Faculty faculty3 = new Faculty("FDUC", departments);
+    Faculty faculty1 = new Faculty("FCTUC");
     ArrayList<Faculty> faculties = new ArrayList<Faculty>();
     faculties.add(faculty1);
-    faculties.add(faculty2);
-    faculties.add(faculty3);
 
-    User user1 = new User("Teresa", "123", department1, faculty1, "9140975", "Rua X", "444",
+    User user1= new User("Teresa", "123", department1, faculty1, "9140975", "Rua X", "444",
             "expireDate", 1 );
-    User user2 = new User("Miguel", "1234", department2, faculty2, "91409756", "Rua Y", "555",
-            "expireDate2", 2 );
-    User user3 = new User("Teresa", "12345", department3, faculty3, "91409757", "Rua Z", "666",
-            "expireDate3", 1 );
     ArrayList<User> users = new ArrayList<User>();
     users.add(user1);
-    users.add(user2);
-    users.add(user3);
 
-    CandidateList candidateList1 = new CandidateList(users);
-    CandidateList candidateList2 = new CandidateList(users);
-    CandidateList candidateList3 = new CandidateList(users);
-    ArrayList<CandidateList> cls = new ArrayList<>();
-    cls.add(candidateList1);
-    cls.add(candidateList2);
-    cls.add(candidateList3);
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/M/yyyy hh:mm:ss");
 
-    Date start = new Date(1,1,1,1,1);
-    Date end = new Date(1,2,1,1,1);
-    Election election = new Election("NEI", "Nucleo de estudantes de informatica", start, end, 1, cls, null);
-    ArrayList<Election> elections = new ArrayList<>();
-    elections.add(election);
+    long startDate = 0;
+    long endDate = 0;
+    try {
+      startDate = simpleDateFormat.parse("10/10/2017 11:30:10").getTime();
+      endDate = simpleDateFormat.parse("10/10/2017 18:30:10").getTime();
+    }
+    catch (ParseException e) {
+      e.printStackTrace();
+    }
+
+    ArrayList<CandidateList> candidateLists = new ArrayList<CandidateList>();
+    CandidateList candidateList = new CandidateList("LISTA", users);
+    candidateLists.add(candidateList);
+
+    Election election1 = new Election("NEI", "Nucleo Estudante Informatica", startDate, endDate, 1, department1);
+    ArrayList<Election> elections = new ArrayList<Election>();
+    elections.add(election1);
 
     writeFile(users,"Users");
-    ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
-
     writeFile(departments,"Departments");
-    ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");
-
     writeFile(faculties,"Faculties");
-    ArrayList<Faculty> facultiesFromFile = (ArrayList<Faculty>) readFile("Faculty");
-
-    writeFile(cls,"CandidateLists");
-    ArrayList<CandidateList> candidateListsFromFile = (ArrayList<CandidateList>) readFile("CandidateList");
-
     writeFile(elections,"Elections");
+    writeFile(candidateLists,"CandidateLists"); */
+
+    ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
+    ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");
+    ArrayList<Faculty> facultiesFromFile = (ArrayList<Faculty>) readFile("Faculty");
     ArrayList<Election> electionsFromFile = (ArrayList<Election>) readFile("Election");
+    ArrayList<CandidateList> candidateListsFromFile = (ArrayList<CandidateList>) readFile("CandidateList");
 
     this.users = usersFromFile;
     this.departments = departmentsFromFile;
     this.faculties = facultiesFromFile;
-    this.candidateLists = candidateListsFromFile;
     this.elections = electionsFromFile;
+    this.candidateLists = candidateListsFromFile;
   }
 
-  private static void writeFile(Object classe, String className) throws IOException, ClassNotFoundException {
+  public void writeFile(Object classe, String className) throws IOException, ClassNotFoundException {
     String filename = "ObjectFiles/" + className + ".dat";
     File file = new File();
     file.openWrite(filename);
@@ -109,18 +99,6 @@ public class FileWrapper {
     return array;
   }
 
-  public ArrayList<Department> getDepartments() {
-    return departments;
-  }
-
-  public ArrayList<Election> getElections() {
-    return elections;
-  }
-
-  public ArrayList<VotingTable> getVotingTables() {
-    return votingTables;
-  }
-
   public ArrayList<User> getUsers() {
     return users;
   }
@@ -129,7 +107,19 @@ public class FileWrapper {
     return faculties;
   }
 
+  public ArrayList<Department> getDepartments() {
+    return departments;
+  }
+
+  public ArrayList<Election> getElections() {
+    return elections;
+  }
+
   public ArrayList<CandidateList> getCandidateLists() {
     return candidateLists;
+  }
+
+  public ArrayList<VotingTable> getVotingTables() {
+    return votingTables;
   }
 }

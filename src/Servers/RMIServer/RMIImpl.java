@@ -13,14 +13,16 @@ import java.rmi.registry.Registry;
 import java.net.*;
 import java.io.*;
 import java.util.concurrent.TimeUnit;
+import java.text.SimpleDateFormat;
+
 
 public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
-
+  private FileWrapper data;
   private ArrayList<User> users;
   private ArrayList<Faculty> faculties;
   private ArrayList<Department> departments;
-  ArrayList<Election> elections;
-  ArrayList<CandidateList> candidateLists;
+  private ArrayList<Election> elections;
+  private ArrayList<CandidateList> candidateLists;
   ArrayList<VotingTable> votingTables;
 
   public RMIImpl() throws RemoteException {
@@ -28,9 +30,12 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
     try {
       FileWrapper data = new FileWrapper();
+      this.data = data;
       users = data.users;
       faculties = data.faculties;
       departments = data.departments;
+      elections = data.elections;
+      candidateLists = data.candidateLists;
     } catch (ClassNotFoundException e) {
       System.out.println("Class Not Found Exception " + e);
     } catch (java.io.IOException e) {
@@ -42,40 +47,144 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     System.out.println("Server: " + s);
   }
 
-  public void createUser(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) {
+  public void createUser(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) throws RemoteException {
     User user = new User(name, password, department, faculty, contact, address, cc, expireDate, type);
+    this.users.add(user);
+    updateUsersFile();
   }
 
   public void createFaculty(String name) throws RemoteException {
-
+    Faculty faculty = new Faculty(name);
+    this.faculties.add(faculty);
+    updateFacultiesFile();
   }
 
-  public void createDepartment(String name, int facultyID) throws RemoteException {
-
+  public void createDepartment(String name, Faculty faculty) throws RemoteException {
+    Department department = new Department(name);
+    updateFacultyDepartment(faculty, department);
+    this.departments.add(department);
+    updateFacultiesFile();
+    updateDepartmentsFile();
   }
 
-  public void updateDepartment(Department department) throws RemoteException {
 
+  public void createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException {
+    Election election = new Election(name, description, startDate, endDate, type);
+    this.elections.add(election);
+    this.updateElectionsFile();
   }
 
-  public void updateFaculty(Faculty faculty) throws RemoteException {
-
+  public boolean createStudentsElection(String name, String description, long startDate, long endDate, int type, String departmentName) throws RemoteException {
+    Department department = getDepartmentByName(departmentName);
+    if (department == null) {
+      return false;
+    }
+    Election election = new Election(name, description, startDate, endDate, type, department);
+    this.elections.add(election);
+    this.updateElectionsFile();
+    return true;
   }
 
-  public Department removeDepartment(Department department) throws RemoteException {
-    return null;
+  public void createCandidateList(String name, ArrayList<User> users, Election election) throws RemoteException {
+    CandidateList candidateList = new CandidateList(name, users);
+    this.candidateLists.add(candidateList);
+    election.addCandidateList(candidateList);
+    this.updateCandidateListsFile();
+    this.updateElectionsFile();
   }
 
-  public Faculty removeFaculty(Faculty faculty) throws RemoteException {
-    return null;
+  public void createCandidateListCouncil(String name, ArrayList<User> users, Election election, int usersType) throws RemoteException {
+    CandidateList candidateList = new CandidateList(name, users, usersType);
+    this.candidateLists.add(candidateList);
+    election.addCandidateList(candidateList);
+    this.updateCandidateListsFile();
+    this.updateElectionsFile();
   }
 
-  public void createElection(String name, String description, Date startDate, Date endDate, int type) throws RemoteException {
-
+  public void updateDepartmentName(Department department, String name) throws RemoteException {
+    for (int i = 0; i < departments.size(); i++) {
+      if (departments.get(i).getName().equals(department.getName())) {
+        departments.get(i).setName(name);
+      }
+    }
+    updateDepartmentsFile();
   }
 
-  public void updateElection(Election election) throws RemoteException {
+  public void updateFacultyDepartment(Faculty faculty, Department department) throws RemoteException {
+    for (int i = 0; i < faculties.size(); i++) {
+      if (faculties.get(i).getName().equals(faculty.getName())) {
+        faculties.get(i).addDepartment(department);
+      }
+    }
+    updateFacultiesFile();
+  }
 
+  public void updateFacultyDepartmentName(Department department, String name) throws RemoteException {
+    for (int i = 0; i < faculties.size(); i++) {
+      for (int j = 0; j < faculties.get(i).getDepartments().size(); j++) {
+        if (faculties.get(i).getDepartments().get(j).getName().equals(department.getName())) {
+          faculties.get(i).getDepartments().get(j).setName(name);
+        }
+      }
+    }
+    updateFacultiesFile();
+  }
+
+  public void updateFacultyName(Faculty faculty, String name) throws RemoteException {
+    for (int i = 0; i < faculties.size(); i++) {
+      if (faculties.get(i).getName().equals(faculty.getName())) {
+        faculties.get(i).setName(name);
+      }
+    }
+    updateFacultiesFile();
+  }
+
+  public void removeDepartment(Department department) throws RemoteException {
+    for (int i = 0; i < departments.size(); i++) {
+      if (departments.get(i).getName().equals(department.getName())) {
+        departments.remove(departments.get(i));
+      }
+    }
+    updateDepartmentsFile();
+  }
+
+  public int updateElection(String electionName, Object toChange, int type) throws RemoteException {
+    for (int i = 0; i < elections.size(); i++) {
+      if (elections.get(i).getName().equals(electionName)) {
+        if (type == 1) {
+          elections.get(i).setName((String) toChange);
+        }
+        else if (type == 2) {
+          elections.get(i).setDescription((String) toChange);
+        }
+        else if (type == 3) {
+          elections.get(i).setStartDate((long) toChange);
+        }
+        else {
+          elections.get(i).setEndDate((long) toChange);
+        }
+        updateElectionsFile();
+        return 1;
+      }
+    }
+    return 2;
+  }
+
+  public void removeFaculty(Faculty faculty) throws RemoteException {
+    for (int i = 0; i < faculty.getDepartments().size(); i++) {
+      for (int j = 0; j < this.departments.size(); j++) {
+        if (faculty.getDepartments().get(i).getName().equals(departments.get(j).getName())) {
+          departments.remove(departments.get(j));
+        }
+      }
+    }
+    updateDepartmentsFile();
+    for (int i = 0; i < faculties.size(); i++) {
+      if (faculties.get(i).getName().equals(faculty.getName())) {
+        faculties.remove(faculties.get(i));
+      }
+    }
+    updateFacultiesFile();
   }
 
   public void createList(Election electionID, int[] candidatesIDs) throws RemoteException {
@@ -183,7 +292,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
   }
 
-  public Department getDepartmentByName(String departmentName) {
+  public Department getDepartmentByName(String departmentName) throws RemoteException {
     for (int i = 0; i < departments.size(); i++) {
       if (departments.get(i).getName().equals(departmentName)) {
         return departments.get(i);
@@ -192,10 +301,39 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return null;
   }
 
-  public Faculty getFacultyByName(String facultyName) {
+  public Faculty getFacultyByName(String facultyName) throws RemoteException {
     for (int i = 0; i < faculties.size(); i++) {
       if (faculties.get(i).getName().equals(facultyName)) {
         return faculties.get(i);
+      }
+    }
+    return null;
+  }
+
+  public Faculty getFacultyByDepartmentName(String department) throws RemoteException {
+    for (int i = 0; i < faculties.size(); i++) {
+      for (int j = 0; j < faculties.get(i).getDepartments().size(); j++) {
+        if (faculties.get(i).getDepartments().get(j).getName().equals(department)) {
+          return faculties.get(i);
+        }
+      }
+    }
+    return null;
+  }
+
+  public Election getElectionByName(String electionName) throws RemoteException {
+    for (int i = 0; i < elections.size(); i++) {
+      if (elections.get(i).getName().equals(electionName)) {
+        return elections.get(i);
+      }
+    }
+    return null;
+  }
+
+  public User getUserByName(String userName) throws RemoteException {
+    for (int i = 0; i < users.size(); i++) {
+      if (users.get(i).getName().equals(userName)) {
+        return users.get(i);
       }
     }
     return null;
@@ -212,10 +350,11 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         RMIImpl server = new RMIImpl();
         NewThread thread = new NewThread("CheckRMIServerStatus");
 
-        /*
         System.out.println(server.users);
         System.out.println(server.faculties);
-        System.out.println(server.departments); */
+        System.out.println(server.departments);
+        System.out.println(server.elections);
+        System.out.println(server.candidateLists);
 
         Registry reg = LocateRegistry.createRegistry(1099);
         reg.rebind("ivotas", server);
@@ -228,6 +367,61 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     else {
       backupServer(args);
     }
+  }
+
+  public void updateUsersFile() {
+    try {
+      this.data.writeFile(this.users, "Users");
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in users file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in users file");
+    }
+    System.out.println(this.users);
+  }
+
+  public void updateFacultiesFile() {
+    try {
+      this.data.writeFile(this.faculties, "Faculties");
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in faculties file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in faculties file");
+    }
+    System.out.println(this.faculties);
+  }
+
+  public void updateDepartmentsFile() {
+    try {
+      this.data.writeFile(this.departments, "Departments");
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in departments file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in departments file");
+    }
+    System.out.println(this.departments);
+  }
+
+  public void updateElectionsFile() {
+    try {
+      this.data.writeFile(this.elections, "Elections");
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in elections file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in elections file");
+    }
+    System.out.println(this.elections);
+  }
+
+  public void updateCandidateListsFile() {
+    try {
+      this.data.writeFile(this.candidateLists, "candidateLists");
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in candidateLists file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in candidateLists file");
+    }
+    System.out.println(this.candidateLists);
   }
 
   // The backup server will be a client that will send a message to the main server every 5 seconds. The main server has
