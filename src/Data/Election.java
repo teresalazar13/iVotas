@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 
 public class Election implements Serializable {
-  private static final long serialVersionUID = 7538208724782622046L;
+  private static final long serialVersionUID = 7538208724782622040L;
   private String name;
   private String description;
   private long startDate;
@@ -100,8 +100,23 @@ public class Election implements Serializable {
             ",startDate=" + startDate +
             ",endDate=" + endDate +
             ",type=" + type +
-            ",candidateLists|" + candidateLists +
-            ",votes|" + votes +
+            ",candidateLists=" + candidateLists +
+            ",votes=" + votes +
+            '}';
+  }
+
+  public String toStringClient() {
+    ArrayList<CandidateList> cls = this.candidateLists;
+    ArrayList<String> clsString = new ArrayList<>();
+
+    for (CandidateList candidateList : cls) {
+      clsString.add(candidateList.toStringClient());
+    }
+
+    return "Election{" +
+            "name=" + name+
+            "-description=" + description +
+            "-candidateLists=" + clsString +
             '}';
   }
 }

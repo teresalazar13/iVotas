@@ -110,8 +110,16 @@ class Connection extends Thread {
           this.getOut().println(message);
 
           if (validLogin) {
-            message = "type | voting ; election | " + this.election.toString();
+            message = "type | voting ; election | " + this.election.toStringClient();
             this.getOut().println(message);
+            clientResponse = bufferedReader.readLine();
+            keyValues = parseProtocolMessage(clientResponse);
+
+            User user = rmi.getUserByName(keyValues.get("username"));
+            Election voteElection = rmi.getElectionByName(keyValues.get("election"));
+            CandidateList voteList = rmi.getCandidateListByName(keyValues.get("choice"));
+
+            rmi.vote(user, voteElection, voteList);
           }
         }
       }

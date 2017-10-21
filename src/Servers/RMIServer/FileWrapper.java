@@ -17,7 +17,7 @@ public class FileWrapper {
 
   public FileWrapper() throws IOException, ClassNotFoundException {
 
-    /*Department department1 = new Department("EngenhariaInformatica");
+    Department department1 = new Department("EngenhariaInformatica");
     ArrayList<Department> departments = new ArrayList<Department>();
     departments.add(department1);
 
@@ -27,8 +27,14 @@ public class FileWrapper {
 
     User user1= new User("Teresa", "123", department1, faculty1, "9140975", "Rua X", "444",
             "expireDate", 1 );
+    User user2= new User("Test", "123", department1, faculty1, "9140975", "Rua X", "444",
+            "expireDate", 1 );
+    User user3= new User("Machado", "123", department1, faculty1, "9140975", "Rua X", "444",
+            "expireDate", 1 );
     ArrayList<User> users = new ArrayList<User>();
     users.add(user1);
+    users.add(user2);
+    users.add(user3);
 
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/M/yyyy hh:mm:ss");
 
@@ -43,10 +49,14 @@ public class FileWrapper {
     }
 
     ArrayList<CandidateList> candidateLists = new ArrayList<CandidateList>();
-    CandidateList candidateList = new CandidateList("LISTA", users);
+    CandidateList candidateList = new CandidateList("LISTAA", users);
+    CandidateList candidateList2 = new CandidateList("LISTAB", users);
     candidateLists.add(candidateList);
+    candidateLists.add(candidateList2);
 
     Election election1 = new Election("NEI", "Nucleo Estudante Informatica", startDate, endDate, 1, department1);
+    election1.addCandidateList(candidateList);
+    election1.addCandidateList(candidateList2);
     ArrayList<Election> elections = new ArrayList<Election>();
     elections.add(election1);
 
@@ -54,7 +64,7 @@ public class FileWrapper {
     writeFile(departments,"Departments");
     writeFile(faculties,"Faculties");
     writeFile(elections,"Elections");
-    writeFile(candidateLists,"CandidateLists"); */
+    writeFile(candidateLists,"CandidateLists");
 
     ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
     ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");

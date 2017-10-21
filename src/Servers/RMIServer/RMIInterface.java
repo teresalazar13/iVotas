@@ -55,7 +55,7 @@ public interface RMIInterface extends Remote {
 
   boolean authenticateUser(String name, String password) throws RemoteException;
 
-  void vote(int userID, int electionID, int candidateListID) throws RemoteException;
+  void vote(User user, Election election, CandidateList candidateList) throws RemoteException;
 
   List getVotingInfo(User user, Election election) throws RemoteException;
 
@@ -70,4 +70,6 @@ public interface RMIInterface extends Remote {
   Election getElectionByName(String electionName) throws RemoteException;
 
   Faculty getFacultyByDepartmentName(String department) throws RemoteException;
+
+  CandidateList getCandidateListByName(String listName) throws RemoteException;
 }
