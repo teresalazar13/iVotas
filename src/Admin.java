@@ -1,7 +1,10 @@
 import Data.*;
 import Servers.RMIServer.*;
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
+
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
@@ -10,10 +13,13 @@ import java.text.SimpleDateFormat;
 public class Admin {
 
   // ASK - pode haver facs, deps ou users com nomes iguais?
-  // TODO - funcoes 1, 2 -> verificar do lado do servidor tudo com boolean de resposta
+  // A lista de candidatos tem que ser composta por pessoas User ou basta Strings? ao criar assim a lista e necessario ir verificando se o user existe?
+  // ASK - o que e que deve ser possivel configurar
+  // ASK - Que tipo de testes temos que ter?
+  // TODO - Funcoes 1, 2 -> verificar do lado do servidor tudo com boolean de resposta
   // TODO - Funcoes synchronized
   // TODO - Terminal
-  // TODO - votar nao pode ser perdido com excecao -> votar mais que uma vez nao
+  // TODO - Votar nao pode ser perdido com excecao -> votar mais que uma vez nao
   // TODO - Mudar portos fixos
 
   private int port;
@@ -57,14 +63,15 @@ public class Admin {
           createElection(r, a);
           break;
         case 4:
+          createCandidateList(r, a);
+          break;
+        case 5:
           try {
             r.remote_print("XXXXXXXX");
           } catch (Exception e) {
             System.out.println("Fail on Server");
             connectRMIInterface(a);
           }
-          break;
-        case 5:
           break;
         case 6:
           break;
@@ -285,11 +292,93 @@ public class Admin {
             "2 - Conselho Geral\n" +
             "3 back", 1, 2);
     try {
-      r.createElection(name, description, startDate, endDate, type);
-      System.out.println("Election successfully created");
+      if (type == 2) {
+        r.createElection(name, description, startDate, endDate, type);
+        System.out.println("Election successfully created");
+      }
+      else {
+        String departmentName = getValidString("Department: ");
+        if (r.createStudentsElection(name, description, startDate, endDate, type, departmentName)) {
+          System.out.println("Election successfully created");
+        }
+        else {
+          System.out.println("Error: there isn't a department with that name. Election wasn't created.");
+        }
+      }
+
     }
     catch(RemoteException e) {
       System.out.println("Remote Exception creating election");
+      connectRMIInterface(a);
+    }
+  }
+
+  public static void createCandidateList(RMIInterface r, Admin a) {
+    String name = getValidString("Name of Candidate List: ");
+
+    String electionName = getValidString("Name of Election List: ");
+    Election election;
+    try {
+      election = r.getElectionByName(electionName);
+      if (election == null) {
+        System.out.println("There isn't an election with that name.");
+        return;
+      }
+    }
+    catch(RemoteException e) {
+      System.out.println("Remote Exception creating candidate List");
+      connectRMIInterface(a);
+      return;
+    }
+
+    int electionType = election.getType();
+
+    ArrayList<User> users = new ArrayList<>();
+    while(true) {
+      String candidateName = getValidString("Name of User from Candidate List (STOP to stop): ");
+      if (candidateName.equals("STOP")) {
+        break;
+      }
+      try {
+        User user = r.getUserByName(candidateName);
+        if (user != null) {
+
+          // Nucleo de Estudantes
+          if (electionType == 1) {
+            if (user.getType() != 1) {
+              System.out.println("User has to be a student");
+            }
+            else {
+              if (!election.getDepartment().getName().equals(user.getDepartment().getName())) {
+                System.out.println("User has to be in department " + election.getDepartment().getName());
+              }
+              else {
+                users.add(user);
+              }
+            }
+          }
+
+          // Conselho Geral
+          else {
+            users.add(user);
+          }
+        }
+        else {
+          System.out.println("There isn't a user with that name");
+        }
+      }
+      catch(RemoteException e) {
+        System.out.println("Remote Exception creating Candidate List");
+        connectRMIInterface(a);
+      }
+    }
+    try {
+      r.createCandidateList(name, users, election);
+      System.out.println("Candidate list successfully created.");
+    }
+    catch(RemoteException e) {
+      System.out.println("Remote Exception creating candidate List");
+      connectRMIInterface(a);
     }
   }
 

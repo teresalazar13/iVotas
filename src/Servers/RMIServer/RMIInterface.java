@@ -3,6 +3,7 @@ package Servers.RMIServer;
 import Data.*;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -30,6 +31,10 @@ public interface RMIInterface extends Remote {
 
   void createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException;
 
+  boolean createStudentsElection(String name, String description, long startDate, long endDate, int type, String departmentName) throws RemoteException;
+
+  void createCandidateList(String name, ArrayList<User> users, Election election) throws RemoteException;
+
   void updateElection(Election election) throws RemoteException;
 
   void createList(Election electionID, int[] candidatesIDs) throws RemoteException;
@@ -54,9 +59,13 @@ public interface RMIInterface extends Remote {
 
   void getElectionResults() throws RemoteException;
 
+  User getUserByName(String userName) throws RemoteException;
+
   Department getDepartmentByName(String departmentName) throws RemoteException;
 
   Faculty getFacultyByName(String facultyName) throws RemoteException;
+
+  Election getElectionByName(String electionName) throws RemoteException;
 
   Faculty getFacultyByDepartmentName(String department) throws RemoteException;
 }

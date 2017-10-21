@@ -22,7 +22,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   private ArrayList<Faculty> faculties;
   private ArrayList<Department> departments;
   private ArrayList<Election> elections;
-  ArrayList<CandidateList> candidateLists;
+  private ArrayList<CandidateList> candidateLists;
   ArrayList<VotingTable> votingTables;
 
   public RMIImpl() throws RemoteException {
@@ -35,6 +35,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       faculties = data.faculties;
       departments = data.departments;
       elections = data.elections;
+      candidateLists = data.candidateLists;
     } catch (ClassNotFoundException e) {
       System.out.println("Class Not Found Exception " + e);
     } catch (java.io.IOException e) {
@@ -64,6 +65,32 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     this.departments.add(department);
     updateFacultiesFile();
     updateDepartmentsFile();
+  }
+
+
+  public void createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException {
+    Election election = new Election(name, description, startDate, endDate, type);
+    this.elections.add(election);
+    this.updateElectionsFile();
+  }
+
+  public boolean createStudentsElection(String name, String description, long startDate, long endDate, int type, String departmentName) throws RemoteException {
+    Department department = getDepartmentByName(departmentName);
+    if (department == null) {
+      return false;
+    }
+    Election election = new Election(name, description, startDate, endDate, type, department);
+    this.elections.add(election);
+    this.updateElectionsFile();
+    return true;
+  }
+
+  public void createCandidateList(String name, ArrayList<User> users, Election election) throws RemoteException {
+    CandidateList candidateList = new CandidateList(name, users);
+    this.candidateLists.add(candidateList);
+    election.addCandidateList(candidateList);
+    this.updateCandidateListsFile();
+    this.updateElectionsFile();
   }
 
   public void updateDepartmentName(Department department, String name) throws RemoteException {
@@ -128,12 +155,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       }
     }
     updateFacultiesFile();
-  }
-
-  public void createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException {
-    Election election = new Election(name, description, startDate, endDate, type);
-    this.elections.add(election);
-    this.updateElectionsFile();
   }
 
   public void updateElection(Election election) throws RemoteException {
@@ -213,6 +234,23 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return null;
   }
 
+  public Election getElectionByName(String electionName) throws RemoteException {
+    for (int i = 0; i < elections.size(); i++) {
+      if (elections.get(i).getName().equals(electionName)) {
+        return elections.get(i);
+      }
+    }
+    return null;
+  }
+
+  public User getUserByName(String userName) throws RemoteException {
+    for (int i = 0; i < users.size(); i++) {
+      if (users.get(i).getName().equals(userName)) {
+        return users.get(i);
+      }
+    }
+    return null;
+  }
 
   // args server => 1
   // args backup => 0 localhost
@@ -229,6 +267,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         System.out.println(server.faculties);
         System.out.println(server.departments);
         System.out.println(server.elections);
+        System.out.println(server.candidateLists);
 
         Registry reg = LocateRegistry.createRegistry(7000);
         reg.rebind("ivotas", server);
@@ -285,6 +324,17 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       System.out.println("ClassNotFoundException: Error writing in elections file");
     }
     System.out.println(this.elections);
+  }
+
+  public void updateCandidateListsFile() {
+    try {
+      this.data.writeFile(this.candidateLists, "candidateLists");
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in candidateLists file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in candidateLists file");
+    }
+    System.out.println(this.candidateLists);
   }
 
   // The backup server will be a client that will send a message to the main server every 5 seconds. The main server has
