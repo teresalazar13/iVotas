@@ -1,10 +1,9 @@
-import Data.Department;
-import Data.Faculty;
-import Data.User;
-
 import java.io.*;
 import java.net.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Scanner;
 
 /**
  * This class establishes a TCP connection to a specified server, and loops
@@ -25,7 +24,6 @@ import java.util.*;
 class TCPClient {
   public static void main(String[] args) {
     Socket socket;
-    PrintWriter outToServer;
     BufferedReader inFromServer = null;
     TCPClient client = new TCPClient();
 
@@ -38,19 +36,27 @@ class TCPClient {
         
       // create streams for writing to and reading from the socket
       inFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-      outToServer = new PrintWriter(socket.getOutputStream(), true);
 
       // read from keyboard and write to the server
-      Reader reader = new Reader("reader", socket);
+      VotingTerminalMenu votingTerminalMenu = new VotingTerminalMenu("votingTerminalMenu", socket);
 
       // the main thread loops reading from the server and writing to System.out
       String messageFromServer;
       while((messageFromServer = inFromServer.readLine()) != null) {
-        synchronized (reader.getT()) {
-          Map<String, String> response = client.parseProtocolMessage(messageFromServer);
-          System.out.println(reader.getT().getState());
-          reader.getT().notify();
-          System.out.println(reader.getT().getState());
+        synchronized (votingTerminalMenu.getT()) {
+          System.out.println("Aqui");
+          // set current username to log in
+          votingTerminalMenu.setCurrentUsername(messageFromServer);
+          System.out.println(messageFromServer);
+          System.out.println(votingTerminalMenu.getCurrentUsername());
+          votingTerminalMenu.getT().notify();
+
+          /*
+          // check if login was sucessful
+          messageFromServer = inFromServer.readLine();
+          Map<String, String> protocolValues = client.parseProcolMessage(messageFromServer);
+          votingTerminalMenu.setLoginState(Boolean.parseBoolean(protocolValues.get("logged")));
+          votingTerminalMenu.getT().notify();*/
         }
       }
     } catch (IOException e) {
@@ -58,21 +64,18 @@ class TCPClient {
         System.out.println("\nUsage: java TCPClient <host> <port>\n");
         System.out.println(e.getMessage());
     } finally {
-      try { inFromServer.close(); } catch (Exception e) {}
+      try {
+        inFromServer.close();
+      } catch (Exception e) {}
     }
   }
 
-  private Map<String, String> parseProtocolMessage(String protocolMessage) {
+  private Map<String, String> parseProcolMessage(String protocolMessage) {
     // The protocol message is going to be parsed into key-value map
     Map<String, String> protocolValues = new LinkedHashMap<>();
 
     // Clean protocol message of whitespaces
     String cleanProtocolMessage = protocolMessage.replaceAll("\\s+", "");
-    // Clean user toString garbage
-    cleanProtocolMessage = cleanProtocolMessage.replace("User{", "");
-    cleanProtocolMessage = cleanProtocolMessage.replace("}", "");
-
-    // Split by | and ;
     String [] cleanProtocolWords = cleanProtocolMessage.split("\\||[;]");
 
     for (int i = 0; i < cleanProtocolWords.length; i+=2) {
@@ -84,13 +87,17 @@ class TCPClient {
 }
 
 // Thread responsible for reading from keyboard and writing to the server
-class Reader implements Runnable {
+class VotingTerminalMenu implements Runnable {
+  private String currentUsername;
+  private boolean loginState;
   private String threadName;
   private PrintWriter outToServer;
   private Socket clientSocket;
   private Thread t;
 
-  public Reader(String threadName, Socket clientSocket) {
+  public VotingTerminalMenu(String threadName, Socket clientSocket) {
+    this.currentUsername = null;
+    this.loginState = false;
     this.threadName = threadName;
 
     try {
@@ -105,16 +112,26 @@ class Reader implements Runnable {
   }
 
   public void run() {
-    Object lock = new Object();
     while(!this.clientSocket.isClosed()) {
       synchronized (this.getT()) {
-        String searchString = this.votingTableMenu();
-        outToServer.println(searchString);
-
-        System.out.println("waiting");
         try {
+          System.out.println("waiting");
           this.getT().wait();
           System.out.println("resumed");
+
+          // Ask or password and send it to the server
+          String messageToServer = this.menu();
+          this.outToServer.println(messageToServer);
+          /*
+          this.getT().wait();
+
+          // Check login state
+          Boolean loginState = this.loginState;
+          System.out.println(loginState);
+
+          this.setLoginState(false);
+          */
+          this.setCurrentUsername(null);
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
@@ -122,82 +139,25 @@ class Reader implements Runnable {
     }
   }
 
-  private int getValidInteger(int maximum) {
+  private String menu() {
+    String messageToServer = "type | login ; username | "  + this.currentUsername + " ; password | ";
+    String password;
     Scanner sc = new Scanner(System.in);
-    System.out.println("Option: ");
-    while (true) {
-      while (!sc.hasNextInt()) {
-        System.out.println("Please write an integer");
-        sc.next();
-      }
-      int option = sc.nextInt();
-      if (maximum < option || option <= 0) {
-        System.out.println("Please write an integer between 1 and " + maximum);
-      }
-      else {
-        return option;
-      }
-    }
-  }
 
-  private String votingTableMenu() {
-    Scanner sc = new Scanner(System.in);
-    String toSearch;
-    String tcpString = "type | search ; ";
+    System.out.println("Welcome " + this.currentUsername);
+    System.out.println("----------Login----------\n" +
+            "Password: ");
+    password = sc.nextLine();
+    messageToServer += password + " ; ";
 
-    while(true) {
-      System.out.println("Identify user by:\n" +
-              "1 - Name\n" +
-              "2 - Department\n" +
-              "3 - Faculty \n" +
-              "4 - Contact\n" +
-              "5 - Address\n" +
-              "6 - cc\n" +
-              "7 - expireDate\n" +
-              "8 to quit");
-
-      int option = getValidInteger(9);
-      switch (option) {
-        case 1:
-          tcpString += "name | ";
-          System.out.println("Name: ");
-          break;
-        case 2:
-          tcpString += "department | ";
-          System.out.println("Department: ");
-          break;
-        case 3:
-          tcpString += "faculty | ";
-          System.out.println("Faculty: ");
-          break;
-        case 4:
-          tcpString += "contact | ";
-          System.out.println("Contact: ");
-          break;
-        case 5:
-          tcpString += "address| ";
-          System.out.println("Address: ");
-          break;
-        case 6:
-          tcpString += "cc | ";
-          System.out.println("CC: ");
-          break;
-        case 7:
-          tcpString += "expireDate | ";
-          System.out.println("Expire Date: ");
-          break;
-        case 8:
-          return "Terminate";
-        default:
-          break;
-      }
-
-      toSearch = sc.nextLine();
-      tcpString += toSearch + " ; ";
-
-      return tcpString;
-    }
+    return messageToServer;
   }
 
   public Thread getT() { return t; }
+
+  public String getCurrentUsername() { return currentUsername; }
+  public void setCurrentUsername(String currentUsername) { this.currentUsername = currentUsername; }
+
+  public boolean isLoginState() { return loginState; }
+  public void setLoginState(boolean loginState) { this.loginState = loginState; }
 }
