@@ -54,18 +54,11 @@ public class User implements Serializable {
   public int getType() { return type; }
   public void setType(int type) { this.type = type; }
 
+  // TODO regular toString candidate list change TODO to only have name
   @Override
   public String toString() {
     return "User{" +
             "name=" + name +
-            ",password=" + password +
-            ",department=" + department.getName() +
-            ",faculty=" + faculty.getName() +
-            ",contact=" + contact +
-            ",address=" + address +
-            ",cc=" + cc +
-            ",expireDate=" + expireDate +
-            ",type=" + type +
             '}';
   }
 }

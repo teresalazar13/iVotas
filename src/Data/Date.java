@@ -58,10 +58,10 @@ public class Date implements Serializable {
   public String toString() {
     return "Date{" +
             "day=" + day +
-            ", month=" + month +
-            ", year=" + year +
-            ", hour=" + hour +
-            ", minute=" + minute +
+            ",month=" + month +
+            ",year=" + year +
+            ",hour=" + hour +
+            ",minute=" + minute +
             '}';
   }
 }

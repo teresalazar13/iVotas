@@ -54,7 +54,7 @@ public class TCPServer {
         Socket clientSocket = listenSocket.accept();
         System.out.println("CLIENT_SOCKET (created at accept()) = " + clientSocket);
         number++;
-        Connection thread = new Connection(clientSocket, number, votingTableMenuMessages, threads);
+        Connection thread = new Connection(clientSocket, number, votingTable.election, votingTableMenuMessages, threads);
         votingTable.votingTerminals.add(thread);
       }
     } catch(IOException e) {
@@ -65,14 +65,16 @@ public class TCPServer {
 
 // Thread to handle comm with client
 class Connection extends Thread {
+  private int thread_number;
+  private Election election;
   private BufferedReader bufferedReader;
   private PrintWriter outToServer;
-  private int thread_number;
   private ArrayList<String> votingTableMenuMessages;
   private CopyOnWriteArrayList<Connection> threads;
 
-  public Connection (Socket aClientSocket, int number, ArrayList<String> votingTableMessages, CopyOnWriteArrayList<Connection> threads) {
+  public Connection (Socket aClientSocket, int number, Election election, ArrayList<String> votingTableMessages, CopyOnWriteArrayList<Connection> threads) {
     this.thread_number = number;
+    this.election = election;
     this.threads = threads;
     this.votingTableMenuMessages = votingTableMessages;
 
@@ -106,6 +108,11 @@ class Connection extends Thread {
           boolean validLogin = rmi.authenticateUser(keyValues.get("username"), keyValues.get("password"));
           message = "type | status ; logged | " + validLogin ;
           this.getOut().println(message);
+
+          if (validLogin) {
+            message = "type | voting ; election | " + this.election.toString();
+            this.getOut().println(message);
+          }
         }
       }
     } catch (InterruptedException | IOException e) {

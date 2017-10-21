@@ -1,9 +1,11 @@
+import Data.Department;
+import Data.Election;
+import Data.Faculty;
+import Data.User;
+
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * This class establishes a TCP connection to a specified server, and loops
@@ -61,6 +63,12 @@ class TCPClient {
           votingTerminalMenu.setLoginState(Boolean.parseBoolean(protocolValues.get("logged")));
           votingTerminalMenu.getT().notify();
         }
+
+        // get election info
+        System.out.println("waiting");
+        messageFromServer = inFromServer.readLine();
+        System.out.println(messageFromServer);
+        System.out.println("Resumed");
       }
     } catch (IOException e) {
       if(inFromServer == null)
@@ -87,12 +95,40 @@ class TCPClient {
 
     return protocolValues;
   }
+
+  private User buildUser(String userString) {
+    String [] userAttributes = userString.split("=|[,]");
+    Map<String, String> userMap = new HashMap<>();
+
+    // attributes in a map
+    for (int i = 0; i < userAttributes.length; i+=2) {
+      userMap.put(userAttributes[i], userAttributes[i+1]);
+    }
+
+    // build user
+    User user = new User(
+            userMap.get("name"),
+            userMap.get("password"),
+            new Department(userMap.get("department")),
+            new Faculty(userMap.get("faculty"), null),
+            userMap.get("contact"),
+            userMap.get("address"),
+            userMap.get("cc"),
+            userMap.get("expireDate"),
+            Integer.parseInt(userMap.get("type"))
+    );
+
+    return user;
+  }
+
+
 }
 
 // Thread responsible for reading from keyboard and writing to the server
 class VotingTerminalMenu implements Runnable {
   private String currentUsername;
   private boolean loginState;
+  private Election election;
   private String threadName;
   private PrintWriter outToServer;
   private Socket clientSocket;
@@ -101,6 +137,7 @@ class VotingTerminalMenu implements Runnable {
   public VotingTerminalMenu(String threadName, Socket clientSocket) {
     this.currentUsername = null;
     this.loginState = false;
+    this.election = null;
     this.threadName = threadName;
 
     try {
@@ -126,12 +163,16 @@ class VotingTerminalMenu implements Runnable {
             this.getT().wait();
 
             // Check login state
-            Boolean loginState = this.loginState;
-            System.out.println(loginState);
+            boolean loginState = this.loginState;
+            if (loginState) {
 
+            } else {
+
+            }
+
+            // clean vars received
             this.setLoginState(false);
             this.setCurrentUsername(null);
-
         }
       } catch (InterruptedException e) {
         e.printStackTrace();

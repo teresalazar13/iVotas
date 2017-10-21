@@ -68,13 +68,13 @@ public class Election implements Serializable{
   @Override
   public String toString() {
     return "Election{" +
-            "name='" + name + '\'' +
-            ", description='" + description + '\'' +
-            ", startDate=" + startDate +
-            ", endDate=" + endDate +
-            ", type=" + type +
-            ", candidateLists=" + candidateLists +
-            ", votes=" + votes +
+            "name=" + name+
+            ",description=" + description +
+            ",startDate=" + startDate +
+            ",endDate=" + endDate +
+            ",type=" + type +
+            ",candidateLists|" + candidateLists +
+            ",votes|" + votes +
             '}';
   }
 }
