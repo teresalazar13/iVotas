@@ -1,9 +1,9 @@
 package Data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-public class Election {
+public class Election implements Serializable{
   private String name;
   private String description;
   private Date startDate;

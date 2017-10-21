@@ -147,26 +147,28 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   }
 
   public User searchUser(String field, String value) throws RemoteException {
-    try {
-      FileWrapper fw = new FileWrapper();
-      ArrayList<User> users = fw.users;
-      ArrayList<String> values = fieldValues(field, users);
+    ArrayList<User> users = this.users;
+    ArrayList<String> values = fieldValues(field, users);
 
-      for (int i = 0; i < values.size(); i++) {
-        if (values.get(i).equals(value)) {
-          return users.get(i);
-        }
+    for (int i = 0; i < values.size(); i++) {
+      if (values.get(i).equals(value)) {
+        return users.get(i);
       }
-
-    } catch (IOException | ClassNotFoundException e) {
-      e.printStackTrace();
     }
 
     return null;
   }
 
-  public void authenticateUser(String name, String password) throws RemoteException {
+  public boolean authenticateUser(String name, String password) throws RemoteException {
+    ArrayList<User> users = this.users;
 
+    for (User user : users) {
+      if (name.equals(user.getName()) && password.equals(user.getPassword())) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   public void vote(int userID, int electionID, int candidateListID) throws RemoteException {
