@@ -1,8 +1,9 @@
 package Data;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class CandidateList {
+public class CandidateList implements Serializable {
   private ArrayList<User> users;
 
   public CandidateList() {}
