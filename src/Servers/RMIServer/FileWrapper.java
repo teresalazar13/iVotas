@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-public class GetData {
+public class FileWrapper {
 
   ArrayList<User> users;
   ArrayList<Faculty> faculties;
@@ -15,7 +15,7 @@ public class GetData {
   ArrayList<CandidateList> candidateLists;
   ArrayList<VotingTable> votingTables;
 
-  public GetData() throws IOException, ClassNotFoundException {
+  public FileWrapper() throws IOException, ClassNotFoundException {
 
     /*Department department1 = new Department("EngenhariaInformatica");
     ArrayList<Department> departments = new ArrayList<Department>();
@@ -99,5 +99,27 @@ public class GetData {
     return array;
   }
 
+  public ArrayList<User> getUsers() {
+    return users;
+  }
 
+  public ArrayList<Faculty> getFaculties() {
+    return faculties;
+  }
+
+  public ArrayList<Department> getDepartments() {
+    return departments;
+  }
+
+  public ArrayList<Election> getElections() {
+    return elections;
+  }
+
+  public ArrayList<CandidateList> getCandidateLists() {
+    return candidateLists;
+  }
+
+  public ArrayList<VotingTable> getVotingTables() {
+    return votingTables;
+  }
 }

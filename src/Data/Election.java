@@ -2,11 +2,10 @@ package Data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
+
 
 public class Election implements Serializable {
   private static final long serialVersionUID = 7538208724782622046L;
-
   private String name;
   private String description;
   private long startDate;

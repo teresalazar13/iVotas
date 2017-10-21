@@ -2,6 +2,8 @@ package Servers.RMIServer;
 
 import Data.*;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -15,9 +17,7 @@ import java.text.SimpleDateFormat;
 
 
 public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
-
-
-  private GetData data;
+  private FileWrapper data;
   private ArrayList<User> users;
   private ArrayList<Faculty> faculties;
   private ArrayList<Department> departments;
@@ -29,7 +29,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     super();
 
     try {
-      GetData data = new GetData();
+      FileWrapper data = new FileWrapper();
       this.data = data;
       users = data.users;
       faculties = data.faculties;
@@ -211,12 +211,73 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
   }
 
-  public void identifyUser(String field, String res) throws RemoteException {
+  private ArrayList<String> fieldValues(String field, ArrayList<User> users) {
+    ArrayList<String> values = new ArrayList<>();
 
+    switch (field) {
+      case "name":
+        for (User user : users) {
+          values.add(user.getName());
+        }
+        break;
+      case "department":
+        for (User user : users) {
+          values.add(user.getDepartment().getName());
+        }
+        break;
+      case "faculty":
+        for (User user : users) {
+          values.add(user.getFaculty().getName());
+        }
+        break;
+      case "contact":
+        for (User user : users) {
+          values.add(user.getContact());
+        }
+        break;
+      case "address":
+        for (User user : users) {
+          values.add(user.getAddress());
+        }
+        break;
+      case "cc":
+        for (User user : users) {
+          values.add(user.getCc());
+        }
+        break;
+      case "expireDate":
+        for (User user : users) {
+          values.add(user.getExpireDate());
+        }
+        break;
+    }
+
+    return values;
   }
 
-  public void authenticateUser(String name, String password) throws RemoteException {
+  public User searchUser(String field, String value) throws RemoteException {
+    ArrayList<User> users = this.users;
+    ArrayList<String> values = fieldValues(field, users);
 
+    for (int i = 0; i < values.size(); i++) {
+      if (values.get(i).equals(value)) {
+        return users.get(i);
+      }
+    }
+
+    return null;
+  }
+
+  public boolean authenticateUser(String name, String password) throws RemoteException {
+    ArrayList<User> users = this.users;
+
+    for (User user : users) {
+      if (name.equals(user.getName()) && password.equals(user.getPassword())) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   public void vote(int userID, int electionID, int candidateListID) throws RemoteException {
@@ -295,7 +356,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         System.out.println(server.elections);
         System.out.println(server.candidateLists);
 
-        Registry reg = LocateRegistry.createRegistry(7000);
+        Registry reg = LocateRegistry.createRegistry(1099);
         reg.rebind("ivotas", server);
         System.out.println("RMI Server ready.");
       } catch (RemoteException re) {
