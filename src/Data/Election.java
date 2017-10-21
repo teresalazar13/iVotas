@@ -5,11 +5,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Election implements Serializable {
+  private static final long serialVersionUID = 7538208724782622046L;
+
   private String name;
   private String description;
   private long startDate;
   private long endDate;
   private int type;
+  private Department department;
   private ArrayList<CandidateList> candidateLists;
   private ArrayList<Vote> votes;
 
@@ -23,6 +26,18 @@ public class Election implements Serializable {
     this.type = type;
     this.candidateLists = new ArrayList<CandidateList>();
     this.votes = new ArrayList<Vote>();
+    this.department = null;
+  }
+
+  public Election(String name, String description, long startDate, long endDate, int type, Department department) {
+    this.name = name;
+    this.description = description;
+    this.startDate = startDate;
+    this.endDate = endDate;
+    this.type = type;
+    this.candidateLists = new ArrayList<CandidateList>();
+    this.votes = new ArrayList<Vote>();
+    this.department = department;
   }
 
   public String getName() {
@@ -65,6 +80,18 @@ public class Election implements Serializable {
 
   public ArrayList<Vote> getVotes() { return votes; }
   public void setVotes(ArrayList<Vote> votes) { this.votes = votes; }
+
+  public Department getDepartment() {
+    return department;
+  }
+
+  public void setDepartment(Department department) {
+    this.department = department;
+  }
+
+  public void addCandidateList(CandidateList candidateList) {
+    candidateLists.add(candidateList);
+  }
 
   @Override
   public String toString() {

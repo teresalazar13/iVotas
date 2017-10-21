@@ -1,22 +1,62 @@
 package Data;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class CandidateList {
+public class CandidateList implements Serializable {
+  private static final long serialVersionUID = -1967452776847494962L;
+  private String name;
   private ArrayList<User> users;
+  private int usersType;
 
   public CandidateList() {}
 
-  public CandidateList(ArrayList<User> users) {
-      this.users = users;
+  // Nucleo de Estudantes
+  public CandidateList(String name, ArrayList<User> users) {
+    this.name = name;
+    this.users = users;
+    this.usersType = 1;
   }
 
-  public ArrayList<User> getUsers() { return users; }
-  public void setUsers(ArrayList<User> users) { this.users = users; }
+  // Conselho Geral
+  public CandidateList(String name, ArrayList<User> users, int usersType) {
+    this.name = name;
+    this.users = users;
+    this.usersType = usersType;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public ArrayList<User> getUsers() {
+    return users;
+  }
+
+  public void setUsers(ArrayList<User> users) {
+    this.users = users;
+  }
+
+  public static long getSerialVersionUID() {
+    return serialVersionUID;
+  }
+
+  public int getUsersType() {
+    return usersType;
+  }
+
+  public void setUsersType(int usersType) {
+    this.usersType = usersType;
+  }
 
   @Override
   public String toString() {
     return "CandidateList{" +
+            "name='" + name + '\'' +
             ", users=" + users +
             '}';
   }

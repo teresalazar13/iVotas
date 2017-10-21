@@ -42,24 +42,31 @@ public class GetData {
       e.printStackTrace();
     }
 
-    Election election1 = new Election("NEI", "Nucleo Estudante Informatica", startDate, endDate, 1);
+    ArrayList<CandidateList> candidateLists = new ArrayList<CandidateList>();
+    CandidateList candidateList = new CandidateList("LISTA", users);
+    candidateLists.add(candidateList);
+
+    Election election1 = new Election("NEI", "Nucleo Estudante Informatica", startDate, endDate, 1, department1);
     ArrayList<Election> elections = new ArrayList<Election>();
     elections.add(election1);
 
     writeFile(users,"Users");
     writeFile(departments,"Departments");
     writeFile(faculties,"Faculties");
-    writeFile(elections,"Elections"); */
+    writeFile(elections,"Elections");
+    writeFile(candidateLists,"CandidateLists"); */
 
     ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
     ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");
     ArrayList<Faculty> facultiesFromFile = (ArrayList<Faculty>) readFile("Faculty");
     ArrayList<Election> electionsFromFile = (ArrayList<Election>) readFile("Election");
+    ArrayList<CandidateList> candidateListsFromFile = (ArrayList<CandidateList>) readFile("CandidateList");
 
     this.users = usersFromFile;
     this.departments = departmentsFromFile;
     this.faculties = facultiesFromFile;
     this.elections = electionsFromFile;
+    this.candidateLists = candidateListsFromFile;
   }
 
   public void writeFile(Object classe, String className) throws IOException, ClassNotFoundException {
