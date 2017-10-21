@@ -17,6 +17,8 @@ public class Admin {
   // ASK - o que e que deve ser possivel configurar
   // ASK - Que tipo de testes temos que ter?
   // ASK - Pode haver listas de candidatos sem candidatos?
+  // ASK - perguntar se update ou remove sao pontos extra?
+  // ASK - Que propriedade das eleicoes e que podem ser alteradas?
   // TODO - Funcoes 1, 2 -> verificar do lado do servidor tudo com boolean de resposta
   // TODO - Funcoes synchronized
   // TODO - Terminal
@@ -76,6 +78,7 @@ public class Admin {
           }
           break;
         case 6:
+          changeElectionsProperties(r, a);
           break;
         case 7:
           break;
@@ -395,6 +398,47 @@ public class Admin {
     catch(RemoteException e) {
       System.out.println("Remote Exception creating candidate List");
       connectRMIInterface(a);
+    }
+  }
+
+  public static void changeElectionsProperties(RMIInterface r, Admin a) {
+    String electionName = getValidString("Name of election to change: ");
+    int option = getValidInteger("What do you want to change: \n" +
+            "1 - name\n" +
+            "2 - description\n" +
+            "3 - start date\n" +
+            "4 - end date\n" +
+            "5 - back", 1, 5);
+    Object object = null;
+    switch (option) {
+      case 1:
+        object = getValidString("New name: ");
+        break;
+      case 2:
+        object = getValidString("New description: ");
+        break;
+      case 3:
+        object = createDate();
+        break;
+      case 4:
+        object = createDate();
+      case 5:
+        break;
+    }
+    if (option != 5) {
+      try {
+        int success = r.updateElection(electionName, object, option);
+        if(success == 1) {
+          System.out.println("Election successfully updated");
+        }
+        else {
+          System.out.println("Error updating election. There isn't an election with that name");
+        }
+      }
+      catch(RemoteException e) {
+        System.out.println("Remote Exception updating Election");
+        connectRMIInterface(a);
+      }
     }
   }
 

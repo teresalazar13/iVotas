@@ -148,6 +148,28 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     updateDepartmentsFile();
   }
 
+  public int updateElection(String electionName, Object toChange, int type) throws RemoteException {
+    for (int i = 0; i < elections.size(); i++) {
+      if (elections.get(i).getName().equals(electionName)) {
+        if (type == 1) {
+          elections.get(i).setName((String) toChange);
+        }
+        else if (type == 2) {
+          elections.get(i).setDescription((String) toChange);
+        }
+        else if (type == 3) {
+          elections.get(i).setStartDate((long) toChange);
+        }
+        else {
+          elections.get(i).setEndDate((long) toChange);
+        }
+        updateElectionsFile();
+        return 1;
+      }
+    }
+    return 2;
+  }
+
   public void removeFaculty(Faculty faculty) throws RemoteException {
     for (int i = 0; i < faculty.getDepartments().size(); i++) {
       for (int j = 0; j < this.departments.size(); j++) {
@@ -163,10 +185,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       }
     }
     updateFacultiesFile();
-  }
-
-  public void updateElection(Election election) throws RemoteException {
-
   }
 
   public void createList(Election electionID, int[] candidatesIDs) throws RemoteException {
