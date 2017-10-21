@@ -3,25 +3,40 @@ package Data;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Election implements Serializable{
+
+public class Election implements Serializable {
+  private static final long serialVersionUID = 7538208724782622046L;
   private String name;
   private String description;
-  private Date startDate;
-  private Date endDate;
+  private long startDate;
+  private long endDate;
   private int type;
+  private Department department;
   private ArrayList<CandidateList> candidateLists;
   private ArrayList<Vote> votes;
 
   public Election() {}
 
-  public Election(String name, String description, Date startDate, Date endDate, int type, ArrayList<CandidateList> candidateLists, ArrayList<Vote> votes) {
+  public Election(String name, String description, long startDate, long endDate, int type) {
     this.name = name;
     this.description = description;
     this.startDate = startDate;
     this.endDate = endDate;
     this.type = type;
-    this.candidateLists = candidateLists;
-    this.votes = votes;
+    this.candidateLists = new ArrayList<CandidateList>();
+    this.votes = new ArrayList<Vote>();
+    this.department = null;
+  }
+
+  public Election(String name, String description, long startDate, long endDate, int type, Department department) {
+    this.name = name;
+    this.description = description;
+    this.startDate = startDate;
+    this.endDate = endDate;
+    this.type = type;
+    this.candidateLists = new ArrayList<CandidateList>();
+    this.votes = new ArrayList<Vote>();
+    this.department = department;
   }
 
   public String getName() {
@@ -38,17 +53,17 @@ public class Election implements Serializable{
       this.description = description;
   }
 
-  public Date getStartDate() {
+  public long getStartDate() {
       return startDate;
   }
-  public void setStartDate(Date startDate) {
+  public void setStartDate(long startDate) {
       this.startDate = startDate;
   }
 
-  public Date getEndDate() {
+  public long getEndDate() {
       return endDate;
   }
-  public void setEndDate(Date endDate) {
+  public void setEndDate(long endDate) {
       this.endDate = endDate;
   }
 
@@ -64,6 +79,18 @@ public class Election implements Serializable{
 
   public ArrayList<Vote> getVotes() { return votes; }
   public void setVotes(ArrayList<Vote> votes) { this.votes = votes; }
+
+  public Department getDepartment() {
+    return department;
+  }
+
+  public void setDepartment(Department department) {
+    this.department = department;
+  }
+
+  public void addCandidateList(CandidateList candidateList) {
+    candidateLists.add(candidateList);
+  }
 
   @Override
   public String toString() {

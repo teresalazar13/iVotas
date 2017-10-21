@@ -110,7 +110,7 @@ class TCPClient {
             userMap.get("name"),
             userMap.get("password"),
             new Department(userMap.get("department")),
-            new Faculty(userMap.get("faculty"), null),
+            new Faculty(userMap.get("faculty")),
             userMap.get("contact"),
             userMap.get("address"),
             userMap.get("cc"),
