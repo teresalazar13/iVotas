@@ -20,8 +20,6 @@ public class Admin {
   // ASK - Perguntar se update ou remove sao pontos extra?
   // ASK - Que propriedade das eleicoes e que podem ser alteradas?
   // ASK - Configs em txt? E suposto as portas serem argumentos. Fazer alguma coisa no cliente se a porta nao corresponder?
-  // TODO - Funcoes 1, 2 -> verificar do lado do servidor tudo com boolean de resposta
-  // TODO - Funcoes synchronized
   // TODO - Terminal
   // TODO - Votar nao pode ser perdido com excecao -> votar mais que uma vez nao
   // TODO - Adicionar mais dados default a BD
@@ -161,6 +159,7 @@ public class Admin {
       if (option2 == 1) {
         try {
           r.createFaculty(name);
+          System.out.println("Faculty successfully created.");
         }
         catch (RemoteException e) {
           System.out.println("Remote Exception, " + e);
@@ -212,23 +211,15 @@ public class Admin {
     else {
       if (option2 == 1) {
         String facultyName = getValidString("Faculty name: ");
-        Faculty faculty;
         try {
-          faculty = r.getFacultyByName(facultyName);
-          if (faculty != null) {
-            try {
-              r.createDepartment(name, faculty);
-            } catch (RemoteException e) {
-              System.out.println("Remote Exception " + e);
-              connectRMIInterface(a);
-            }
-          }
-          else {
-            System.out.println("There isn't a faculty with that name.");
-          }
+          boolean success = r.createDepartment(name, facultyName);
+          if (success)
+            System.out.println("Deparment successfully created.");
+          else
+            System.out.println("Error. There isn't a faculty with the name " + facultyName);
         }
         catch (RemoteException e) {
-          System.out.println("Error getting faculty by name " + e);
+          System.out.println("Remote Exception creating Department " + e);
           connectRMIInterface(a);
         }
       }

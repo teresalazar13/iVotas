@@ -203,12 +203,17 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     updateFile(this.faculties, "Faculties");
   }
 
-  public synchronized void createDepartment(String name, Faculty faculty) throws RemoteException {
+  public synchronized boolean createDepartment(String name, String facultyName)  throws RemoteException {
+    Faculty faculty = getFacultyByName(facultyName);
+    if (faculty == null) {
+      return false;
+    }
     Department department = new Department(name);
-    updateFacultyDepartment(faculty, department);
     this.departments.add(department);
+    updateFacultyDepartment(faculty, department);
     updateFile(this.faculties, "Faculties");
     updateFile(this.departments, "Departments");
+    return true;
   }
 
   public synchronized void createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException {
