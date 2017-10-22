@@ -52,30 +52,38 @@ class TCPClient {
         messageFromServer = inFromServer.readLine();
 
         boolean loginState;
-        synchronized (votingTerminalMenu.getT()) {
-          Map<String, String> protocolValues = client.parseProcolMessage(messageFromServer);
-          loginState = Boolean.parseBoolean(protocolValues.get("logged"));
-          votingTerminalMenu.setLoginState(loginState);
+        Map<String, String> protocolValues = client.parseProcolMessage(messageFromServer);
+        loginState = Boolean.parseBoolean(protocolValues.get("logged"));
 
-          if (!loginState) {
+        while (!loginState) {
+          synchronized (votingTerminalMenu.getT()) {
             votingTerminalMenu.getT().notify();
           }
+
+          messageFromServer = inFromServer.readLine();
+          protocolValues = client.parseProcolMessage(messageFromServer);
+          loginState = Boolean.parseBoolean(protocolValues.get("logged"));
         }
 
-        if (loginState) {
-          // get election info
-          messageFromServer = inFromServer.readLine();
-          Map<String, String> protocolValues = client.parseProcolMessage(messageFromServer);
-          String cleanElection = protocolValues.get("election").replace("Election{", "");
-          Map<String, String> electionInfo = client.parseElectionString(cleanElection);
-          ArrayList<String> candidateListsName = client.parseCandidateLists(electionInfo.get("candidateLists"));
+        // get election info
+        messageFromServer = inFromServer.readLine();
+        System.out.println(".......................");
+        System.out.println(messageFromServer);
+        System.out.println(".......................");
+        protocolValues = client.parseProcolMessage(messageFromServer);
+        String cleanElection = protocolValues.get("election").replace("Election{", "");
+        Map<String, String> electionInfo = client.parseElectionString(cleanElection);
+        ArrayList<String> candidateListsName = client.parseCandidateLists(electionInfo.get("candidateLists"));
 
-          // update terminal object
-          synchronized (votingTerminalMenu.getT()) {
-            votingTerminalMenu.setElectionInfo(electionInfo);
-            votingTerminalMenu.setCandidateListsName(candidateListsName);
-            votingTerminalMenu.getT().notify();
-          }
+
+        // update terminal object
+        synchronized (votingTerminalMenu.getT()) {
+          System.out.println(electionInfo);
+          System.out.println(candidateListsName);
+          votingTerminalMenu.setLoginState(true);
+          votingTerminalMenu.setElectionInfo(electionInfo);
+          votingTerminalMenu.setCandidateListsName(candidateListsName);
+          votingTerminalMenu.getT().notify();
         }
 
         System.out.println("Resumed");
@@ -140,10 +148,6 @@ class TCPClient {
       }
     }
 
-    for (String u : candidateListNames) {
-      System.out.println(candidateListNames);
-    }
-
     return candidateListNames;
   }
 }
@@ -181,29 +185,35 @@ class VotingTerminalMenu implements Runnable {
     while(!this.clientSocket.isClosed()) {
       try {
         synchronized (this.getT()) {
-            this.getT().wait();
-
-            // Ask or password and send it to the server
-            String messageToServer = this.menu();
-            this.outToServer.println(messageToServer);
-            this.getT().wait();
-
-            // Check login state
-            boolean loginState = this.loginState;
-            if (loginState) {
-              String listNameToVote = votingMenu();
-              this.outToServer.println("type | vote ; election | " + electionInfo.get("name")+ " ; username | " + this.currentUsername + " ; choice | " + listNameToVote + " ;");
-            } else {
-              // TODO failed login logic missing
-              System.out.println("Failed");
-            }
-
-            // clean vars received
-            this.setLoginState(false);
-            this.setCurrentUsername(null);
-            this.setElectionInfo(null);
-            this.setCandidateListsName(null);
+          this.getT().wait();
         }
+
+        // Ask or password and send it to the server
+        String messageToServer;
+        while (!this.loginState) {
+          System.out.println(!this.loginState);
+
+          System.out.println("Again");
+          messageToServer = this.menu();
+          this.outToServer.println(messageToServer);
+
+          synchronized (this.getT()) {
+            this.getT().wait();
+          }
+        }
+
+        String listNameToVote = votingMenu();
+        this.outToServer.println("type | vote ; " +
+                "election | " + electionInfo.get("name") + " ; " +
+                "username | " + this.currentUsername + " ; " +
+                "choice | " + listNameToVote + " ;"
+        );
+
+        // clean vars received
+        this.setLoginState(false);
+        this.setCurrentUsername(null);
+        this.setElectionInfo(null);
+        this.setCandidateListsName(null);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -238,6 +248,9 @@ class VotingTerminalMenu implements Runnable {
         System.out.println("Please write an integer between 0 and " + maximum);
       }
       else {
+        System.out.println("..............");
+        System.out.println(option);
+        System.out.println("..............");
         return option;
       }
     }

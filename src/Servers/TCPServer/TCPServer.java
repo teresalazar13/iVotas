@@ -98,6 +98,7 @@ class Connection extends Thread {
 
           // Identify user at table
           String message = votingTableMenuMessages.get(0);
+          votingTableMenuMessages.remove(0);
           this.getOut().println(message);
 
           // Read client login message
@@ -106,27 +107,33 @@ class Connection extends Thread {
 
           // Check if login is valid
           boolean validLogin = rmi.authenticateUser(keyValues.get("username"), keyValues.get("password"));
+          while(!validLogin) {
+            message = "type | status ; logged | " + validLogin ;
+            this.getOut().println(message);
+            System.out.println(message);
+            clientResponse = bufferedReader.readLine();
+            keyValues = parseProtocolMessage(clientResponse);
+            validLogin = rmi.authenticateUser(keyValues.get("username"), keyValues.get("password"));
+          }
+
           message = "type | status ; logged | " + validLogin ;
           this.getOut().println(message);
 
-          if (validLogin) {
-            message = "type | voting ; election | " + this.election.toStringClient();
-            this.getOut().println(message);
-            clientResponse = bufferedReader.readLine();
-            keyValues = parseProtocolMessage(clientResponse);
+          message = "type | voting ; election | " + this.election.toStringClient();
+          this.getOut().println(message);
+          clientResponse = bufferedReader.readLine();
+          System.out.println(clientResponse);
+          keyValues = parseProtocolMessage(clientResponse);
 
-            User user = rmi.getUserByName(keyValues.get("username"));
-            Election voteElection = rmi.getElectionByName(keyValues.get("election"));
-            CandidateList voteList = rmi.getCandidateListByName(keyValues.get("choice"));
+          User user = rmi.getUserByName(keyValues.get("username"));
+          Election voteElection = rmi.getElectionByName(keyValues.get("election"));
+          CandidateList voteList = rmi.getCandidateListByName(keyValues.get("choice"));
 
-            // TODO -> change null to object Department
-            rmi.vote(user, voteElection, voteList, null);
-          }
+          // TODO -> change null to object Department
+          rmi.vote(user, voteElection, voteList, null);
         }
       }
-    } catch (InterruptedException | IOException e) {
-      e.printStackTrace();
-    } catch (NotBoundException e) {
+    } catch (InterruptedException | IOException | NotBoundException e) {
       e.printStackTrace();
     }
   }
@@ -203,17 +210,12 @@ class Menu extends Thread {
             this.votingTerminals.get(this.getLockedTerminal()).notify();
           }
 
-          synchronized (this) {
-            this.wait();
-          }
         } else {
           System.out.println("User not found");
         }
       }
 
     } catch (NotBoundException | MalformedURLException | RemoteException e) {
-      e.printStackTrace();
-    } catch (InterruptedException e) {
       e.printStackTrace();
     }
   }
