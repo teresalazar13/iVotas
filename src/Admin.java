@@ -17,11 +17,9 @@ public class Admin {
   // ASK - o que e que deve ser possivel configurar
   // ASK - Que tipo de testes temos que ter?
   // ASK - Pode haver listas de candidatos sem candidatos?
-  // ASK - perguntar se update ou remove sao pontos extra?
+  // ASK - Perguntar se update ou remove sao pontos extra?
   // ASK - Que propriedade das eleicoes e que podem ser alteradas?
-  // ASK - E suposto as portas serem argumentos. Fazer alguma coisa no cliente se a porta nao corresponder?
-  // TODO - Funcoes 1, 2 -> verificar do lado do servidor tudo com boolean de resposta
-  // TODO - Funcoes synchronized
+  // ASK - Configs em txt? E suposto as portas serem argumentos. Fazer alguma coisa no cliente se a porta nao corresponder?
   // TODO - Terminal
   // TODO - Votar nao pode ser perdido com excecao -> votar mais que uma vez nao
   // TODO - Adicionar mais dados default a BD
@@ -65,7 +63,8 @@ public class Admin {
               "6 - Change Election's properties\n" +
               "7 - Know where a User has voted\n" +
               "8 - See details of past elections\n" +
-              "10 to quit", 1, 9);
+              "9 - Print Data\n" +
+              "11 to quit", 1, 9);
       switch (option) {
         case 1:
           createUser(r, a);
@@ -92,12 +91,15 @@ public class Admin {
           pastElections(r, a);
           break;
         case 9:
+          printData(r, a);
+        case 10:
           try {
             r.remote_print("XXXXXXXX");
           } catch (Exception e) {
             System.out.println("Fail on Server");
             connectRMIInterface(a);
           }
+          break;
         default:
           return;
       }
@@ -105,13 +107,14 @@ public class Admin {
   }
 
   public static void createUser(RMIInterface r, Admin a) {
-    int option = getValidInteger(
+    int type = getValidInteger(
             "What type of User do you want to Create?\n" +
                     "1 - Student\n" +
                     "2 - Teacher\n" +
                     "3 - Staff\n" +
                     "4 back", 1,4);
-    if (option == 4) return;
+    if (type == 4) return;
+
     String name = getValidString("Name: ");
     String password = getValidString("Password: ");
     String departmentName = getValidString("Department: ");
@@ -120,37 +123,15 @@ public class Admin {
     String address = getValidString("Address: ");
     String cc = getValidString("CC: ");
     String expireDate = getValidString("Expire date: ");
-    int type = option;
-
-    Department department = null;
-    Faculty faculty = null;
-    try {
-      department = r.getDepartmentByName(departmentName);
-      if (department == null) {
-        System.out.println("There isn't a department with that name.");
-        return;
-      }
-    }
-    catch (RemoteException e) {
-      System.out.println("Main Server crashed. Connecting to Backup Server..." );
-      connectRMIInterface(a);
-      return;
-    }
 
     try {
-      faculty = r.getFacultyByName(facultyName);
-      if (faculty == null) {
-        System.out.println("There isn't a faculty with that name.");
-        return;
-      }
-    }
-    catch (RemoteException e) {
-      System.out.println("Remote Exception, " + e);
-      connectRMIInterface(a);
-    }
-
-    try {
-      r.createUser(name, password, department, faculty, contact, address, cc, expireDate, type);
+      int success = r.createUser(name, password, departmentName, facultyName, contact, address, cc, expireDate, type);
+      if (success == 1)
+        System.out.println("User successfully created");
+      else if (success == 2)
+        System.out.println("There isn't a department with the name " + departmentName);
+      else
+        System.out.println("There isn't a faculty with the name " + facultyName);
     }
     catch (RemoteException e) {
       System.out.println("Remote Exception, " + e);
@@ -178,6 +159,7 @@ public class Admin {
       if (option2 == 1) {
         try {
           r.createFaculty(name);
+          System.out.println("Faculty successfully created.");
         }
         catch (RemoteException e) {
           System.out.println("Remote Exception, " + e);
@@ -229,23 +211,15 @@ public class Admin {
     else {
       if (option2 == 1) {
         String facultyName = getValidString("Faculty name: ");
-        Faculty faculty;
         try {
-          faculty = r.getFacultyByName(facultyName);
-          if (faculty != null) {
-            try {
-              r.createDepartment(name, faculty);
-            } catch (RemoteException e) {
-              System.out.println("Remote Exception " + e);
-              connectRMIInterface(a);
-            }
-          }
-          else {
-            System.out.println("There isn't a faculty with that name.");
-          }
+          boolean success = r.createDepartment(name, facultyName);
+          if (success)
+            System.out.println("Deparment successfully created.");
+          else
+            System.out.println("Error. There isn't a faculty with the name " + facultyName);
         }
         catch (RemoteException e) {
-          System.out.println("Error getting faculty by name " + e);
+          System.out.println("Remote Exception creating Department " + e);
           connectRMIInterface(a);
         }
       }
@@ -522,6 +496,10 @@ public class Admin {
       updatePort(a);
       connectRMIInterface(a);
     }
+  }
+
+  public static void printData(RMIInterface r, Admin a) {
+
   }
 
   public static int getValidInteger(String field, int minimum, int maximum) {
