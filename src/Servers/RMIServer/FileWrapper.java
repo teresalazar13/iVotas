@@ -76,7 +76,7 @@ public class FileWrapper {
     ArrayList<CandidateResults> candidatesResults = new ArrayList<CandidateResults>();
     CandidateResults candidateResults1 = new CandidateResults(candidateList2, 100, 100);
     candidatesResults.add(candidateResults1);
-    ElectionResult electionResults1 = new ElectionResult(candidatesResults, 0, 0);
+    ElectionResult electionResults1 = new ElectionResult(election1, candidatesResults, 0, 0);
     electionResults.add(electionResults1);
 
     writeFile(users,"Users");

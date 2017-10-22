@@ -65,7 +65,7 @@ public class Admin {
               "6 - Change Election's properties\n" +
               "7 - Know where a User has voted\n" +
               "8 - See details of past elections\n" +
-              "9 to quit", 1, 9);
+              "10 to quit", 1, 9);
       switch (option) {
         case 1:
           createUser(r, a);
@@ -89,13 +89,15 @@ public class Admin {
           knowWhereUserVoted(r, a);
           break;
         case 8:
+          pastElections(r, a);
+          break;
+        case 9:
           try {
             r.remote_print("XXXXXXXX");
           } catch (Exception e) {
             System.out.println("Fail on Server");
             connectRMIInterface(a);
           }
-          break;
         default:
           return;
       }
@@ -484,6 +486,17 @@ public class Admin {
     }
     catch(RemoteException e) {
       System.out.println("Remote exception knowing where user has voted.");
+    }
+  }
+
+  public static void pastElections(RMIInterface r, Admin a) {
+    try {
+      System.out.println("Details of all Elections");
+      System.out.println(r.detailsOfPastElections());
+    }
+    catch(RemoteException e) {
+      System.out.println("Remote exception getting details of past elections.");
+      connectRMIInterface(a);
     }
   }
 

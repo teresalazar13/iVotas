@@ -304,8 +304,12 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return null;
   }
 
-  public void getElectionResults() throws RemoteException {
-
+  public String detailsOfPastElections() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < electionResults.size(); i++) {
+      res += electionResults.get(i).getElectionResults();
+    }
+    return res;
   }
 
   public Department getDepartmentByName(String departmentName) throws RemoteException {
