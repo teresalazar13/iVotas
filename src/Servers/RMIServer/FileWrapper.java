@@ -14,6 +14,8 @@ public class FileWrapper {
   ArrayList<Election> elections;
   ArrayList<CandidateList> candidateLists;
   ArrayList<VotingTable> votingTables;
+  ArrayList<Vote> votes;
+
 
   public FileWrapper() throws IOException, ClassNotFoundException {
 
@@ -60,23 +62,30 @@ public class FileWrapper {
     ArrayList<Election> elections = new ArrayList<Election>();
     elections.add(election1);
 
+    ArrayList<Vote> votes = new ArrayList<>();
+    Vote vote1 = new Vote(user1, election1, candidateList);
+    votes.add(vote1);
+
     writeFile(users,"Users");
     writeFile(departments,"Departments");
     writeFile(faculties,"Faculties");
     writeFile(elections,"Elections");
     writeFile(candidateLists,"CandidateLists");
+    writeFile(votes,"Votes");
 
     ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
     ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");
     ArrayList<Faculty> facultiesFromFile = (ArrayList<Faculty>) readFile("Faculty");
     ArrayList<Election> electionsFromFile = (ArrayList<Election>) readFile("Election");
     ArrayList<CandidateList> candidateListsFromFile = (ArrayList<CandidateList>) readFile("CandidateList");
+    ArrayList<Vote> votesFromFile = (ArrayList<Vote>) readFile("Vote");
 
     this.users = usersFromFile;
     this.departments = departmentsFromFile;
     this.faculties = facultiesFromFile;
     this.elections = electionsFromFile;
     this.candidateLists = candidateListsFromFile;
+    this.votes = votesFromFile;
   }
 
   public void writeFile(Object classe, String className) throws IOException, ClassNotFoundException {

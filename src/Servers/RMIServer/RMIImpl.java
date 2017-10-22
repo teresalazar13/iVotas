@@ -20,6 +20,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   private ArrayList<Department> departments;
   private ArrayList<Election> elections;
   private ArrayList<CandidateList> candidateLists;
+  private ArrayList<Vote> votes;
   ArrayList<VotingTable> votingTables;
 
   public RMIImpl() throws RemoteException {
@@ -33,6 +34,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       departments = data.departments;
       elections = data.elections;
       candidateLists = data.candidateLists;
+      votes = data.votes;
     } catch (ClassNotFoundException e) {
       System.out.println("Class Not Found Exception " + e);
     } catch (java.io.IOException e) {
@@ -184,30 +186,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     updateFacultiesFile();
   }
 
-  public void createList(Election electionID, int[] candidatesIDs) throws RemoteException {
-
-  }
-
-  public void updateList(Election electionID, int[] candidatesIDs) throws RemoteException {
-
-  }
-
-  public List removeList(CandidateList candidateList) throws RemoteException {
-    return null;
-  }
-
-  public void createVotingTable(Election election, int machineID, int[] votingTerminalsIDs, String location) throws RemoteException {
-
-  }
-
-  public VotingTable removeVotingTable() throws RemoteException {
-    return null;
-  }
-
-  public void createVotingTerminal(int status) throws RemoteException {
-
-  }
-
   private ArrayList<String> fieldValues(String field, ArrayList<User> users) {
     ArrayList<String> values = new ArrayList<>();
 
@@ -279,7 +257,8 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
   public void vote(User user, Election election, CandidateList candidateList) throws RemoteException {
     Vote vote = new Vote(user, election, candidateList);
-    System.out.println(vote);
+    this.votes.add(vote);
+    updateVotesFile();
   }
 
   public List getVotingInfo(User user, Election election) throws RemoteException {
@@ -343,7 +322,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         return candidateLists.get(i);
       }
     }
-
     return null;
   }
 
@@ -393,13 +371,24 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
   public void updateCandidateListsFile() {
     try {
-      this.data.writeFile(this.candidateLists, "candidateLists");
+      this.data.writeFile(this.candidateLists, "CandidateLists");
     } catch(IOException e) {
       System.out.println("IOException: Error writing in candidateLists file");
     } catch(ClassNotFoundException e) {
       System.out.println("ClassNotFoundException: Error writing in candidateLists file");
     }
     System.out.println(this.candidateLists);
+  }
+
+  public void updateVotesFile() {
+    try {
+      this.data.writeFile(this.votes, "Votes");
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in votes file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in votes file");
+    }
+    System.out.println(this.votes);
   }
 
   // The backup server will be a client that will send a message to the main server every 5 seconds. The main server has
@@ -436,6 +425,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         System.out.println(server.departments);
         System.out.println(server.elections);
         System.out.println(server.candidateLists);
+        System.out.println(server.votes);
 
         Registry reg = LocateRegistry.createRegistry(registryPort);
         reg.rebind("ivotas", server);

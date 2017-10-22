@@ -1,6 +1,8 @@
 package Data;
 
-public class Vote {
+import java.io.Serializable;
+
+public class Vote implements Serializable {
   private User user;
   private Election election;
   private CandidateList candidateList;
