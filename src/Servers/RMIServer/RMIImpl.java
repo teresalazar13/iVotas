@@ -44,8 +44,142 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
   }
 
-  public synchronized void remote_print(String s) throws RemoteException {
-    System.out.println("Server: " + s);
+  // The backup server will be a client that will send a message to the main server every 5 seconds. The main server has
+  // 1 second to reply to the backup server. If it doesn't reply we have to turn the backup server into the main server.
+  // The backup server then has to read the object files to get the updated data.
+
+  // args server => 1 6789 7000
+  // args backup => 0 localhost 6789 8000
+
+  public static void main(String args[]) {
+
+    if(args.length == 0) {
+      System.out.println("java RMIIMpl 1 UDPPort RegistryPort");
+      System.exit(0);
+    }
+
+    int isMainServer = Integer.parseInt(args[0]);
+
+    if (isMainServer == 1) {
+      if(args.length != 3) {
+        System.out.println("java RMIIMpl 1 UDPPort RegistryPort");
+        System.exit(0);
+      }
+
+      int UDPPort = Integer.parseInt(args[1]);
+      int registryPort = Integer.parseInt(args[2]);
+
+      try {
+        RMIImpl server = new RMIImpl();
+        NewThread thread = new NewThread("CheckRMIServerStatus", UDPPort);
+
+        System.out.println(server.users);
+        System.out.println(server.faculties);
+        System.out.println(server.departments);
+        System.out.println(server.elections);
+        System.out.println(server.votingTables);
+        System.out.println(server.votes);
+        System.out.println(server.electionResults);
+
+        Registry reg = LocateRegistry.createRegistry(registryPort);
+        reg.rebind("ivotas", server);
+        System.out.println("RMI Server ready.");
+      } catch (RemoteException re) {
+        System.out.println("Exception in RMIImpl.main: " + re);
+      }
+    }
+
+    else {
+      backupServer(args);
+    }
+  }
+
+  // args backup => 0 localhost 6789 8000
+
+  public static void backupServer(String args[]) {
+
+    if(args.length != 4) {
+      System.out.println("java RMIIMpl 0 UDPPort RegistryPort localhost");
+      System.exit(0);
+    }
+
+    int UDPPort = Integer.parseInt(args[2]);
+    int registryPort = Integer.parseInt(args[3]);
+
+    DatagramSocket aSocket = null;
+
+    try {
+      aSocket = new DatagramSocket();
+      String text = "Server Status OK";
+      int numberOfFails = 0;
+
+      while (true) {
+        byte[] m = text.getBytes();
+        InetAddress aHost = InetAddress.getByName(args[1]);
+
+        DatagramPacket request = new DatagramPacket(m, m.length, aHost, UDPPort);
+        aSocket.send(request);
+
+        byte[] buffer = new byte[1000];
+        DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
+
+        aSocket.setSoTimeout(1000);
+
+        try {
+          aSocket.receive(reply);
+          String replyMessage = new String(reply.getData(), 0, reply.getLength());
+
+          if (replyMessage.equals("Server Status OK")) {
+            System.out.println("Received: " + replyMessage);
+            numberOfFails = 0;
+            try {
+              TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+              System.out.println("Error sleep: " + e.getMessage());
+            }
+          }
+        }
+
+        catch (SocketTimeoutException e) {
+          numberOfFails += 1;
+
+          if (numberOfFails < 5) {
+            System.out.println("Number of fails: " + numberOfFails);
+          }
+
+          else if (numberOfFails == 5) {
+            try {
+              RMIImpl backupServer = new RMIImpl();
+              Registry reg = LocateRegistry.createRegistry(registryPort);
+              reg.rebind("ivotas", backupServer);
+              System.out.println("RMI Backup Server ready.");
+            }
+            catch (RemoteException re) {
+              System.out.println("Exception in RMIImpl.backupServer: " + re);
+            }
+          }
+
+          else {
+            System.out.println("Main Server not OK. I am replacing it.");
+            aSocket.send(request);
+            aSocket.setSoTimeout(1000);
+          }
+
+        }
+      }
+    }
+
+    catch (SocketException e) {
+      System.out.println("Socket: " + e.getMessage());
+    }
+    catch (IOException e){
+      System.out.println("IO: " + e.getMessage());
+    }
+    finally {
+      if(aSocket != null) {
+        aSocket.close();
+      }
+    }
   }
 
   public synchronized int createUser(String name, String password, String departmentName, String facultyName, String contact, String address, String cc, String expireDate, int type) throws RemoteException {
@@ -164,15 +298,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     updateFile(this.faculties, "Faculties");
   }
 
-  public synchronized void removeDepartment(Department department) throws RemoteException {
-    for (int i = 0; i < departments.size(); i++) {
-      if (departments.get(i).getName().equals(department.getName())) {
-        departments.remove(departments.get(i));
-      }
-    }
-    updateFile(this.departments, "Departments");
-  }
-
   public synchronized int updateElection(String electionName, Object toChange, int type) throws RemoteException {
     for (int i = 0; i < elections.size(); i++) {
       if (elections.get(i).getName().equals(electionName)) {
@@ -195,6 +320,15 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return 2;
   }
 
+  public synchronized void removeDepartment(Department department) throws RemoteException {
+    for (int i = 0; i < departments.size(); i++) {
+      if (departments.get(i).getName().equals(department.getName())) {
+        departments.remove(departments.get(i));
+      }
+    }
+    updateFile(this.departments, "Departments");
+  }
+
   public synchronized void removeFaculty(Faculty faculty) throws RemoteException {
     for (int i = 0; i < faculty.getDepartments().size(); i++) {
       for (int j = 0; j < this.departments.size(); j++) {
@@ -210,6 +344,95 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       }
     }
     updateFile(this.faculties, "Faculties");
+  }
+
+  public synchronized String knowWhereUserVoted(String userName, String electionName) throws RemoteException {
+    User user = getUserByName(userName);
+    if (user == null) {
+      return "There isn't a user with that name";
+    }
+    Election election = getElectionByName(electionName);
+    if (election == null) {
+      return "There isn't an election with that name";
+    }
+    Vote vote = getVoteByUserAndElection(user, election);
+    if (vote == null) {
+      return "User has not voted in that election";
+    }
+    return vote.getDepartment().getName();
+  }
+
+  public synchronized String detailsOfPastElections() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < electionResults.size(); i++) {
+      res += electionResults.get(i).getElectionResults();
+    }
+    return res;
+  }
+
+  public synchronized User getUserByName(String userName) throws RemoteException {
+    for (int i = 0; i < users.size(); i++) {
+      if (users.get(i).getName().equals(userName)) {
+        return users.get(i);
+      }
+    }
+    return null;
+  }
+
+  public synchronized Department getDepartmentByName(String departmentName) throws RemoteException {
+    for (int i = 0; i < departments.size(); i++) {
+      if (departments.get(i).getName().equals(departmentName)) {
+        return departments.get(i);
+      }
+    }
+    return null;
+  }
+
+  public synchronized Faculty getFacultyByName(String facultyName) throws RemoteException {
+    for (int i = 0; i < faculties.size(); i++) {
+      if (faculties.get(i).getName().equals(facultyName)) {
+        return faculties.get(i);
+      }
+    }
+    return null;
+  }
+
+  public synchronized Faculty getFacultyByDepartmentName(String department) throws RemoteException {
+    for (int i = 0; i < faculties.size(); i++) {
+      for (int j = 0; j < faculties.get(i).getDepartments().size(); j++) {
+        if (faculties.get(i).getDepartments().get(j).getName().equals(department)) {
+          return faculties.get(i);
+        }
+      }
+    }
+    return null;
+  }
+
+  public synchronized Election getElectionByName(String electionName) throws RemoteException {
+    for (int i = 0; i < elections.size(); i++) {
+      if (elections.get(i).getName().equals(electionName)) {
+        return elections.get(i);
+      }
+    }
+    return null;
+  }
+
+  public synchronized CandidateList getCandidateListByName(String listName) throws RemoteException {
+    for (int i = 0; i < candidateLists.size(); i++) {
+      if (candidateLists.get(i).getName().equals(listName)) {
+        return candidateLists.get(i);
+      }
+    }
+    return null;
+  }
+
+  public synchronized Vote getVoteByUserAndElection(User user, Election election) throws RemoteException {
+    for (int i = 0; i < votes.size(); i++) {
+      if (votes.get(i).getElection().getName().equals(election.getName()) && votes.get(i).getUser().getName().equals(user.getName())) {
+        return votes.get(i);
+      }
+    }
+    return null;
   }
 
   private ArrayList<String> fieldValues(String field, ArrayList<User> users) {
@@ -287,95 +510,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     updateFile(this.votes, "Votes");
   }
 
-  public synchronized String knowWhereUserVoted(String userName, String electionName) throws RemoteException {
-    User user = getUserByName(userName);
-    if (user == null) {
-      return "There isn't a user with that name";
-    }
-    Election election = getElectionByName(electionName);
-    if (election == null) {
-      return "There isn't an election with that name";
-    }
-    Vote vote = getVoteByUserAndElection(user, election);
-    if (vote == null) {
-      return "User has not voted in that election";
-    }
-    return vote.getDepartment().getName();
-  }
-
-  public synchronized Vote getVoteByUserAndElection(User user, Election election) throws RemoteException {
-    for (int i = 0; i < votes.size(); i++) {
-      if (votes.get(i).getElection().getName().equals(election.getName()) && votes.get(i).getUser().getName().equals(user.getName())) {
-        return votes.get(i);
-      }
-    }
-    return null;
-  }
-
-  public synchronized String detailsOfPastElections() throws RemoteException {
-    String res = "";
-    for (int i = 0; i < electionResults.size(); i++) {
-      res += electionResults.get(i).getElectionResults();
-    }
-    return res;
-  }
-
-  public synchronized Department getDepartmentByName(String departmentName) throws RemoteException {
-    for (int i = 0; i < departments.size(); i++) {
-      if (departments.get(i).getName().equals(departmentName)) {
-        return departments.get(i);
-      }
-    }
-    return null;
-  }
-
-  public synchronized Faculty getFacultyByName(String facultyName) throws RemoteException {
-    for (int i = 0; i < faculties.size(); i++) {
-      if (faculties.get(i).getName().equals(facultyName)) {
-        return faculties.get(i);
-      }
-    }
-    return null;
-  }
-
-  public synchronized Faculty getFacultyByDepartmentName(String department) throws RemoteException {
-    for (int i = 0; i < faculties.size(); i++) {
-      for (int j = 0; j < faculties.get(i).getDepartments().size(); j++) {
-        if (faculties.get(i).getDepartments().get(j).getName().equals(department)) {
-          return faculties.get(i);
-        }
-      }
-    }
-    return null;
-  }
-
-  public synchronized Election getElectionByName(String electionName) throws RemoteException {
-    for (int i = 0; i < elections.size(); i++) {
-      if (elections.get(i).getName().equals(electionName)) {
-        return elections.get(i);
-      }
-    }
-    return null;
-  }
-
-  public synchronized User getUserByName(String userName) throws RemoteException {
-    for (int i = 0; i < users.size(); i++) {
-      if (users.get(i).getName().equals(userName)) {
-        return users.get(i);
-      }
-    }
-    return null;
-  }
-
-  public synchronized CandidateList getCandidateListByName(String listName) throws RemoteException {
-    for (int i = 0; i < candidateLists.size(); i++) {
-      if (candidateLists.get(i).getName().equals(listName)) {
-        return candidateLists.get(i);
-      }
-    }
-    return null;
-  }
-
   public synchronized void updateFile(Object object, String className) {
     try {
       this.data.writeFile(object, className);
@@ -387,143 +521,8 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     System.out.println(object);
   }
 
-  // The backup server will be a client that will send a message to the main server every 5 seconds. The main server has
-  // 1 second to reply to the backup server. If it doesn't reply we have to turn the backup server into the main server.
-  // The backup server then has to read the object files to get the updated data.
-
-  // args server => 1 6789 7000
-  // args backup => 0 localhost 6789 8000
-
-  public static void main(String args[]) {
-
-    if(args.length == 0) {
-      System.out.println("java RMIIMpl 1 UDPPort RegistryPort");
-      System.exit(0);
-    }
-
-    int isMainServer = Integer.parseInt(args[0]);
-
-    if (isMainServer == 1) {
-      if(args.length != 3) {
-        System.out.println("java RMIIMpl 1 UDPPort RegistryPort");
-        System.exit(0);
-      }
-
-      int UDPPort = Integer.parseInt(args[1]);
-      int registryPort = Integer.parseInt(args[2]);
-
-      try {
-        RMIImpl server = new RMIImpl();
-        NewThread thread = new NewThread("CheckRMIServerStatus", UDPPort);
-
-        System.out.println(server.users);
-        System.out.println(server.faculties);
-        System.out.println(server.departments);
-        System.out.println(server.elections);
-        System.out.println(server.votingTables);
-        System.out.println(server.votes);
-        System.out.println(server.electionResults);
-
-        Registry reg = LocateRegistry.createRegistry(registryPort);
-        reg.rebind("ivotas", server);
-        System.out.println("RMI Server ready.");
-      } catch (RemoteException re) {
-        System.out.println("Exception in RMIImpl.main: " + re);
-      }
-    }
-
-    else {
-      backupServer(args);
-    }
-  }
-
-  // args backup => 0 localhost 6789 8000
-
-  public static void backupServer(String args[]) {
-
-    if(args.length != 4) {
-      System.out.println("java RMIIMpl 0 UDPPort RegistryPort localhost");
-      System.exit(0);
-    }
-
-    int UDPPort = Integer.parseInt(args[2]);
-    int registryPort = Integer.parseInt(args[3]);
-
-    DatagramSocket aSocket = null;
-
-    try {
-      aSocket = new DatagramSocket();
-      String text = "Server Status OK";
-      int numberOfFails = 0;
-
-      while (true) {
-        byte[] m = text.getBytes();
-        InetAddress aHost = InetAddress.getByName(args[1]);
-        int serverPort = UDPPort;
-
-        DatagramPacket request = new DatagramPacket(m, m.length, aHost, serverPort);
-        aSocket.send(request);
-
-        byte[] buffer = new byte[1000];
-        DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
-
-        aSocket.setSoTimeout(1000);
-
-        try {
-          aSocket.receive(reply);
-          String replyMessage = new String(reply.getData(), 0, reply.getLength());
-
-          if (replyMessage.equals("Server Status OK")) {
-            System.out.println("Received: " + replyMessage);
-            numberOfFails = 0;
-            try {
-              TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-              System.out.println("Error sleep: " + e.getMessage());
-            }
-          }
-        }
-
-        catch (SocketTimeoutException e) {
-          numberOfFails += 1;
-
-          if (numberOfFails < 5) {
-            System.out.println("Number of fails: " + numberOfFails);
-          }
-
-          else if (numberOfFails == 5) {
-            try {
-              RMIImpl backupServer = new RMIImpl();
-              Registry reg = LocateRegistry.createRegistry(registryPort);
-              reg.rebind("ivotas", backupServer);
-              System.out.println("RMI Backup Server ready.");
-            }
-            catch (RemoteException re) {
-              System.out.println("Exception in RMIImpl.backupServer: " + re);
-            }
-          }
-
-          else {
-            System.out.println("Main Server not OK. I am replacing it.");
-            aSocket.send(request);
-            aSocket.setSoTimeout(1000);
-          }
-
-        }
-      }
-    }
-
-    catch (SocketException e) {
-      System.out.println("Socket: " + e.getMessage());
-    }
-    catch (IOException e){
-      System.out.println("IO: " + e.getMessage());
-    }
-    finally {
-      if(aSocket != null) {
-        aSocket.close();
-      }
-    }
+  public synchronized void remote_print(String s) throws RemoteException {
+    System.out.println("Server: " + s);
   }
 }
 
