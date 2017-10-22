@@ -17,9 +17,9 @@ public class Admin {
   // ASK - o que e que deve ser possivel configurar
   // ASK - Que tipo de testes temos que ter?
   // ASK - Pode haver listas de candidatos sem candidatos?
-  // ASK - perguntar se update ou remove sao pontos extra?
+  // ASK - Perguntar se update ou remove sao pontos extra?
   // ASK - Que propriedade das eleicoes e que podem ser alteradas?
-  // ASK - E suposto as portas serem argumentos. Fazer alguma coisa no cliente se a porta nao corresponder?
+  // ASK - Configs em txt? E suposto as portas serem argumentos. Fazer alguma coisa no cliente se a porta nao corresponder?
   // TODO - Funcoes 1, 2 -> verificar do lado do servidor tudo com boolean de resposta
   // TODO - Funcoes synchronized
   // TODO - Terminal
@@ -65,7 +65,8 @@ public class Admin {
               "6 - Change Election's properties\n" +
               "7 - Know where a User has voted\n" +
               "8 - See details of past elections\n" +
-              "10 to quit", 1, 9);
+              "9 - Print Data\n" +
+              "11 to quit", 1, 9);
       switch (option) {
         case 1:
           createUser(r, a);
@@ -92,12 +93,15 @@ public class Admin {
           pastElections(r, a);
           break;
         case 9:
+          printData(r, a);
+        case 10:
           try {
             r.remote_print("XXXXXXXX");
           } catch (Exception e) {
             System.out.println("Fail on Server");
             connectRMIInterface(a);
           }
+          break;
         default:
           return;
       }
@@ -522,6 +526,10 @@ public class Admin {
       updatePort(a);
       connectRMIInterface(a);
     }
+  }
+
+  public static void printData(RMIInterface r, Admin a) {
+
   }
 
   public static int getValidInteger(String field, int minimum, int maximum) {
