@@ -27,6 +27,20 @@ public class TCPServer {
     FileWrapper fw;
     Election election = null;
     TCPServer votingTable = null;
+    RMIInterface rmi = null;
+    try {
+      rmi = (RMIInterface) Naming.lookup("ivotas");
+      rmi.getStatus();
+    }
+    catch(RemoteException e) {
+      e.printStackTrace();
+    }
+    catch (NotBoundException e) {
+      e.printStackTrace();
+    }
+    catch (MalformedURLException e) {
+      e.printStackTrace();
+    }
 
     try {
       fw = new FileWrapper();
@@ -47,14 +61,14 @@ public class TCPServer {
       ServerSocket listenSocket = new ServerSocket(serverPort);
       System.out.println("LISTEN SOCKET = " + listenSocket);
 
-      Menu menu = new Menu(votingTableMenuMessages, threads);
+      Menu menu = new Menu(votingTableMenuMessages, threads, rmi);
 
       // thread to accept new client connections
       while(true) {
         Socket clientSocket = listenSocket.accept();
         System.out.println("CLIENT_SOCKET (created at accept()) = " + clientSocket);
         number++;
-        Connection thread = new Connection(clientSocket, number, votingTable.election, votingTableMenuMessages, threads);
+        Connection thread = new Connection(clientSocket, number, votingTable.election, votingTableMenuMessages, threads, rmi);
         votingTable.votingTerminals.add(thread);
       }
     } catch(IOException e) {
@@ -71,12 +85,14 @@ class Connection extends Thread {
   private PrintWriter outToServer;
   private ArrayList<String> votingTableMenuMessages;
   private CopyOnWriteArrayList<Connection> threads;
+  private RMIInterface rmi;
 
-  public Connection (Socket aClientSocket, int number, Election election, ArrayList<String> votingTableMessages, CopyOnWriteArrayList<Connection> threads) {
+  public Connection (Socket aClientSocket, int number, Election election, ArrayList<String> votingTableMessages, CopyOnWriteArrayList<Connection> threads, RMIInterface rmi) {
     this.thread_number = number;
     this.election = election;
     this.threads = threads;
     this.votingTableMenuMessages = votingTableMessages;
+    this.rmi = rmi;
 
     try {
       Socket clientSocket = aClientSocket;
@@ -90,7 +106,6 @@ class Connection extends Thread {
 
   public void run(){
     try {
-      RMIInterface rmi = (RMIInterface) Naming.lookup("ivotas");
 
       while (true) {
         synchronized (this) {
@@ -106,14 +121,14 @@ class Connection extends Thread {
           Map<String, String> keyValues = parseProtocolMessage(clientResponse);
 
           // Check if login is valid
-          boolean validLogin = rmi.authenticateUser(keyValues.get("username"), keyValues.get("password"));
+          boolean validLogin = this.rmi.authenticateUser(keyValues.get("username"), keyValues.get("password"));
           while(!validLogin) {
             message = "type | status ; logged | " + validLogin ;
             this.getOut().println(message);
             System.out.println(message);
             clientResponse = bufferedReader.readLine();
             keyValues = parseProtocolMessage(clientResponse);
-            validLogin = rmi.authenticateUser(keyValues.get("username"), keyValues.get("password"));
+            validLogin = this.rmi.authenticateUser(keyValues.get("username"), keyValues.get("password"));
           }
 
           message = "type | status ; logged | " + validLogin ;
@@ -125,15 +140,19 @@ class Connection extends Thread {
           System.out.println(clientResponse);
           keyValues = parseProtocolMessage(clientResponse);
 
-          User user = rmi.getUserByName(keyValues.get("username"));
-          Election voteElection = rmi.getElectionByName(keyValues.get("election"));
-          CandidateList voteList = rmi.getCandidateListByName(keyValues.get("choice"));
+          User user = this.rmi.getUserByName(keyValues.get("username"));
+          Election voteElection = this.rmi.getElectionByName(keyValues.get("election"));
+          CandidateList voteList = this.rmi.getCandidateListByName(keyValues.get("choice"));
 
           // TODO -> change null to object Department
-          rmi.vote(user, voteElection, voteList, null);
+          this.rmi.vote(user, voteElection, voteList, null);
         }
       }
-    } catch (InterruptedException | IOException | NotBoundException e) {
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }
@@ -184,20 +203,22 @@ class Connection extends Thread {
 class Menu extends Thread {
   private ArrayList<String> votingTableMenuMessages;
   private CopyOnWriteArrayList<Connection> votingTerminals;
+  private RMIInterface rmi;
 
-  public Menu (ArrayList<String> votingTableMenuMessages, CopyOnWriteArrayList<Connection> votingTerminals) {
+  public Menu (ArrayList<String> votingTableMenuMessages, CopyOnWriteArrayList<Connection> votingTerminals, RMIInterface rmi) {
     this.votingTableMenuMessages = votingTableMenuMessages;
     this.votingTerminals = votingTerminals;
+    this.rmi = rmi;
+
     this.start();
   }
 
   public void run() {
     try {
-      RMIInterface rmi = (RMIInterface) Naming.lookup("ivotas");
 
       while (true) {
         ArrayList<String> search = this.votingTableMenu();
-        User user = rmi.searchUser(search.get(0), search.get(1));;
+        User user = this.rmi.searchUser(search.get(0), search.get(1));;
 
         // Check if user was found
         if (user != null) {
@@ -215,7 +236,7 @@ class Menu extends Thread {
         }
       }
 
-    } catch (NotBoundException | MalformedURLException | RemoteException e) {
+    } catch (RemoteException e) {
       e.printStackTrace();
     }
   }

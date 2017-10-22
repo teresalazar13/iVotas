@@ -64,4 +64,8 @@ public interface RMIInterface extends Remote {
   Faculty getFacultyByDepartmentName(String department) throws RemoteException;
 
   CandidateList getCandidateListByName(String listName) throws RemoteException;
+
+  void getStatus() throws RemoteException;
+
+  void addAdmin(Admin admin) throws RemoteException;
 }

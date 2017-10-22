@@ -22,6 +22,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   private ArrayList<VotingTable> votingTables;
   private ArrayList<Vote> votes;
   private ArrayList<ElectionResult> electionResults;
+  private ArrayList<Admin> admins;
 
   public RMIImpl() throws RemoteException {
     super();
@@ -37,6 +38,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       votingTables = data.votingTables;
       votes = data.votes;
       electionResults = data.electionResults;
+      admins = new ArrayList<>();
     } catch (ClassNotFoundException e) {
       System.out.println("Class Not Found Exception " + e);
     } catch (java.io.IOException e) {
@@ -507,6 +509,16 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
 
     return false;
+  }
+
+  public synchronized void getStatus() throws RemoteException {
+    for (int i = 0; i < admins.size(); i++) {
+      admins.get(i).printTableStatus();
+    }
+  }
+
+  public synchronized void addAdmin(Admin admin) throws RemoteException {
+    this.admins.add(admin);
   }
 
   public synchronized void vote(User user, Election election, CandidateList candidateList, Department department) throws RemoteException {
