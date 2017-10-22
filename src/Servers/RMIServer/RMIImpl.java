@@ -275,6 +275,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
   public void vote(User user, Election election, CandidateList candidateList, Department department) throws RemoteException {
     Vote vote = new Vote(user, election, candidateList, department);
+    System.out.println(vote);
     this.votes.add(vote);
     updateVotesFile();
   }
