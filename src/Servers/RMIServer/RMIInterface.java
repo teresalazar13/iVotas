@@ -39,6 +39,8 @@ public interface RMIInterface extends Remote {
 
   void createCandidateListCouncil(String name, ArrayList<User> users, Election election, int usersType) throws RemoteException;
 
+  int createVotingTable(String electionName, String departmentName) throws RemoteException;
+
   User searchUser(String field, String res) throws RemoteException;
 
   boolean authenticateUser(String name, String password) throws RemoteException;

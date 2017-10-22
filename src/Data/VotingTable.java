@@ -1,35 +1,51 @@
 package Data;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class VotingTable {
+public class VotingTable implements Serializable {
   private Election election;
+  private Department department;
   private ArrayList<VotingTerminal> votingTerminals;
-  private String location;
 
   public VotingTable() {}
 
-  public VotingTable(Election election, ArrayList<VotingTerminal> votingTerminals, String location) {
+  public VotingTable(Election election, Department department, ArrayList<VotingTerminal> votingTerminals) {
     this.election = election;
+    this.department = department;
     this.votingTerminals = votingTerminals;
-    this.location = location;
   }
 
-  public Election getElection() { return election; }
-  public void setElection(Election election) { this.election = election; }
+  public Election getElection() {
+    return election;
+  }
 
-  public ArrayList<VotingTerminal> getVotingTerminals() { return votingTerminals; }
-  public void setVotingTerminals(ArrayList<VotingTerminal> votingTerminals) { this.votingTerminals = votingTerminals; }
+  public void setElection(Election election) {
+    this.election = election;
+  }
 
-  public String getLocation() { return location; }
-  public void setLocation(String location) { this.location = location; }
+  public Department getDepartment() {
+    return department;
+  }
+
+  public void setDepartment(Department department) {
+    this.department = department;
+  }
+
+  public ArrayList<VotingTerminal> getVotingTerminals() {
+    return votingTerminals;
+  }
+
+  public void setVotingTerminals(ArrayList<VotingTerminal> votingTerminals) {
+    this.votingTerminals = votingTerminals;
+  }
 
   @Override
   public String toString() {
     return "VotingTable{" +
             "election=" + election +
+            ", department=" + department +
             ", votingTerminals=" + votingTerminals +
-            ", location='" + location + '\'' +
             '}';
   }
 }

@@ -62,6 +62,11 @@ public class FileWrapper {
     ArrayList<Election> elections = new ArrayList<Election>();
     elections.add(election1);
 
+    ArrayList<VotingTable> votingTables = new ArrayList<VotingTable>();
+    ArrayList<VotingTerminal> votingTerminals = new ArrayList<VotingTerminal>();
+    VotingTable votingTable = new VotingTable(election1, department1, votingTerminals);
+    votingTables.add(votingTable);
+
     ArrayList<Vote> votes = new ArrayList<>();
     Vote vote1 = new Vote(user1, election1, candidateList, department1);
     votes.add(vote1);
@@ -71,6 +76,7 @@ public class FileWrapper {
     writeFile(faculties,"Faculties");
     writeFile(elections,"Elections");
     writeFile(candidateLists,"CandidateLists");
+    writeFile(votingTables,"VotingTables");
     writeFile(votes,"Votes");
 
     ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
@@ -78,6 +84,7 @@ public class FileWrapper {
     ArrayList<Faculty> facultiesFromFile = (ArrayList<Faculty>) readFile("Faculty");
     ArrayList<Election> electionsFromFile = (ArrayList<Election>) readFile("Election");
     ArrayList<CandidateList> candidateListsFromFile = (ArrayList<CandidateList>) readFile("CandidateList");
+    ArrayList<VotingTable> votingTablesFromFile = (ArrayList<VotingTable>) readFile("VotingTable");
     ArrayList<Vote> votesFromFile = (ArrayList<Vote>) readFile("Vote");
 
     this.users = usersFromFile;
@@ -85,6 +92,7 @@ public class FileWrapper {
     this.faculties = facultiesFromFile;
     this.elections = electionsFromFile;
     this.candidateLists = candidateListsFromFile;
+    this.votingTables = votingTablesFromFile;
     this.votes = votesFromFile;
   }
 

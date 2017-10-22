@@ -19,8 +19,8 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   private ArrayList<Department> departments;
   private ArrayList<Election> elections;
   private ArrayList<CandidateList> candidateLists;
+  private ArrayList<VotingTable> votingTables;
   private ArrayList<Vote> votes;
-  ArrayList<VotingTable> votingTables;
 
   public RMIImpl() throws RemoteException {
     super();
@@ -33,6 +33,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       departments = data.departments;
       elections = data.elections;
       candidateLists = data.candidateLists;
+      votingTables = data.votingTables;
       votes = data.votes;
     } catch (ClassNotFoundException e) {
       System.out.println("Class Not Found Exception " + e);
@@ -97,6 +98,22 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     election.addCandidateList(candidateList);
     this.updateCandidateListsFile();
     this.updateElectionsFile();
+  }
+
+  public int createVotingTable(String electionName, String departmentName) throws RemoteException {
+    Election election = getElectionByName(electionName);
+    if (election == null) {
+      return 2;
+    }
+    Department department = getDepartmentByName(departmentName);
+    if (department == null) {
+      return 3;
+    }
+    ArrayList<VotingTerminal> votingTerminals = new ArrayList<VotingTerminal>();
+    VotingTable votingTable = new VotingTable(election, department, votingTerminals);
+    votingTables.add(votingTable);
+    updateVotingTablesFile();
+    return 1;
   }
 
   public void updateDepartmentName(Department department, String name) throws RemoteException {
@@ -400,6 +417,17 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     System.out.println(this.candidateLists);
   }
 
+  public void updateVotingTablesFile() {
+    try {
+      this.data.writeFile(this.votingTables, "votingTables");
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in votingTables file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in votingTables file");
+    }
+    System.out.println(this.votingTables);
+  }
+
   public void updateVotesFile() {
     try {
       this.data.writeFile(this.votes, "Votes");
@@ -444,7 +472,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         System.out.println(server.faculties);
         System.out.println(server.departments);
         System.out.println(server.elections);
-        System.out.println(server.candidateLists);
+        System.out.println(server.votingTables);
         System.out.println(server.votes);
 
         Registry reg = LocateRegistry.createRegistry(registryPort);
