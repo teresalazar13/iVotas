@@ -15,6 +15,7 @@ public class FileWrapper {
   ArrayList<CandidateList> candidateLists;
   ArrayList<VotingTable> votingTables;
   ArrayList<Vote> votes;
+  ArrayList<ElectionResult> electionResults;
 
 
   public FileWrapper() throws IOException, ClassNotFoundException {
@@ -71,6 +72,13 @@ public class FileWrapper {
     Vote vote1 = new Vote(user1, election1, candidateList, department1);
     votes.add(vote1);
 
+    ArrayList<ElectionResult> electionResults = new ArrayList<ElectionResult>();
+    ArrayList<CandidateResults> candidatesResults = new ArrayList<CandidateResults>();
+    CandidateResults candidateResults1 = new CandidateResults(candidateList2, 100, 100);
+    candidatesResults.add(candidateResults1);
+    ElectionResult electionResults1 = new ElectionResult(candidatesResults, 0, 0);
+    electionResults.add(electionResults1);
+
     writeFile(users,"Users");
     writeFile(departments,"Departments");
     writeFile(faculties,"Faculties");
@@ -78,6 +86,7 @@ public class FileWrapper {
     writeFile(candidateLists,"CandidateLists");
     writeFile(votingTables,"VotingTables");
     writeFile(votes,"Votes");
+    writeFile(electionResults,"ElectionResults");
 
     ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
     ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");
@@ -86,6 +95,7 @@ public class FileWrapper {
     ArrayList<CandidateList> candidateListsFromFile = (ArrayList<CandidateList>) readFile("CandidateList");
     ArrayList<VotingTable> votingTablesFromFile = (ArrayList<VotingTable>) readFile("VotingTable");
     ArrayList<Vote> votesFromFile = (ArrayList<Vote>) readFile("Vote");
+    ArrayList<ElectionResult> electionResultsFromFile = (ArrayList<ElectionResult>) readFile("ElectionResult");
 
     this.users = usersFromFile;
     this.departments = departmentsFromFile;
@@ -94,6 +104,7 @@ public class FileWrapper {
     this.candidateLists = candidateListsFromFile;
     this.votingTables = votingTablesFromFile;
     this.votes = votesFromFile;
+    this.electionResults = electionResultsFromFile;
   }
 
   public void writeFile(Object classe, String className) throws IOException, ClassNotFoundException {

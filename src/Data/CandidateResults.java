@@ -1,13 +1,15 @@
 package Data;
 
-public class CandidateResults {
+import java.io.Serializable;
+
+public class CandidateResults implements Serializable {
   private CandidateList candidateList;
   private int numberOfVotes;
-  private float percentage;
+  private double percentage;
 
   public CandidateResults() {}
 
-  public CandidateResults(CandidateList candidateList, int numberOfVotes, float percentage) {
+  public CandidateResults(CandidateList candidateList, int numberOfVotes, double percentage) {
     this.candidateList = candidateList;
     this.numberOfVotes = numberOfVotes;
     this.percentage = percentage;
@@ -29,7 +31,7 @@ public class CandidateResults {
     this.numberOfVotes = numberOfVotes;
   }
 
-  public float getPercentage() {
+  public double getPercentage() {
     return percentage;
   }
 

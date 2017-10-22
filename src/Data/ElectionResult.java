@@ -1,15 +1,16 @@
 package Data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class ElectionResults {
+public class ElectionResult implements Serializable {
   private ArrayList<CandidateResults> candidatesResults;
   private int numberOfEmptyVotes;
   private int percentageOfEmptyVotes;
 
-  public ElectionResults() {}
+  public ElectionResult() {}
 
-  public ElectionResults(ArrayList<CandidateResults> candidatesResults, int numberOfEmptyVotes, int percentageOfEmptyVotes) {
+  public ElectionResult(ArrayList<CandidateResults> candidatesResults, int numberOfEmptyVotes, int percentageOfEmptyVotes) {
     this.candidatesResults = candidatesResults;
     this.numberOfEmptyVotes = numberOfEmptyVotes;
     this.percentageOfEmptyVotes = percentageOfEmptyVotes;
@@ -51,9 +52,10 @@ public class ElectionResults {
 
   @Override
   public String toString() {
-    return "ElectionResults{" +
-            "candidateResults=" + candidatesResults +
-            ", emptyVotes=" + emptyVotes +
+    return "ElectionResult{" +
+            "candidatesResults=" + candidatesResults +
+            ", numberOfEmptyVotes=" + numberOfEmptyVotes +
+            ", percentageOfEmptyVotes=" + percentageOfEmptyVotes +
             '}';
   }
 }
