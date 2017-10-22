@@ -21,6 +21,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   private ArrayList<CandidateList> candidateLists;
   private ArrayList<VotingTable> votingTables;
   private ArrayList<Vote> votes;
+  private ArrayList<ElectionResult> electionResults;
 
   public RMIImpl() throws RemoteException {
     super();
@@ -35,6 +36,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       candidateLists = data.candidateLists;
       votingTables = data.votingTables;
       votes = data.votes;
+      electionResults = data.electionResults;
     } catch (ClassNotFoundException e) {
       System.out.println("Class Not Found Exception " + e);
     } catch (java.io.IOException e) {
@@ -302,8 +304,12 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return null;
   }
 
-  public void getElectionResults() throws RemoteException {
-
+  public String detailsOfPastElections() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < electionResults.size(); i++) {
+      res += electionResults.get(i).getElectionResults();
+    }
+    return res;
   }
 
   public Department getDepartmentByName(String departmentName) throws RemoteException {
@@ -474,6 +480,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         System.out.println(server.elections);
         System.out.println(server.votingTables);
         System.out.println(server.votes);
+        System.out.println(server.electionResults);
 
         Registry reg = LocateRegistry.createRegistry(registryPort);
         reg.rebind("ivotas", server);
