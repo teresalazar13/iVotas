@@ -109,13 +109,14 @@ public class Admin {
   }
 
   public static void createUser(RMIInterface r, Admin a) {
-    int option = getValidInteger(
+    int type = getValidInteger(
             "What type of User do you want to Create?\n" +
                     "1 - Student\n" +
                     "2 - Teacher\n" +
                     "3 - Staff\n" +
                     "4 back", 1,4);
-    if (option == 4) return;
+    if (type == 4) return;
+
     String name = getValidString("Name: ");
     String password = getValidString("Password: ");
     String departmentName = getValidString("Department: ");
@@ -124,37 +125,15 @@ public class Admin {
     String address = getValidString("Address: ");
     String cc = getValidString("CC: ");
     String expireDate = getValidString("Expire date: ");
-    int type = option;
-
-    Department department = null;
-    Faculty faculty = null;
-    try {
-      department = r.getDepartmentByName(departmentName);
-      if (department == null) {
-        System.out.println("There isn't a department with that name.");
-        return;
-      }
-    }
-    catch (RemoteException e) {
-      System.out.println("Main Server crashed. Connecting to Backup Server..." );
-      connectRMIInterface(a);
-      return;
-    }
 
     try {
-      faculty = r.getFacultyByName(facultyName);
-      if (faculty == null) {
-        System.out.println("There isn't a faculty with that name.");
-        return;
-      }
-    }
-    catch (RemoteException e) {
-      System.out.println("Remote Exception, " + e);
-      connectRMIInterface(a);
-    }
-
-    try {
-      r.createUser(name, password, department, faculty, contact, address, cc, expireDate, type);
+      int success = r.createUser(name, password, departmentName, facultyName, contact, address, cc, expireDate, type);
+      if (success == 1)
+        System.out.println("User successfully created");
+      else if (success == 2)
+        System.out.println("There isn't a department with the name " + departmentName);
+      else
+        System.out.println("There isn't a faculty with the name " + facultyName);
     }
     catch (RemoteException e) {
       System.out.println("Remote Exception, " + e);

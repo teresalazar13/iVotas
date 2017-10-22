@@ -11,7 +11,7 @@ public interface RMIInterface extends Remote {
 
   void remote_print(String s) throws RemoteException;
 
-  void createUser(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) throws RemoteException;
+  int createUser(String name, String password, String departmentName, String facultyName, String contact, String address, String cc, String expireDate, int type) throws RemoteException;
 
   void createFaculty(String name) throws RemoteException;
 

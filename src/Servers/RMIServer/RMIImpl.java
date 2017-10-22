@@ -48,10 +48,19 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     System.out.println("Server: " + s);
   }
 
-  public synchronized void createUser(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) throws RemoteException {
+  public synchronized int createUser(String name, String password, String departmentName, String facultyName, String contact, String address, String cc, String expireDate, int type) throws RemoteException {
+    Department department = getDepartmentByName(departmentName);
+    if (department == null)
+      return 2;
+
+    Faculty faculty = getFacultyByName(facultyName);
+    if (faculty == null)
+      return 3;
+
     User user = new User(name, password, department, faculty, contact, address, cc, expireDate, type);
     this.users.add(user);
     updateFile(this.users, "Users");
+    return 1;
   }
 
   public synchronized void createFaculty(String name) throws RemoteException {
@@ -67,7 +76,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     updateFile(this.faculties, "Faculties");
     updateFile(this.departments, "Departments");
   }
-
 
   public synchronized void createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException {
     Election election = new Election(name, description, startDate, endDate, type);
