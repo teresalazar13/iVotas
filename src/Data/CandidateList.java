@@ -56,8 +56,22 @@ public class CandidateList implements Serializable {
   @Override
   public String toString() {
     return "CandidateList{" +
-            "name='" + name + '\'' +
+            "name=" + name +
             ", users=" + users +
+            '}';
+  }
+
+  public String toStringClient() {
+    ArrayList<User> users = this.users;
+    ArrayList<String> userNames = new ArrayList<>();
+
+    for (User user : users) {
+      userNames.add(user.getName());
+    }
+
+    return "CandidateList{" +
+            "name:" + this.name + "*" +
+            "usernames:" + userNames +
             '}';
   }
 }

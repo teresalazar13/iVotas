@@ -277,8 +277,9 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return false;
   }
 
-  public void vote(int userID, int electionID, int candidateListID) throws RemoteException {
-
+  public void vote(User user, Election election, CandidateList candidateList) throws RemoteException {
+    Vote vote = new Vote(user, election, candidateList);
+    System.out.println(vote);
   }
 
   public List getVotingInfo(User user, Election election) throws RemoteException {
@@ -333,6 +334,16 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         return users.get(i);
       }
     }
+    return null;
+  }
+
+  public CandidateList getCandidateListByName(String listName) throws RemoteException {
+    for (int i = 0; i < candidateLists.size(); i++) {
+      if (candidateLists.get(i).getName().equals(listName)) {
+        return candidateLists.get(i);
+      }
+    }
+
     return null;
   }
 

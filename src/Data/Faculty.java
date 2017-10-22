@@ -3,7 +3,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Faculty implements Serializable {
-  private static final long serialVersionUID = -3785830534253076995L;
+  private static final long serialVersionUID = -3785830534253236995L;
   private String name;
   private ArrayList<Department> departments;
 

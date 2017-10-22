@@ -1,9 +1,6 @@
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * This class establishes a TCP connection to a specified server, and loops
@@ -43,21 +40,45 @@ class TCPClient {
       // the main thread loops reading from the server and writing to System.out
       String messageFromServer;
       while((messageFromServer = inFromServer.readLine()) != null) {
+        // set current username to log in
         synchronized (votingTerminalMenu.getT()) {
-          System.out.println("Aqui");
-          // set current username to log in
           votingTerminalMenu.setCurrentUsername(messageFromServer);
           System.out.println(messageFromServer);
           System.out.println(votingTerminalMenu.getCurrentUsername());
           votingTerminalMenu.getT().notify();
+        }
 
-          /*
-          // check if login was sucessful
+        // check if login was sucessful
+        messageFromServer = inFromServer.readLine();
+
+        boolean loginState;
+        synchronized (votingTerminalMenu.getT()) {
+          Map<String, String> protocolValues = client.parseProcolMessage(messageFromServer);
+          loginState = Boolean.parseBoolean(protocolValues.get("logged"));
+          votingTerminalMenu.setLoginState(loginState);
+
+          if (!loginState) {
+            votingTerminalMenu.getT().notify();
+          }
+        }
+
+        if (loginState) {
+          // get election info
           messageFromServer = inFromServer.readLine();
           Map<String, String> protocolValues = client.parseProcolMessage(messageFromServer);
-          votingTerminalMenu.setLoginState(Boolean.parseBoolean(protocolValues.get("logged")));
-          votingTerminalMenu.getT().notify();*/
+          String cleanElection = protocolValues.get("election").replace("Election{", "");
+          Map<String, String> electionInfo = client.parseElectionString(cleanElection);
+          ArrayList<String> candidateListsName = client.parseCandidateLists(electionInfo.get("candidateLists"));
+
+          // update terminal object
+          synchronized (votingTerminalMenu.getT()) {
+            votingTerminalMenu.setElectionInfo(electionInfo);
+            votingTerminalMenu.setCandidateListsName(candidateListsName);
+            votingTerminalMenu.getT().notify();
+          }
         }
+
+        System.out.println("Resumed");
       }
     } catch (IOException e) {
       if(inFromServer == null)
@@ -84,12 +105,55 @@ class TCPClient {
 
     return protocolValues;
   }
+
+  private Map<String, String> parseElectionString(String cleanElectionString) {
+    // The protocol message is going to be parsed into key-value map
+    Map<String, String> electionValues = new LinkedHashMap<>();
+
+    // Clean protocol message of whitespaces
+    String [] cleanElectionWords = cleanElectionString.split("[=-]");
+
+    for (int i = 0; i < cleanElectionWords.length; i+=2) {
+      electionValues.put(cleanElectionWords[i], cleanElectionWords[i+1]);
+    }
+
+    return electionValues;
+  }
+
+  private ArrayList<String> parseCandidateLists(String candidateLists) {
+    // The protocol message is going to be parsed into key-value map
+    ArrayList<String> candidateListNames = new ArrayList<>();
+
+    // Clean protocol message of whitespaces
+    candidateLists = candidateLists.replace("{", "");
+    candidateLists = candidateLists.replace("}", "");
+    candidateLists = candidateLists.replace("[", "");
+    candidateLists = candidateLists.replace("]", "");
+
+    String [] cleanCandidateLists = candidateLists.split("CandidateList");
+
+    for (int i = 1; i < cleanCandidateLists.length; i++) {
+      String [] cleanCandidateList = cleanCandidateLists[i].split("[:*]");
+
+      for (int j = 0; j < cleanCandidateList.length; j+=4) {
+        candidateListNames.add(cleanCandidateList[j+1]);
+      }
+    }
+
+    for (String u : candidateListNames) {
+      System.out.println(candidateListNames);
+    }
+
+    return candidateListNames;
+  }
 }
 
 // Thread responsible for reading from keyboard and writing to the server
 class VotingTerminalMenu implements Runnable {
   private String currentUsername;
   private boolean loginState;
+  private Map<String, String> electionInfo;
+  private ArrayList<String> candidateListsName;
   private String threadName;
   private PrintWriter outToServer;
   private Socket clientSocket;
@@ -98,6 +162,8 @@ class VotingTerminalMenu implements Runnable {
   public VotingTerminalMenu(String threadName, Socket clientSocket) {
     this.currentUsername = null;
     this.loginState = false;
+    this.electionInfo = null;
+    this.candidateListsName = null;
     this.threadName = threadName;
 
     try {
@@ -113,28 +179,33 @@ class VotingTerminalMenu implements Runnable {
 
   public void run() {
     while(!this.clientSocket.isClosed()) {
-      synchronized (this.getT()) {
-        try {
-          System.out.println("waiting");
-          this.getT().wait();
-          System.out.println("resumed");
+      try {
+        synchronized (this.getT()) {
+            this.getT().wait();
 
-          // Ask or password and send it to the server
-          String messageToServer = this.menu();
-          this.outToServer.println(messageToServer);
-          /*
-          this.getT().wait();
+            // Ask or password and send it to the server
+            String messageToServer = this.menu();
+            this.outToServer.println(messageToServer);
+            this.getT().wait();
 
-          // Check login state
-          Boolean loginState = this.loginState;
-          System.out.println(loginState);
+            // Check login state
+            boolean loginState = this.loginState;
+            if (loginState) {
+              String listNameToVote = votingMenu();
+              this.outToServer.println("type | vote ; election | " + electionInfo.get("name")+ " ; username | " + this.currentUsername + " ; choice | " + listNameToVote + " ;");
+            } else {
+              // TODO failed login logic missing
+              System.out.println("Failed");
+            }
 
-          this.setLoginState(false);
-          */
-          this.setCurrentUsername(null);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
+            // clean vars received
+            this.setLoginState(false);
+            this.setCurrentUsername(null);
+            this.setElectionInfo(null);
+            this.setCandidateListsName(null);
         }
+      } catch (InterruptedException e) {
+        e.printStackTrace();
       }
     }
   }
@@ -153,6 +224,38 @@ class VotingTerminalMenu implements Runnable {
     return messageToServer;
   }
 
+  private int getValidInteger(int maximum) {
+    Scanner sc = new Scanner(System.in);
+    System.out.println("Option: ");
+
+    while (true) {
+      while (!sc.hasNextInt()) {
+        System.out.println("Please write an integer");
+        sc.next();
+      }
+      int option = sc.nextInt();
+      if (maximum < option || option < 0) {
+        System.out.println("Please write an integer between 0 and " + maximum);
+      }
+      else {
+        return option;
+      }
+    }
+  }
+  private String votingMenu() {
+    System.out.println("-----" + this.electionInfo.get("name") + "-----");
+    System.out.println(this.electionInfo.get("description"));
+
+    for (int i = 0; i < this.candidateListsName.size(); i++) {
+      System.out.println("[" + i + "]" + "--> " + this.candidateListsName.get(i) );
+    }
+
+    System.out.println("List to vote: ");
+    int list = getValidInteger(this.candidateListsName.size());
+
+    return this.candidateListsName.get(list);
+  }
+
   public Thread getT() { return t; }
 
   public String getCurrentUsername() { return currentUsername; }
@@ -160,4 +263,10 @@ class VotingTerminalMenu implements Runnable {
 
   public boolean isLoginState() { return loginState; }
   public void setLoginState(boolean loginState) { this.loginState = loginState; }
+
+  public Map<String, String> getElectionInfo() { return electionInfo; }
+  public void setElectionInfo(Map<String, String> electionInfo) { this.electionInfo = electionInfo; }
+
+  public ArrayList<String> getCandidateListsName() { return candidateListsName; }
+  public void setCandidateListsName(ArrayList<String> candidateListsName) { this.candidateListsName = candidateListsName; }
 }
