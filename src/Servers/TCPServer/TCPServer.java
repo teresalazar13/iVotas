@@ -125,23 +125,15 @@ class Connection extends Thread {
           System.out.println(clientResponse);
           keyValues = parseProtocolMessage(clientResponse);
 
-          System.out.println(keyValues.get("username"));
-          System.out.println(keyValues.get("election"));
-          System.out.println(keyValues.get("choice"));
           User user = rmi.getUserByName(keyValues.get("username"));
           Election voteElection = rmi.getElectionByName(keyValues.get("election"));
           CandidateList voteList = rmi.getCandidateListByName(keyValues.get("choice"));
-          System.out.println(user);
-          System.out.println(voteElection);
-          System.out.println(voteList);
 
           // TODO -> change null to object Department
           rmi.vote(user, voteElection, voteList, null);
         }
       }
-    } catch (InterruptedException | IOException e) {
-      e.printStackTrace();
-    } catch (NotBoundException e) {
+    } catch (InterruptedException | IOException | NotBoundException e) {
       e.printStackTrace();
     }
   }
@@ -210,9 +202,6 @@ class Menu extends Thread {
         // Check if user was found
         if (user != null) {
           int lockedTerminalIndex = this.getLockedTerminal();
-          System.out.println("testtttttttttttttttttttttttt");
-          System.out.println(lockedTerminalIndex);
-          System.out.println("testtttttttttttttttttttttttt");
 
           // send user to voting terminal
           synchronized (this.votingTerminals.get(lockedTerminalIndex)) {
@@ -221,9 +210,6 @@ class Menu extends Thread {
             this.votingTerminals.get(this.getLockedTerminal()).notify();
           }
 
-          /*synchronized (this) {
-            this.wait();
-          }*/
         } else {
           System.out.println("User not found");
         }
