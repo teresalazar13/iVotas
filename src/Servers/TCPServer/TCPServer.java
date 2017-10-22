@@ -119,7 +119,8 @@ class Connection extends Thread {
             Election voteElection = rmi.getElectionByName(keyValues.get("election"));
             CandidateList voteList = rmi.getCandidateListByName(keyValues.get("choice"));
 
-            rmi.vote(user, voteElection, voteList);
+            // TODO -> change null to object Department
+            rmi.vote(user, voteElection, voteList, null);
           }
         }
       }

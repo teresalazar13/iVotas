@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.List;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.net.*;
@@ -255,13 +254,34 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return false;
   }
 
-  public void vote(User user, Election election, CandidateList candidateList) throws RemoteException {
-    Vote vote = new Vote(user, election, candidateList);
+  public void vote(User user, Election election, CandidateList candidateList, Department department) throws RemoteException {
+    Vote vote = new Vote(user, election, candidateList, department);
     this.votes.add(vote);
     updateVotesFile();
   }
 
-  public List getVotingInfo(User user, Election election) throws RemoteException {
+  public String knowWhereUserVoted(String userName, String electionName) throws RemoteException {
+    User user = getUserByName(userName);
+    if (user == null) {
+      return "There isn't a user with that name";
+    }
+    Election election = getElectionByName(electionName);
+    if (election == null) {
+      return "There isn't an election with that name";
+    }
+    Vote vote = getVoteByUserAndElection(user, election);
+    if (vote == null) {
+      return "User has not voted in that election";
+    }
+    return vote.getDepartment().getName();
+  }
+
+  public Vote getVoteByUserAndElection(User user, Election election) throws RemoteException {
+    for (int i = 0; i < votes.size(); i++) {
+      if (votes.get(i).getElection().getName().equals(election.getName()) && votes.get(i).getUser().getName().equals(user.getName())) {
+        return votes.get(i);
+      }
+    }
     return null;
   }
 

@@ -63,7 +63,7 @@ public class FileWrapper {
     elections.add(election1);
 
     ArrayList<Vote> votes = new ArrayList<>();
-    Vote vote1 = new Vote(user1, election1, candidateList);
+    Vote vote1 = new Vote(user1, election1, candidateList, department1);
     votes.add(vote1);
 
     writeFile(users,"Users");

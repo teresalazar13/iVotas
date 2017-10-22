@@ -91,6 +91,7 @@ public class Admin {
           changeElectionsProperties(r, a);
           break;
         case 7:
+          knowWhereUserVoted(r, a);
           break;
         case 8:
           break;
@@ -449,6 +450,18 @@ public class Admin {
         System.out.println("Remote Exception updating Election");
         connectRMIInterface(a);
       }
+    }
+  }
+
+  public static void knowWhereUserVoted(RMIInterface r, Admin a) {
+    String userName = getValidString("Username: ");
+    String electionName = getValidString("Name of election: ");
+    try {
+      System.out.println(r.knowWhereUserVoted(userName, electionName));
+      connectRMIInterface(a);
+    }
+    catch(RemoteException e) {
+      System.out.println("Remote exception knowing where user has voted.");
     }
   }
 
