@@ -3,7 +3,6 @@ package Servers.RMIServer;
 import Data.*;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -11,9 +10,7 @@ import java.util.List;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.net.*;
-import java.io.*;
 import java.util.concurrent.TimeUnit;
-import java.text.SimpleDateFormat;
 
 
 public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
@@ -340,7 +337,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return null;
   }
 
-  @Override
   public CandidateList getCandidateListByName(String listName) throws RemoteException {
     for (int i = 0; i < candidateLists.size(); i++) {
       if (candidateLists.get(i).getName().equals(listName)) {
@@ -349,36 +345,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
 
     return null;
-  }
-
-  // args server => 1
-  // args backup => 0 localhost
-
-  public static void main(String args[]) {
-    int isMainServer = Integer.parseInt(args[0]);
-
-    if (isMainServer == 1) {
-      try {
-        RMIImpl server = new RMIImpl();
-        NewThread thread = new NewThread("CheckRMIServerStatus");
-
-        System.out.println(server.users);
-        System.out.println(server.faculties);
-        System.out.println(server.departments);
-        System.out.println(server.elections);
-        System.out.println(server.candidateLists);
-
-        Registry reg = LocateRegistry.createRegistry(1099);
-        reg.rebind("ivotas", server);
-        System.out.println("RMI Server ready.");
-      } catch (RemoteException re) {
-        System.out.println("Exception in RMIImpl.main: " + re);
-      }
-    }
-
-    else {
-      backupServer(args);
-    }
   }
 
   public void updateUsersFile() {
@@ -440,12 +406,62 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   // 1 second to reply to the backup server. If it doesn't reply we have to turn the backup server into the main server.
   // The backup server then has to read the object files to get the updated data.
 
-  public static void backupServer(String args[]) {
+  // args server => 1 6789 7000
+  // args backup => 0 localhost 6789 8000
+
+  public static void main(String args[]) {
 
     if(args.length == 0) {
-      System.out.println("java UDPClient hostname");
+      System.out.println("java RMIIMpl 1 UDPPort RegistryPort");
       System.exit(0);
     }
+
+    int isMainServer = Integer.parseInt(args[0]);
+
+    if (isMainServer == 1) {
+      if(args.length != 3) {
+        System.out.println("java RMIIMpl 1 UDPPort RegistryPort");
+        System.exit(0);
+      }
+
+      int UDPPort = Integer.parseInt(args[1]);
+      int registryPort = Integer.parseInt(args[2]);
+
+      try {
+        RMIImpl server = new RMIImpl();
+        NewThread thread = new NewThread("CheckRMIServerStatus", UDPPort);
+
+        System.out.println(server.users);
+        System.out.println(server.faculties);
+        System.out.println(server.departments);
+        System.out.println(server.elections);
+        System.out.println(server.candidateLists);
+
+        Registry reg = LocateRegistry.createRegistry(registryPort);
+        reg.rebind("ivotas", server);
+        System.out.println("RMI Server ready.");
+      } catch (RemoteException re) {
+        System.out.println("Exception in RMIImpl.main: " + re);
+      }
+    }
+
+    else {
+      backupServer(args);
+    }
+  }
+
+  // args backup => 0 localhost 6789 8000
+
+  public static void backupServer(String args[]) {
+
+    if(args.length != 4) {
+      System.out.println("java RMIIMpl 0 UDPPort RegistryPort localhost");
+      System.exit(0);
+    }
+
+    int UDPPort = Integer.parseInt(args[2]);
+    int registryPort = Integer.parseInt(args[3]);
+
     DatagramSocket aSocket = null;
 
     try {
@@ -456,7 +472,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       while (true) {
         byte[] m = text.getBytes();
         InetAddress aHost = InetAddress.getByName(args[1]);
-        int serverPort = 6789;
+        int serverPort = UDPPort;
 
         DatagramPacket request = new DatagramPacket(m, m.length, aHost, serverPort);
         aSocket.send(request);
@@ -491,7 +507,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
           else if (numberOfFails == 5) {
             try {
               RMIImpl backupServer = new RMIImpl();
-              Registry reg = LocateRegistry.createRegistry(8000);
+              Registry reg = LocateRegistry.createRegistry(registryPort);
               reg.rebind("ivotas", backupServer);
               System.out.println("RMI Backup Server ready.");
             }
@@ -527,8 +543,10 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 class NewThread implements Runnable {
   private String threadName;
   private Thread t;
+  private int port;
 
-  NewThread(String threadName) {
+  NewThread(String threadName, int port) {
+    this.port = port;
     this.threadName = threadName;
     t = new Thread(this, threadName);
     System.out.println("New thread: " + t);
@@ -542,7 +560,7 @@ class NewThread implements Runnable {
     System.out.println("Thread " + this.threadName + " started.");
 
     try {
-      aSocket = new DatagramSocket(6789);
+      aSocket = new DatagramSocket(this.port);
       System.out.println("Socket Datagram listening.");
 
       while(true) {

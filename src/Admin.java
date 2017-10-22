@@ -19,19 +19,21 @@ public class Admin {
   // ASK - Pode haver listas de candidatos sem candidatos?
   // ASK - perguntar se update ou remove sao pontos extra?
   // ASK - Que propriedade das eleicoes e que podem ser alteradas?
+  // ASK - E suposto as portas serem argumentos. Fazer alguma coisa no cliente se a porta nao corresponder?
   // TODO - Funcoes 1, 2 -> verificar do lado do servidor tudo com boolean de resposta
   // TODO - Funcoes synchronized
   // TODO - Terminal
   // TODO - Votar nao pode ser perdido com excecao -> votar mais que uma vez nao
-  // TODO - Mudar portos fixos
   // TODO - Adicionar mais dados default a BD
 
   private int port;
+  private int mainPort;
+  private int backupPort;
 
-  public Admin() {}
-
-  public Admin(int port) {
+  public Admin(int port, int mainPort, int backupPort) {
     this.port = port;
+    this.mainPort = mainPort;
+    this.backupPort = backupPort;
   }
 
   public static void main(String args[]) {
@@ -39,7 +41,15 @@ public class Admin {
     // System.getProperties().put("java.security.policy", "policy.all");
     // System.setSecurityManager(new RMISecurityManager());
 
-    Admin a = new Admin(7000);
+    if(args.length != 2) {
+      System.out.println("java Admin 1 port backupPort");
+      System.exit(0);
+    }
+
+    int mainPort = Integer.parseInt(args[0]);
+    int backupPort = Integer.parseInt(args[1]);
+
+    Admin a = new Admin(mainPort, mainPort, backupPort);
     connectRMIInterface(a);
   }
 
@@ -443,8 +453,8 @@ public class Admin {
   }
 
   public static void updatePort(Admin a) {
-    if (a.getPort() == 7000) a.setPort(8000);
-    else a.setPort(7000);
+    if (a.getPort() == a.mainPort) a.setPort(a.backupPort);
+    else a.setPort(a.mainPort);
   }
 
   public static void connectRMIInterface(Admin a) {
