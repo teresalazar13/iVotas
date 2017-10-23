@@ -242,13 +242,15 @@ class Menu extends Thread {
         if (user != null) {
           int lockedTerminalIndex = this.getLockedTerminal();
 
-          // send user to voting terminal
-          synchronized (this.votingTerminals.get(lockedTerminalIndex)) {
-            System.out.println(this.votingTerminals.size());
-            this.votingTableMenuMessages.add(user.getName());
-            this.votingTerminals.get(this.getLockedTerminal()).notify();
+          if (lockedTerminalIndex != -1) {
+            // send user to voting terminal
+            synchronized (this.votingTerminals.get(lockedTerminalIndex)) {
+              this.votingTableMenuMessages.add(user.getName());
+              this.votingTerminals.get(this.getLockedTerminal()).notify();
+            }
+          } else {
+            System.out.println("All terminals are currently busy, return later");
           }
-
         } else {
           System.out.println("User not found");
         }
