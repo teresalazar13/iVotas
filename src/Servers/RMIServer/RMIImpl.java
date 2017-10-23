@@ -543,13 +543,16 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   public synchronized boolean voteIsValid(User user, VotingTable votingTable, CandidateList candidateList) throws RemoteException {
     Election election = votingTable.getElection();
 
-    // conselho geral
+    // nucleo de estudantes
     if (election.getType() == 1) {
-      if (user.getType() == candidateList.getUsersType() && getVoteByUserAndElection(user, election) == null) {
+      if (user.getDepartment().getName().equals(election.getDepartment().getName()) &&
+              user.getType() == 1 &&
+              getVoteByUserAndElection(user, election) == null
+              ) {
         return true;
       }
-    } else { // nucleo de estudantes
-      if (user.getDepartment().getName().equals(election.getDepartment().getName()) && getVoteByUserAndElection(user, election) == null) {
+    } else { // conselho geral
+      if (user.getType() == candidateList.getUsersType() && getVoteByUserAndElection(user, election) == null) {
         return true;
       }
     }
