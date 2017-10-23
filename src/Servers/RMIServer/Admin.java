@@ -13,13 +13,13 @@ import java.text.SimpleDateFormat;
 
 public class Admin implements Serializable {
 
-  // ASK - pode haver facs, deps ou users com nomes iguais?
+  // ASK - pode haver facs, deps ou users com nomes iguais? - nao e preciso
   // ASK - A lista de candidatos tem que ser composta por pessoas User ou basta Strings? ao criar assim a lista e necessario ir verificando se o user existe?
-  // ASK - o que e que deve ser possivel configurar
-  // ASK - Que tipo de testes temos que ter?
-  // ASK - Pode haver listas de candidatos sem candidatos?
-  // ASK - Perguntar se update ou remove sao pontos extra?
-  // ASK - Que propriedade das eleicoes e que podem ser alteradas?
+  // ASK - o que e que deve ser possivel configurar - txt
+  // ASK - Que tipo de testes temos que ter? - os requisitos no excel
+  // ASK - Pode haver listas de candidatos sem candidatos? - nao pode haver
+  // ASK - Perguntar se update ou remove sao pontos extra? - talvez
+  // ASK - Que propriedade das eleicoes e que podem ser alteradas? - textuais e datas
   // ASK - Configs em txt? E suposto as portas serem argumentos. Fazer alguma coisa no cliente se a porta nao corresponder?
   // TODO - Terminal
   // TODO - Votar nao pode ser perdido com excecao -> votar mais que uma vez nao

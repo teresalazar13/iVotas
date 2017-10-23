@@ -65,7 +65,7 @@ public class FileWrapper {
 
     ArrayList<VotingTable> votingTables = new ArrayList<VotingTable>();
     ArrayList<VotingTerminal> votingTerminals = new ArrayList<VotingTerminal>();
-    VotingTable votingTable = new VotingTable(election1, department1, votingTerminals);
+    VotingTable votingTable = new VotingTable(0, election1, department1, votingTerminals);
     votingTables.add(votingTable);
 
     ArrayList<Vote> votes = new ArrayList<>();

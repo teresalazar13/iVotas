@@ -4,16 +4,26 @@ import java.io.Serializable;
 import java.util.*;
 
 public class VotingTable implements Serializable {
+  private int id;
   private Election election;
   private Department department;
   private ArrayList<VotingTerminal> votingTerminals;
 
   public VotingTable() {}
 
-  public VotingTable(Election election, Department department, ArrayList<VotingTerminal> votingTerminals) {
+  public VotingTable(int id, Election election, Department department, ArrayList<VotingTerminal> votingTerminals) {
+    this.id = id;
     this.election = election;
     this.department = department;
     this.votingTerminals = votingTerminals;
+  }
+
+  public int getId() {
+    return id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
   }
 
   public Election getElection() {
@@ -43,7 +53,8 @@ public class VotingTable implements Serializable {
   @Override
   public String toString() {
     return "VotingTable{" +
-            "election=" + election +
+            "id=" + id +
+            ", election=" + election +
             ", department=" + department +
             ", votingTerminals=" + votingTerminals +
             '}';
