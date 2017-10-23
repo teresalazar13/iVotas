@@ -72,7 +72,10 @@ public class TCPServer {
         Socket clientSocket = listenSocket.accept();
         System.out.println("CLIENT_SOCKET (created at accept()) = " + clientSocket);
         number++;
-        Connection thread = new Connection(clientSocket, number, votingTable.election, votingTableMenuMessages, threads, rmi);
+        System.out.println("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+        System.out.println(votingTable.votingTerminals.size());
+        System.out.println("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+        Connection thread = new Connection(clientSocket, votingTable.votingTerminals.size(), votingTable.election, votingTableMenuMessages, threads, rmi);
         votingTable.votingTerminals.add(thread);
       }
     } catch(IOException e) {
@@ -166,11 +169,18 @@ class Connection extends Thread {
         }
       }
     } catch (RemoteException e) {
+      this.close();
       e.printStackTrace();
     } catch (InterruptedException e) {
+      this.close();
       e.printStackTrace();
+    } catch (SocketException e) {
+      this.close();
     } catch (IOException e) {
+      this.close();
       e.printStackTrace();
+    } catch (NullPointerException e) {
+      this.close();
     }
   }
 
@@ -215,7 +225,24 @@ class Connection extends Thread {
     return outToServer;
   }
 
+  private  void updateTerminalsIndexes() {
+    int size = this.threads.size();
 
+    for (int i = 0; i < this.threads.size(); i++) {
+      this.threads.get(i).thread_number = i;
+    }
+  }
+
+  private void close() {
+    try {
+      this.bufferedReader.close();
+      this.outToServer.close();
+      this.threads.remove(this.thread_number);
+      this.updateTerminalsIndexes();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
 }
 
 // Thread to accept input and send it to rmi
