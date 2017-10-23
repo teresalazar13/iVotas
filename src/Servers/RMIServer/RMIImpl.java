@@ -54,8 +54,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   // args backup => localhost 6789 8000
 
   public static void main(String args[]) {
-    System.out.println("AOYH");
-
     if(args.length != 3) {
       System.out.println("java RMIIMpl localhost UDPPort RegistryPort");
       System.exit(0);
@@ -237,8 +235,9 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     if (department == null) {
       return 3;
     }
+    int id = generateVotingTableId(election);
     ArrayList<VotingTerminal> votingTerminals = new ArrayList<VotingTerminal>();
-    VotingTable votingTable = new VotingTable(election, department, votingTerminals);
+    VotingTable votingTable = new VotingTable(id, election, department, votingTerminals);
     votingTables.add(votingTable);
     updateFile(this.votingTables, "VotingTables");
     return 1;
@@ -417,6 +416,26 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       }
     }
     return null;
+  }
+
+  public synchronized VotingTable searchVotingTableById(int id) {
+    for (VotingTable votingTable : this.votingTables) {
+      if (votingTable.getId() == id) {
+        return votingTable;
+      }
+    }
+
+    return null;
+  }
+
+  public synchronized int generateVotingTableId(Election election) throws RemoteException {
+    int id = 0;
+    for (int i = 0; i < votingTables.size(); i++) {
+      if (votingTables.get(i).getElection().getName().equals(election.getName())) {
+        id += 1;
+      }
+    }
+    return id;
   }
 
   private ArrayList<String> fieldValues(String field, ArrayList<User> users) {
