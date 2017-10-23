@@ -218,7 +218,7 @@ class VotingTerminalMenu implements Runnable {
           this.getT().wait();
         }
         if (!this.voteState) {
-          System.out.println("You already voted, you can only vote once");
+          System.out.println("You cannot vote, you have already voted or can't vote on this election/list");
         }
 
         // clean vars received
@@ -257,8 +257,8 @@ class VotingTerminalMenu implements Runnable {
         sc.next();
       }
       int option = sc.nextInt();
-      if (maximum < option || option < 0) {
-        System.out.println("Please write an integer between 0 and " + maximum);
+      if (maximum <= option || option < 0) {
+        System.out.println("Please write an integer between 0 and " + (maximum-1));
       }
       else {
         System.out.println("..............");
