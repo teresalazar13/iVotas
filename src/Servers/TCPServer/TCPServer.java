@@ -16,11 +16,14 @@ public class TCPServer {
   private Election election;
   private CopyOnWriteArrayList <Connection> votingTerminals;
   private String location;
+  private boolean status;
 
-  public TCPServer(Election election, CopyOnWriteArrayList<Connection> votingTerminals, String location) {
+
+  public TCPServer(Election election, CopyOnWriteArrayList<Connection> votingTerminals, String location, boolean status) {
     this.election = election;
     this.votingTerminals = votingTerminals;
     this.location = location;
+    this.status = status;
   }
 
   public static void main(String args[]) {
@@ -52,7 +55,7 @@ public class TCPServer {
     int number = 0;
     ArrayList<String> votingTableMenuMessages = new ArrayList<>();
     CopyOnWriteArrayList <Connection> threads = new CopyOnWriteArrayList<>();
-    votingTable = new TCPServer(election, threads, "DEI");
+    votingTable = new TCPServer(election, threads, "DEI", true);
 
     try {
       int serverPort = 6000;
@@ -75,6 +78,9 @@ public class TCPServer {
       System.out.println("Listen: " + e.getMessage());
     }
   }
+
+  public boolean isStatus() { return status; }
+  public void setStatus(boolean status) { this.status = status; }
 }
 
 // Thread to handle comm with client
@@ -197,6 +203,8 @@ class Connection extends Thread {
   public PrintWriter getOut() {
     return outToServer;
   }
+
+
 }
 
 // Thread to accept input and send it to rmi
@@ -209,7 +217,6 @@ class Menu extends Thread {
     this.votingTableMenuMessages = votingTableMenuMessages;
     this.votingTerminals = votingTerminals;
     this.rmi = rmi;
-
     this.start();
   }
 
@@ -326,4 +333,6 @@ class Menu extends Thread {
 
     return -1;
   }
+
+
 }
