@@ -27,7 +27,6 @@ public class TCPServer {
   }
 
   public static void main(String args[]) {
-    FileWrapper fw;
     Election election = null;
     TCPServer votingTable = null;
     RMIInterface rmi = null;
@@ -45,10 +44,11 @@ public class TCPServer {
       e.printStackTrace();
     }
 
+    // TODO pass election through argument
     try {
-      fw = new FileWrapper();
-      election = fw.getElections().get(0);
-    } catch (IOException | ClassNotFoundException e) {
+      election = rmi.getElections().get(0);
+      System.out.println(election);
+    } catch (IOException e) {
       e.printStackTrace();
     }
 
@@ -137,9 +137,11 @@ class Connection extends Thread {
             validLogin = this.rmi.authenticateUser(keyValues.get("username"), keyValues.get("password"));
           }
 
+          // Send sucess login message
           message = "type | status ; logged | " + validLogin ;
           this.getOut().println(message);
 
+          // Send election info to client
           message = "type | voting ; election | " + this.election.toStringClient();
           this.getOut().println(message);
           clientResponse = bufferedReader.readLine();
@@ -150,8 +152,17 @@ class Connection extends Thread {
           Election voteElection = this.rmi.getElectionByName(keyValues.get("election"));
           CandidateList voteList = this.rmi.getCandidateListByName(keyValues.get("choice"));
 
-          // TODO -> change null to object Department
-          this.rmi.vote(user, voteElection, voteList, null);
+          // Check if vote is possible
+          Vote vote = rmi.getVoteByUserAndElection(user, this.election);
+          if (vote != null) {
+            message = "type | status ; vote | failed ;";
+          } else{
+            message = "type | status ; vote | success ;";
+            // TODO -> change null to object Department
+            this.rmi.vote(user, voteElection, voteList, null);
+          }
+
+          this.getOut().println(message);
         }
       }
     } catch (RemoteException e) {

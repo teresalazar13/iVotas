@@ -67,9 +67,6 @@ class TCPClient {
 
         // get election info
         messageFromServer = inFromServer.readLine();
-        System.out.println(".......................");
-        System.out.println(messageFromServer);
-        System.out.println(".......................");
         protocolValues = client.parseProcolMessage(messageFromServer);
         String cleanElection = protocolValues.get("election").replace("Election{", "");
         Map<String, String> electionInfo = client.parseElectionString(cleanElection);
@@ -78,11 +75,20 @@ class TCPClient {
 
         // update terminal object
         synchronized (votingTerminalMenu.getT()) {
-          System.out.println(electionInfo);
-          System.out.println(candidateListsName);
           votingTerminalMenu.setLoginState(true);
           votingTerminalMenu.setElectionInfo(electionInfo);
           votingTerminalMenu.setCandidateListsName(candidateListsName);
+          votingTerminalMenu.getT().notify();
+        }
+
+        // get vote status
+        messageFromServer = inFromServer.readLine();
+        protocolValues = client.parseProcolMessage(messageFromServer);
+
+        if ("success".equals(protocolValues.get("vote"))) {
+          votingTerminalMenu.setVoteState(true);
+        }
+        synchronized (votingTerminalMenu.getT()) {
           votingTerminalMenu.getT().notify();
         }
 
@@ -155,6 +161,7 @@ class TCPClient {
 // Thread responsible for reading from keyboard and writing to the server
 class VotingTerminalMenu implements Runnable {
   private String currentUsername;
+  private boolean voteState;
   private boolean loginState;
   private Map<String, String> electionInfo;
   private ArrayList<String> candidateListsName;
@@ -166,6 +173,7 @@ class VotingTerminalMenu implements Runnable {
   public VotingTerminalMenu(String threadName, Socket clientSocket) {
     this.currentUsername = null;
     this.loginState = false;
+    this.voteState= false;
     this.electionInfo = null;
     this.candidateListsName = null;
     this.threadName = threadName;
@@ -191,9 +199,6 @@ class VotingTerminalMenu implements Runnable {
         // Ask or password and send it to the server
         String messageToServer;
         while (!this.loginState) {
-          System.out.println(!this.loginState);
-
-          System.out.println("Again");
           messageToServer = this.menu();
           this.outToServer.println(messageToServer);
 
@@ -209,8 +214,16 @@ class VotingTerminalMenu implements Runnable {
                 "choice | " + listNameToVote + " ;"
         );
 
+        synchronized (this.getT()) {
+          this.getT().wait();
+        }
+        if (!this.voteState) {
+          System.out.println("You already voted, you can only vote once");
+        }
+
         // clean vars received
         this.setLoginState(false);
+        this.setVoteState(false);
         this.setCurrentUsername(null);
         this.setElectionInfo(null);
         this.setCandidateListsName(null);
@@ -282,4 +295,7 @@ class VotingTerminalMenu implements Runnable {
 
   public ArrayList<String> getCandidateListsName() { return candidateListsName; }
   public void setCandidateListsName(ArrayList<String> candidateListsName) { this.candidateListsName = candidateListsName; }
+
+  public boolean isVoteState() { return voteState; }
+  public void setVoteState(boolean voteState) { this.voteState = voteState; }
 }
