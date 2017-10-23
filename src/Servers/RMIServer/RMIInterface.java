@@ -68,4 +68,6 @@ public interface RMIInterface extends Remote {
   void getStatus() throws RemoteException;
 
   void addAdmin(Admin admin) throws RemoteException;
+
+  ArrayList<Election> getElections() throws RemoteException;
 }
