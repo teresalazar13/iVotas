@@ -1,7 +1,6 @@
 package Servers.TCPServer;
 
 import Data.*;
-import Servers.RMIServer.FileWrapper;
 import Servers.RMIServer.RMIInterface;
 
 import java.net.*;
@@ -15,13 +14,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class TCPServer {
   private Election election;
   private CopyOnWriteArrayList <Connection> votingTerminals;
-  private String location;
   private boolean status;
 
   public TCPServer(Election election, CopyOnWriteArrayList<Connection> votingTerminals, String location, boolean status) {
     this.election = election;
     this.votingTerminals = votingTerminals;
-    this.location = location;
     this.status = status;
   }
 
@@ -170,15 +167,12 @@ class Connection extends Thread {
       }
     } catch (RemoteException e) {
       this.close();
-      e.printStackTrace();
     } catch (InterruptedException e) {
       this.close();
-      e.printStackTrace();
     } catch (SocketException e) {
       this.close();
     } catch (IOException e) {
       this.close();
-      e.printStackTrace();
     } catch (NullPointerException e) {
       this.close();
     }

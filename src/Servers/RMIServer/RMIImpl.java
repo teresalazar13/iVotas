@@ -540,6 +540,23 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     System.out.println("Server: " + s);
   }
 
+  public synchronized boolean voteIsValid(User user, VotingTable votingTable, CandidateList candidateList) throws RemoteException {
+    Election election = votingTable.getElection();
+
+    // conselho geral
+    if (election.getType() == 1) {
+      if (user.getType() == candidateList.getUsersType() && getVoteByUserAndElection(user, election) == null) {
+        return true;
+      }
+    } else { // nucleo de estudantes
+      if (user.getDepartment().getName().equals(election.getDepartment().getName()) && getVoteByUserAndElection(user, election) == null) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   public synchronized  ArrayList<Election> getElections() throws RemoteException { return elections; }
 }
 

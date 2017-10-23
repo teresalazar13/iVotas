@@ -51,6 +51,8 @@ public interface RMIInterface extends Remote {
 
   Vote getVoteByUserAndElection(User user, Election election) throws RemoteException;
 
+  boolean voteIsValid(User user, VotingTable votingTable, CandidateList candidateList) throws RemoteException;
+
   String detailsOfPastElections() throws RemoteException;
 
   User getUserByName(String userName) throws RemoteException;
