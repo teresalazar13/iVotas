@@ -150,14 +150,12 @@ class Connection extends Thread {
           User user = this.rmi.getUserByName(keyValues.get("username"));
           CandidateList voteList = this.rmi.getCandidateListByName(keyValues.get("choice"));
 
-          // Check if vote is possible
-          Vote vote = rmi.getVoteByUserAndElection(user, this.votingTable.getElection());
-          if (vote != null) {
-            message = "type | status ; vote | failed ;";
-          } else{
+          // Check if vote is valid
+          if (rmi.voteIsValid(user, this.votingTable, voteList)) {
             message = "type | status ; vote | success ;";
-            // TODO -> change null to object Department
-            this.rmi.vote(user, this.votingTable.getElection(), voteList, null);
+            this.rmi.vote(user, this.votingTable.getElection(), voteList, this.votingTable.getDepartment());
+          } else{
+            message = "type | status ; vote | failed ;";
           }
 
           this.getOut().println(message);
