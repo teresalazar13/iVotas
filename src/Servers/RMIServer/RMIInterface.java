@@ -67,6 +67,8 @@ public interface RMIInterface extends Remote {
 
   CandidateList getCandidateListByName(String listName) throws RemoteException;
 
+  VotingTable getVotingTableById(int id) throws RemoteException;
+
   void getStatus() throws RemoteException;
 
   void addAdmin(Admin admin) throws RemoteException;

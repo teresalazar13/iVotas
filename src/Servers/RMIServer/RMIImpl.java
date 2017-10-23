@@ -420,7 +420,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return null;
   }
 
-  public synchronized VotingTable searchVotingTableById(int id) {
+  public synchronized VotingTable getVotingTableById(int id) {
     for (VotingTable votingTable : this.votingTables) {
       if (votingTable.getId() == id) {
         return votingTable;
