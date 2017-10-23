@@ -18,7 +18,6 @@ public class TCPServer {
   private String location;
   private boolean status;
 
-
   public TCPServer(Election election, CopyOnWriteArrayList<Connection> votingTerminals, String location, boolean status) {
     this.election = election;
     this.votingTerminals = votingTerminals;
@@ -30,6 +29,7 @@ public class TCPServer {
     Election election = null;
     TCPServer votingTable = null;
     RMIInterface rmi = null;
+
     try {
       rmi = (RMIInterface) Naming.lookup("ivotas");
       rmi.getStatus();
@@ -46,11 +46,12 @@ public class TCPServer {
 
     // TODO pass election through argument
     try {
-      election = rmi.getElections().get(0);
-      System.out.println(election);
+      election = rmi.getElectionByName(args[0]);
     } catch (IOException e) {
       e.printStackTrace();
     }
+
+    System.out.println(election);
 
     int number = 0;
     ArrayList<String> votingTableMenuMessages = new ArrayList<>();
@@ -149,7 +150,6 @@ class Connection extends Thread {
           keyValues = parseProtocolMessage(clientResponse);
 
           User user = this.rmi.getUserByName(keyValues.get("username"));
-          Election voteElection = this.rmi.getElectionByName(keyValues.get("election"));
           CandidateList voteList = this.rmi.getCandidateListByName(keyValues.get("choice"));
 
           // Check if vote is possible
@@ -159,7 +159,7 @@ class Connection extends Thread {
           } else{
             message = "type | status ; vote | success ;";
             // TODO -> change null to object Department
-            this.rmi.vote(user, voteElection, voteList, null);
+            this.rmi.vote(user, this.election, voteList, null);
           }
 
           this.getOut().println(message);
