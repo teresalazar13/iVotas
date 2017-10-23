@@ -12,19 +12,19 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TCPServer {
-  private Election election;
+  private VotingTable votingTable;
   private CopyOnWriteArrayList <Connection> votingTerminals;
   private boolean status;
 
-  public TCPServer(Election election, CopyOnWriteArrayList<Connection> votingTerminals, String location, boolean status) {
-    this.election = election;
+  public TCPServer(VotingTable votingTable, CopyOnWriteArrayList<Connection> votingTerminals, boolean status) {
+    this.votingTable = votingTable;
     this.votingTerminals = votingTerminals;
     this.status = status;
   }
 
   public static void main(String args[]) {
-    Election election = null;
-    TCPServer votingTable = null;
+    VotingTable votingTable = null;
+    TCPServer tableServer = null;
     RMIInterface rmi = null;
 
     try {
@@ -43,17 +43,16 @@ public class TCPServer {
 
     // TODO pass election through argument
     try {
-      election = rmi.getElectionByName(args[0]);
+      votingTable = rmi.getVotingTableById(Integer.parseInt(args[0]));
     } catch (IOException e) {
       e.printStackTrace();
     }
 
-    System.out.println(election);
+    System.out.println(votingTable);
 
-    int number = 0;
     ArrayList<String> votingTableMenuMessages = new ArrayList<>();
     CopyOnWriteArrayList <Connection> threads = new CopyOnWriteArrayList<>();
-    votingTable = new TCPServer(election, threads, "DEI", true);
+    tableServer = new TCPServer(votingTable, threads, true);
 
     try {
       int serverPort = 6000;
@@ -68,12 +67,11 @@ public class TCPServer {
       while(true) {
         Socket clientSocket = listenSocket.accept();
         System.out.println("CLIENT_SOCKET (created at accept()) = " + clientSocket);
-        number++;
         System.out.println("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-        System.out.println(votingTable.votingTerminals.size());
+        System.out.println(tableServer.votingTerminals.size());
         System.out.println("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-        Connection thread = new Connection(clientSocket, votingTable.votingTerminals.size(), votingTable.election, votingTableMenuMessages, threads, rmi);
-        votingTable.votingTerminals.add(thread);
+        Connection thread = new Connection(clientSocket, tableServer.votingTerminals.size(), tableServer.votingTable, votingTableMenuMessages, threads, rmi);
+        tableServer.votingTerminals.add(thread);
       }
     } catch(IOException e) {
       System.out.println("Listen: " + e.getMessage());
@@ -87,16 +85,16 @@ public class TCPServer {
 // Thread to handle comm with client
 class Connection extends Thread {
   private int thread_number;
-  private Election election;
+  private VotingTable votingTable;
   private BufferedReader bufferedReader;
   private PrintWriter outToServer;
   private ArrayList<String> votingTableMenuMessages;
   private CopyOnWriteArrayList<Connection> threads;
   private RMIInterface rmi;
 
-  public Connection (Socket aClientSocket, int number, Election election, ArrayList<String> votingTableMessages, CopyOnWriteArrayList<Connection> threads, RMIInterface rmi) {
+  public Connection (Socket aClientSocket, int number, VotingTable votingTable, ArrayList<String> votingTableMessages, CopyOnWriteArrayList<Connection> threads, RMIInterface rmi) {
     this.thread_number = number;
-    this.election = election;
+    this.votingTable = votingTable;
     this.threads = threads;
     this.votingTableMenuMessages = votingTableMessages;
     this.rmi = rmi;
@@ -143,7 +141,7 @@ class Connection extends Thread {
           this.getOut().println(message);
 
           // Send election info to client
-          message = "type | voting ; election | " + this.election.toStringClient();
+          message = "type | voting ; election | " + this.votingTable.getElection().toStringClient();
           this.getOut().println(message);
           clientResponse = bufferedReader.readLine();
           System.out.println(clientResponse);
@@ -153,13 +151,13 @@ class Connection extends Thread {
           CandidateList voteList = this.rmi.getCandidateListByName(keyValues.get("choice"));
 
           // Check if vote is possible
-          Vote vote = rmi.getVoteByUserAndElection(user, this.election);
+          Vote vote = rmi.getVoteByUserAndElection(user, this.votingTable.getElection());
           if (vote != null) {
             message = "type | status ; vote | failed ;";
           } else{
             message = "type | status ; vote | success ;";
             // TODO -> change null to object Department
-            this.rmi.vote(user, this.election, voteList, null);
+            this.rmi.vote(user, this.votingTable.getElection(), voteList, null);
           }
 
           this.getOut().println(message);
