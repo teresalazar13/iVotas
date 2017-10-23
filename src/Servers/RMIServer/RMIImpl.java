@@ -418,6 +418,16 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return null;
   }
 
+  public synchronized VotingTable searchVotingTableById(int id) {
+    for (VotingTable votingTable : this.votingTables) {
+      if (votingTable.getId() == id) {
+        return votingTable;
+      }
+    }
+
+    return null;
+  }
+
   public synchronized int generateVotingTableId(Election election) throws RemoteException {
     int id = 0;
     for (int i = 0; i < votingTables.size(); i++) {
