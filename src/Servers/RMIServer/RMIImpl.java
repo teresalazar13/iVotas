@@ -294,6 +294,8 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
           elections.get(i).setStartDate((long) toChange);
         }
         else {
+          if ((long) toChange <= elections.get(i).getStartDate())
+            return 3;
           elections.get(i).setEndDate((long) toChange);
         }
         updateFile(this.elections, "Elections");

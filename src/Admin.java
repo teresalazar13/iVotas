@@ -13,7 +13,7 @@ import java.text.SimpleDateFormat;
 public class Admin {
 
   // TODO - configs em txt - portas, ips
-  // TODO - ao atualizar propriedades das eleicoes verificar se nao terminaram ja e se mudar a data de fim, verificar se nao e antes de inicio
+  // TODO - ao atualizar propriedades das eleicoes verificar se nao terminaram.
   // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
   // TODO - Policies
@@ -440,9 +440,10 @@ public class Admin {
         if(success == 1) {
           System.out.println("Election successfully updated");
         }
-        else {
-          System.out.println("Error updating election. There isn't an election with that name");
-        }
+        else if (success == 2)
+          System.out.println("Error updating election. There isn't an election with that name.");
+        else
+          System.out.println("Error updating election. You cant end an election before it started.");
       }
       catch(RemoteException e) {
         System.out.println("Remote Exception updating Election");
