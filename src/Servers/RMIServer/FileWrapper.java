@@ -20,7 +20,7 @@ public class FileWrapper {
 
   public FileWrapper() throws IOException, ClassNotFoundException {
 
-    Department department1 = new Department("EngenhariaInformatica");
+    /*Department department1 = new Department("EngenhariaInformatica");
     ArrayList<Department> departments = new ArrayList<Department>();
     departments.add(department1);
 
@@ -39,7 +39,7 @@ public class FileWrapper {
     users.add(user2);
     users.add(user3);
 
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/M/yyyy hh:mm:ss");
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
 
     long startDate = 0;
     long endDate = 0;
@@ -86,7 +86,7 @@ public class FileWrapper {
     writeFile(candidateLists,"CandidateLists");
     writeFile(votingTables,"VotingTables");
     writeFile(votes,"Votes");
-    writeFile(electionResults,"ElectionResults");
+    writeFile(electionResults,"ElectionResults"); */
 
     ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
     ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");

@@ -1,6 +1,5 @@
 import Data.*;
 import Servers.RMIServer.*;
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -12,8 +11,9 @@ import java.text.SimpleDateFormat;
 
 public class Admin {
 
+  // ASK - terminar eleicao pode ser so sempre que precisamos de saber se eleicao acabou comparar end date com a data de agora
+  // ASK - temos que nao permitir criar uma eleicao no tempo passado? E que depois nao da para testar...
   // TODO - configs em txt - portas, ips
-  // TODO - ao atualizar propriedades das eleicoes verificar se nao terminaram.
   // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
   // TODO - Policies
@@ -442,8 +442,10 @@ public class Admin {
         }
         else if (success == 2)
           System.out.println("Error updating election. There isn't an election with that name.");
-        else
+        else if(success == 3)
           System.out.println("Error updating election. You cant end an election before it started.");
+        else
+          System.out.println("Error updating election. You cant update election because it has already started or even ended.");
       }
       catch(RemoteException e) {
         System.out.println("Remote Exception updating Election");

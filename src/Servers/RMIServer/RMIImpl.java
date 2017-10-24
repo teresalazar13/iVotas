@@ -2,8 +2,6 @@ package Servers.RMIServer;
 
 import Data.*;
 
-// começa como secundario a espera. se nao recebe nenhum começa primario
-
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -12,6 +10,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.net.*;
 import java.util.concurrent.TimeUnit;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 
 public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
@@ -284,6 +285,8 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   public synchronized int updateElection(String electionName, Object toChange, int type) throws RemoteException {
     for (int i = 0; i < elections.size(); i++) {
       if (elections.get(i).getName().equals(electionName)) {
+        if (elections.get(i).getStartDate() < currentTimestamp()) // Election already started
+          return 4;
         if (type == 1) {
           elections.get(i).setName((String) toChange);
         }
@@ -294,7 +297,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
           elections.get(i).setStartDate((long) toChange);
         }
         else {
-          if ((long) toChange <= elections.get(i).getStartDate())
+          if ((long) toChange <= elections.get(i).getStartDate()) // Cant end election before it started
             return 3;
           elections.get(i).setEndDate((long) toChange);
         }
@@ -302,7 +305,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         return 1;
       }
     }
-    return 2;
+    return 2; // No elections with that name
   }
 
   public synchronized void removeDepartment(Department department) throws RemoteException {
@@ -590,6 +593,24 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     Vote vote = new Vote(user, election, candidateList, department);
     this.votes.add(vote);
     updateFile(this.votes, "Votes");
+  }
+
+  private long currentTimestamp() {
+    long date = 0;
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+    Calendar currentDate = Calendar.getInstance();
+
+    try {
+      date = simpleDateFormat.parse(currentDate.get(Calendar.DAY_OF_MONTH) + "/" +
+              currentDate.get(Calendar.MONTH) + "/" +
+              currentDate.get(Calendar.YEAR) + " " +
+              currentDate.get(Calendar.HOUR_OF_DAY) + ":" +
+              currentDate.get(Calendar.MINUTE) + ":00").getTime();
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+
+    return date;
   }
 
   public synchronized void updateFile(Object object, String className) {
