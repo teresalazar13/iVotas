@@ -1,6 +1,5 @@
 import Data.*;
 import Servers.RMIServer.*;
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -12,17 +11,14 @@ import java.text.SimpleDateFormat;
 
 public class Admin {
 
-  // ASK - pode haver facs, deps ou users com nomes iguais? - nao e preciso
-  // ASK - A lista de candidatos tem que ser composta por pessoas User ou basta Strings? ao criar assim a lista e necessario ir verificando se o user existe?
-  // ASK - o que e que deve ser possivel configurar - txt
-  // ASK - Que tipo de testes temos que ter? - os requisitos no excel
-  // ASK - Pode haver listas de candidatos sem candidatos? - nao pode haver
-  // ASK - Perguntar se update ou remove sao pontos extra? - talvez
-  // ASK - Que propriedade das eleicoes e que podem ser alteradas? - textuais e datas
-  // ASK - Configs em txt? E suposto as portas serem argumentos. Fazer alguma coisa no cliente se a porta nao corresponder?
-  // TODO - Terminal
-  // TODO - Votar nao pode ser perdido com excecao -> votar mais que uma vez nao
+  // ASK - terminar eleicao pode ser so sempre que precisamos de saber se eleicao acabou comparar end date com a data de agora
+  // ASK - temos que nao permitir criar uma eleicao no tempo passado? E que depois nao da para testar...
+  // TODO - configs em txt - portas, ips
+  // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
+  // TODO - Policies
+  // TODO - getValidString
+  // TODO - expire date
 
   private int port;
   private int mainPort;
@@ -319,7 +315,7 @@ public class Admin {
       }
     }
     catch(RemoteException e) {
-      System.out.println("Remote Exception creating candidate List");
+      System.out.println("Remote Exception creating candidate List.");
       connectRMIInterface(a);
       return;
     }
@@ -377,6 +373,10 @@ public class Admin {
       }
     }
     try {
+      if (users.size() == 0) {
+        System.out.println("Error. You can't create a candidate list without any users.");
+        return;
+      }
       if (electionType == 1)
         r.createCandidateList(name, users, election);
       else
@@ -384,7 +384,7 @@ public class Admin {
       System.out.println("Candidate list successfully created.");
     }
     catch(RemoteException e) {
-      System.out.println("Remote Exception creating candidate List");
+      System.out.println("Remote Exception creating candidate List.");
       connectRMIInterface(a);
     }
   }
@@ -440,9 +440,12 @@ public class Admin {
         if(success == 1) {
           System.out.println("Election successfully updated");
         }
-        else {
-          System.out.println("Error updating election. There isn't an election with that name");
-        }
+        else if (success == 2)
+          System.out.println("Error updating election. There isn't an election with that name.");
+        else if(success == 3)
+          System.out.println("Error updating election. You cant end an election before it started.");
+        else
+          System.out.println("Error updating election. You cant update election because it has already started or even ended.");
       }
       catch(RemoteException e) {
         System.out.println("Remote Exception updating Election");
@@ -499,7 +502,21 @@ public class Admin {
   }
 
   public static void printData(RMIInterface r, Admin a) {
-
+    int option = getValidInteger("What do you want to print?\n" +
+            "1 - Users\n" +
+            "2 - Faculties\n" +
+            "3 - Departments\n" +
+            "4 - Elections\n" +
+            "5 - Candidate Lists\n" +
+            "6 - Voting Tables\n" +
+            "7 - Back\n", 1, 6);
+    if (option == 7) return;
+    try {
+      System.out.println(r.prettyPrint(option));
+    }
+    catch (RemoteException e) {
+      System.out.println("Error printing data.");
+    }
   }
 
   public static int getValidInteger(String field, int minimum, int maximum) {

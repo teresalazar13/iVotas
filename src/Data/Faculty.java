@@ -28,6 +28,14 @@ public class Faculty implements Serializable {
     this.departments.add(department);
   }
 
+  public String prettyPrint() {
+    String res = "Name: " + this.name + "\nDepartments: ";
+    for (int i = 0; i < departments.size(); i++) {
+      res += departments.get(i).getName() + " ,";
+    }
+    return res.substring(0, res.length() - 2);
+  }
+
   @Override
   public String toString() {
     return "Faculty{" +

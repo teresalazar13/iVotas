@@ -13,6 +13,9 @@ public class Department implements Serializable {
   public String getName() { return name; }
   public void setName(String name) { this.name = name; }
 
+  public String prettyPrint() {
+    return "Name: " + this.name + "\n";
+  }
 
   @Override
   public String toString() {

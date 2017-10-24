@@ -1,6 +1,7 @@
 package Data;
 
 import java.io.Serializable;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 
@@ -90,6 +91,15 @@ public class Election implements Serializable {
 
   public void addCandidateList(CandidateList candidateList) {
     candidateLists.add(candidateList);
+  }
+
+  public synchronized String prettyPrint() throws RemoteException {
+    String res = "\n\nName: " + this.getName() + "\nDescription: " + this.getDescription() + "\nStart date: " +
+            this.startDate + "\nEnd Date: " + this.endDate + "\nType: " + this.type + "\nCandidate Lists: ";
+    for (int i = 0; i < this.candidateLists.size(); i++) {
+      res += this.candidateLists.get(i).getName() + ", ";
+    }
+    return res.substring(0, res.length() - 3);
   }
 
   @Override
