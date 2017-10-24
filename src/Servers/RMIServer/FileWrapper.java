@@ -33,19 +33,19 @@ public class FileWrapper {
     User user2= new User("Test", "123", department1, faculty1, "9140975", "Rua X", "444",
             "expireDate", 1 );
     User user3= new User("Machado", "123", department1, faculty1, "9140975", "Rua X", "444",
-            "expireDate", 1 );
+            "expireDate", 2 );
     ArrayList<User> users = new ArrayList<User>();
     users.add(user1);
     users.add(user2);
     users.add(user3);
 
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/M/yyyy hh:mm:ss");
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
 
     long startDate = 0;
     long endDate = 0;
     try {
-      startDate = simpleDateFormat.parse("10/10/2017 11:30:10").getTime();
-      endDate = simpleDateFormat.parse("10/10/2017 18:30:10").getTime();
+      startDate = simpleDateFormat.parse("24/9/2017 16:15:00").getTime();
+      endDate = simpleDateFormat.parse("24/9/2017 16:20:00").getTime();
     }
     catch (ParseException e) {
       e.printStackTrace();

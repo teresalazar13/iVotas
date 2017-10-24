@@ -7,10 +7,13 @@ import Data.*;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.net.*;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 
@@ -540,8 +543,31 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     System.out.println("Server: " + s);
   }
 
+  private long currentTimestamp() {
+    long date = 0;
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+    Calendar currentDate = Calendar.getInstance();
+
+    try {
+      date = simpleDateFormat.parse(currentDate.get(Calendar.DAY_OF_MONTH) + "/" +
+              currentDate.get(Calendar.MONTH) + "/" +
+              currentDate.get(Calendar.YEAR) + " " +
+              currentDate.get(Calendar.HOUR_OF_DAY) + ":" +
+              currentDate.get(Calendar.MINUTE) + ":00").getTime();
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+
+    return date;
+  }
+
   public synchronized boolean voteIsValid(User user, VotingTable votingTable, CandidateList candidateList) throws RemoteException {
     Election election = votingTable.getElection();
+    long currentTime = currentTimestamp();
+
+    if (!(currentTime >= votingTable.getElection().getStartDate() && currentTime < votingTable.getElection().getEndDate())) {
+      return false;
+    }
 
     // nucleo de estudantes
     if (election.getType() == 1) {
