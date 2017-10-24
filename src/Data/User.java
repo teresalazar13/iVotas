@@ -54,6 +54,16 @@ public class User implements Serializable {
   public int getType() { return type; }
   public void setType(int type) { this.type = type; }
 
+  public String prettyPrint() {
+    String res = "Name: " + this.name + "\nDepartment: " + this.department.getName() + "\nFaculty: " + this.faculty.getName()
+            + "\nContact: " + this.contact + "\ncc: " + this.cc + "\nExpire Date: " + this.expireDate;
+    if (this.type == 1)
+      return "\n\nSTUDENT\n" + res;
+    else if (this.type == 2)
+      return "\n\nTEACHER\n" + res;
+    return "\n\nSTAFF\n" + res;
+  }
+
   @Override
   public String toString() {
     return "User{" +

@@ -12,9 +12,7 @@ import java.text.SimpleDateFormat;
 
 public class Admin {
 
-  // TODO - print Data
   // TODO - configs em txt - portas, ips
-  // TODO - fazer alguma coisa em cliente enquanto nao ha servers
   // TODO - ao atualizar propriedades das eleicoes verificar se nao terminaram ja e se mudar a data de fim, verificar se nao e antes de inicio
   // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
@@ -501,7 +499,21 @@ public class Admin {
   }
 
   public static void printData(RMIInterface r, Admin a) {
-
+    int option = getValidInteger("What do you want to print?\n" +
+            "1 - Users\n" +
+            "2 - Faculties\n" +
+            "3 - Departments\n" +
+            "4 - Elections\n" +
+            "5 - Candidate Lists\n" +
+            "6 - Voting Tables\n" +
+            "7 - Back\n", 1, 6);
+    if (option == 7) return;
+    try {
+      System.out.println(r.prettyPrint(option));
+    }
+    catch (RemoteException e) {
+      System.out.println("Error printing data.");
+    }
   }
 
   public static int getValidInteger(String field, int minimum, int maximum) {

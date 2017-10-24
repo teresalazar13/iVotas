@@ -418,6 +418,83 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return null;
   }
 
+  public synchronized String prettyPrint(int option) throws RemoteException {
+    String res = "";
+    if (option == 1)
+      res = printUsers();
+    else if (option == 2)
+      res = printFaculties();
+    else if (option == 3)
+      res = printDepartments();
+    else if (option == 4)
+      res = printElections();
+    else if (option == 5)
+      res = printCandidateLists();
+    else
+      res = printVotingTables();
+    return res;
+  }
+
+  public synchronized String printUsers() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < users.size(); i++) {
+      res += users.get(i).prettyPrint();
+    }
+    if (res == "")
+      return "There are no users";
+    return res;
+  }
+
+  public synchronized String printFaculties() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < faculties.size(); i++) {
+      res += faculties.get(i).prettyPrint();
+    }
+    if (res == "")
+      return "There are no faculties";
+    return res;
+  }
+
+  public synchronized String printDepartments() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < departments.size(); i++) {
+      res += departments.get(i).prettyPrint();
+    }
+    if (res == "")
+      return "There are no departments";
+    return res;
+  }
+
+  public synchronized String printElections() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < elections.size(); i++) {
+      res += elections.get(i).prettyPrint();
+    }
+    if (res == "")
+      return "There are no elections";
+    return res;
+  }
+
+  public synchronized String printCandidateLists() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < candidateLists.size(); i++) {
+      res += candidateLists.get(i).prettyPrint();
+    }
+    if (res == "")
+      return "There are no candidate lists";
+    return res;
+  }
+
+  public synchronized String printVotingTables() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < votingTables.size(); i++) {
+      res += votingTables.get(i).prettyPrint();
+    }
+    if (res == "")
+      return "There are no voting tables";
+    return res;
+  }
+
   public synchronized VotingTable searchVotingTableById(int id) {
     for (VotingTable votingTable : this.votingTables) {
       if (votingTable.getId() == id) {
