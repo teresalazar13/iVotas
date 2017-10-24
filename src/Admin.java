@@ -12,17 +12,15 @@ import java.text.SimpleDateFormat;
 
 public class Admin {
 
-  // ASK - pode haver facs, deps ou users com nomes iguais? - nao e preciso
-  // ASK - A lista de candidatos tem que ser composta por pessoas User ou basta Strings? ao criar assim a lista e necessario ir verificando se o user existe?
-  // ASK - o que e que deve ser possivel configurar - txt
-  // ASK - Que tipo de testes temos que ter? - os requisitos no excel
-  // ASK - Pode haver listas de candidatos sem candidatos? - nao pode haver
-  // ASK - Perguntar se update ou remove sao pontos extra? - talvez
-  // ASK - Que propriedade das eleicoes e que podem ser alteradas? - textuais e datas
-  // ASK - Configs em txt? E suposto as portas serem argumentos. Fazer alguma coisa no cliente se a porta nao corresponder?
-  // TODO - Terminal
-  // TODO - Votar nao pode ser perdido com excecao -> votar mais que uma vez nao
+  // TODO - print Data
+  // TODO - configs em txt - portas, ips
+  // TODO - fazer alguma coisa em cliente enquanto nao ha servers
+  // TODO - ao atualizar propriedades das eleicoes verificar se nao terminaram ja e se mudar a data de fim, verificar se nao e antes de inicio
+  // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
+  // TODO - Policies
+  // TODO - getValidString
+  // TODO - expire date
 
   private int port;
   private int mainPort;
@@ -319,7 +317,7 @@ public class Admin {
       }
     }
     catch(RemoteException e) {
-      System.out.println("Remote Exception creating candidate List");
+      System.out.println("Remote Exception creating candidate List.");
       connectRMIInterface(a);
       return;
     }
@@ -377,6 +375,10 @@ public class Admin {
       }
     }
     try {
+      if (users.size() == 0) {
+        System.out.println("Error. You can't create a candidate list without any users.");
+        return;
+      }
       if (electionType == 1)
         r.createCandidateList(name, users, election);
       else
@@ -384,7 +386,7 @@ public class Admin {
       System.out.println("Candidate list successfully created.");
     }
     catch(RemoteException e) {
-      System.out.println("Remote Exception creating candidate List");
+      System.out.println("Remote Exception creating candidate List.");
       connectRMIInterface(a);
     }
   }
