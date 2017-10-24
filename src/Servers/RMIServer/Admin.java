@@ -528,8 +528,8 @@ public class Admin implements Serializable {
     int month = getValidInteger("Month: ", 1, 12);
     int year = getValidInteger("Year: ", 2017, 2020);
     int hour = getValidInteger("Hour: ", 0,23);
-    int minute = getValidInteger("Minute: ", 0,31);
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/M/yyyy hh:mm:ss");
+    int minute = getValidInteger("Minute: ", 0,59);
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
 
     long date = 0;
     try {
