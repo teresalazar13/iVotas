@@ -199,21 +199,28 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return true;
   }
 
-  public synchronized void createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException {
+  public synchronized int createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException {
+    if (startDate < currentTimestamp()) {
+      return 2;
+    }
     Election election = new Election(name, description, startDate, endDate, type);
     this.elections.add(election);
     this.updateFile(this.elections, "Elections");
+    return 1;
   }
 
-  public synchronized boolean createStudentsElection(String name, String description, long startDate, long endDate, int type, String departmentName) throws RemoteException {
+  public synchronized int createStudentsElection(String name, String description, long startDate, long endDate, int type, String departmentName) throws RemoteException {
+    if (startDate < currentTimestamp()) {
+      return 3;
+    }
     Department department = getDepartmentByName(departmentName);
     if (department == null) {
-      return false;
+      return 2;
     }
     Election election = new Election(name, description, startDate, endDate, type, department);
     this.elections.add(election);
     this.updateFile(this.elections, "Elections");
-    return true;
+    return 1;
   }
 
   public synchronized void createCandidateList(String name, ArrayList<User> users, Election election) throws RemoteException {
@@ -616,6 +623,11 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     Calendar currentDate = Calendar.getInstance();
 
     try {
+      /*System.out.println(Calendar.DAY_OF_MONTH);
+      System.out.println(Calendar.MONTH);
+      System.out.println(Calendar.YEAR);
+      System.out.println(Calendar.HOUR_OF_DAY);
+      System.out.println(Calendar.MINUTE); */
       date = simpleDateFormat.parse(currentDate.get(Calendar.DAY_OF_MONTH) + "/" +
               currentDate.get(Calendar.MONTH) + "/" +
               currentDate.get(Calendar.YEAR) + " " +

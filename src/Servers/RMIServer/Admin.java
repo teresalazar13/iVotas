@@ -12,13 +12,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 
-public class Admin {
-  // ASK - terminar eleicao pode ser so sempre que precisamos de saber se eleicao acabou comparar end date com a data de agora
-  // ASK - temos que nao permitir criar uma eleicao no tempo passado? E que depois nao da para testar...
+public class Admin implements Serializable {
+  // TODO - see details of past elections
   // TODO - configs em txt - portas, ips
   // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
-  // TODO - Policies
   // TODO - getValidString
   // TODO - expire date
 
@@ -284,17 +282,21 @@ public class Admin {
             "3 back", 1, 2);
     try {
       if (type == 2) {
-        r.createElection(name, description, startDate, endDate, type);
-        System.out.println("Election successfully created");
+        int success = r.createElection(name, description, startDate, endDate, type);
+        if (success == 1)
+          System.out.println("Election successfully created");
+        else
+          System.out.println("Error creating election. You can't create an election in the past");
       }
       else {
         String departmentName = getValidString("Department: ");
-        if (r.createStudentsElection(name, description, startDate, endDate, type, departmentName)) {
+        int success = r.createStudentsElection(name, description, startDate, endDate, type, departmentName);
+        if (success == 1)
           System.out.println("Election successfully created");
-        }
-        else {
+        else if (success == 2)
           System.out.println("Error: there isn't a department with that name. Election wasn't created.");
-        }
+        else
+          System.out.println("Error creating election. You can't create an election in the past");
       }
 
     }
@@ -493,7 +495,6 @@ public class Admin {
       System.out.println("Successfully connected to port " + a.port);
       menu(r, a);
     } catch (Exception e) {
-      e.printStackTrace();
       System.out.println("Failed to connect to port " + a.port);
       try {
         TimeUnit.SECONDS.sleep(1);
@@ -532,13 +533,20 @@ public class Admin {
         sc.next();
       }
       int option = sc.nextInt();
-      if (maximum < option || option <= 0) {
+      if (maximum < option || option < minimum) {
         System.out.println("Please write an integer between " + minimum + " and " + maximum);
       }
       else {
         return option;
       }
     }
+  }
+
+  public static String getValidString(String field) {
+    System.out.println(field);
+    Scanner sc = new Scanner(System.in);
+    String res = sc.next();
+    return res;
   }
 
   public static long createDate() {
@@ -558,13 +566,6 @@ public class Admin {
       e.printStackTrace();
     }
     return date;
-  }
-
-  public static String getValidString(String field) {
-    Scanner sc = new Scanner(System.in);
-    System.out.println(field);
-    String res = sc.next();
-    return res;
   }
 
   public void printTableStatus() {
