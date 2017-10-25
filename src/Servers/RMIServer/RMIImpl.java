@@ -605,7 +605,14 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   }
 
   public synchronized void vote(User user, Election election, CandidateList candidateList, Department department) throws RemoteException {
-    Vote vote = new Vote(user, election, candidateList, department);
+    Vote vote;
+
+    if (candidateList == null) {
+      vote = new Vote(user, election, department);
+    } else {
+      vote = new Vote(user, election, candidateList, department);
+    }
+
     this.votes.add(vote);
     updateFile(this.votes, "Votes");
   }
@@ -660,8 +667,14 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         return true;
       }
     } else { // conselho geral
-      if (user.getType() == candidateList.getUsersType() && getVoteByUserAndElection(user, election) == null) {
-        return true;
+      if (candidateList != null) {
+        if (user.getType() == candidateList.getUsersType() && getVoteByUserAndElection(user, election) == null) {
+          return true;
+        }
+      } else {
+        if (getVoteByUserAndElection(user, election) == null) {
+          return true;
+        }
       }
     }
 
