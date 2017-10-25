@@ -11,10 +11,10 @@ import java.text.SimpleDateFormat;
 
 public class Admin {
 
-  // ASK - terminar eleicao pode ser so sempre que precisamos de saber se eleicao acabou comparar end date com a data de agora
-  // ASK - temos que nao permitir criar uma eleicao no tempo passado? E que depois nao da para testar...
+  // ASK - terminar eleicao pode ser so sempre que precisamos de saber se eleicao acabou comparar end date com a data de agora -> cuidado com ir buscar resultados de eleicao passado
+  // ASK - temos que nao permitir criar uma eleicao no tempo passado? -> sim.
+  // TODO - correr em maquinas diferentes. JAR. Terminal
   // TODO - configs em txt - portas, ips
-  // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
   // TODO - Policies
   // TODO - getValidString
@@ -117,8 +117,8 @@ public class Admin {
     String facultyName = getValidString("Faculty: ");
     String contact = getValidString("Contact: ");
     String address = getValidString("Address: ");
-    String cc = getValidString("CC: ");
-    String expireDate = getValidString("Expire date: ");
+    int cc = getValidInteger("CC", 0, 99999999);
+    long expireDate = createDate();
 
     try {
       int success = r.createUser(name, password, departmentName, facultyName, contact, address, cc, expireDate, type);
@@ -543,7 +543,7 @@ public class Admin {
     int year = getValidInteger("Year: ", 2017, 2020);
     int hour = getValidInteger("Hour: ", 0,23);
     int minute = getValidInteger("Minute: ", 0,31);
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/M/yyyy hh:mm:ss");
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
 
     long date = 0;
     try {

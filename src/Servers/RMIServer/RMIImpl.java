@@ -160,7 +160,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
   }
 
-  public synchronized int createUser(String name, String password, String departmentName, String facultyName, String contact, String address, String cc, String expireDate, int type) throws RemoteException {
+  public synchronized int createUser(String name, String password, String departmentName, String facultyName, String contact, String address, int cc, long expireDate, int type) throws RemoteException {
     Department department = getDepartmentByName(departmentName);
     if (department == null)
       return 2;
@@ -551,12 +551,12 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         break;
       case "cc":
         for (User user : users) {
-          values.add(user.getCc());
+          values.add(Integer.toString(user.getCc()));
         }
         break;
       case "expireDate":
         for (User user : users) {
-          values.add(user.getExpireDate());
+          values.add(Long.toString(user.getExpireDate()));
         }
         break;
     }

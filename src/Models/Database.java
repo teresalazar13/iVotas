@@ -92,7 +92,7 @@ public class Database {
       preparedStatement.setString(2, user.getPassword());
       preparedStatement.setString(3, user.getContact());
       preparedStatement.setString(4, user.getAddress());
-      preparedStatement.setString(5, user.getCc());
+      preparedStatement.setString(5, Integer.toString(user.getCc()));
       preparedStatement.setInt(6, user.getType());
 
       // Execute insert statement
@@ -134,8 +134,8 @@ public class Database {
                 null,
                 results.getString("contact"),
                 results.getString("address"),
-                results.getString("cc"),
-                results.getString("expireDate"),
+                Integer.parseInt(results.getString("cc")),
+                Long.parseLong(results.getString("expireDate")),
                 results.getInt("type")
         );
       }

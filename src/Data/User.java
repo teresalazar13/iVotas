@@ -9,13 +9,13 @@ public class User implements Serializable {
   private Faculty faculty;
   private String contact;
   private String address;
-  private String cc;
-  private String expireDate;
+  private int cc;
+  private long expireDate;
   private int type;
 
   public User() {}
 
-  public User(String name, String password, Department department, Faculty faculty, String contact, String address, String cc, String expireDate, int type) {
+  public User(String name, String password, Department department, Faculty faculty, String contact, String address, int cc, long expireDate, int type) {
     this.name = name;
     this.password = password;
     this.department = department;
@@ -45,11 +45,11 @@ public class User implements Serializable {
   public String getAddress() { return address; }
   public void setAddress(String address) { this.address = address; }
 
-  public String getCc() { return cc; }
-  public void setCc(String cc) { this.cc = cc; }
+  public int getCc() { return cc; }
+  public void setCc(int cc) { this.cc = cc; }
 
-  public String getExpireDate() { return expireDate; }
-  public void setExpireDate(String expireDate) { this.expireDate = expireDate; }
+  public long getExpireDate() { return expireDate; }
+  public void setExpireDate(long expireDate) { this.expireDate = expireDate; }
 
   public int getType() { return type; }
   public void setType(int type) { this.type = type; }
