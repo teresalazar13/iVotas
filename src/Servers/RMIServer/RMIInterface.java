@@ -78,5 +78,4 @@ public interface RMIInterface extends Remote {
   String prettyPrint(int option) throws RemoteException;
 
   String printUsers() throws RemoteException;
-
 }

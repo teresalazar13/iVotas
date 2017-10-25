@@ -11,8 +11,8 @@ import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-public class Admin implements Serializable {
 
+public class Admin {
   // ASK - terminar eleicao pode ser so sempre que precisamos de saber se eleicao acabou comparar end date com a data de agora
   // ASK - temos que nao permitir criar uma eleicao no tempo passado? E que depois nao da para testar...
   // TODO - configs em txt - portas, ips
