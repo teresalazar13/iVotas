@@ -79,6 +79,6 @@ public class ElectionResult implements Serializable {
               " --- Percentage: " + candidateResult.getPercentage() + "\n";
     }
     return res += "Empty votes --- Number of votes: " + numberOfEmptyVotes + " --- Percentage: " + percentageOfEmptyVotes
-            + "Null votes --- Number of null votes: " + numberOfNullVotes + " --- Percentage: " + percentageOfNullVotes;
+            + " Null votes --- Number of null votes: " + numberOfNullVotes + " --- Percentage: " + percentageOfNullVotes;
   }
 }

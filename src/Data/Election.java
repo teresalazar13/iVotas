@@ -14,7 +14,6 @@ public class Election implements Serializable {
   private int type;
   private Department department;
   private ArrayList<CandidateList> candidateLists;
-  private ArrayList<Vote> votes;
 
   public Election() {}
 
@@ -26,7 +25,6 @@ public class Election implements Serializable {
     this.endDate = endDate;
     this.type = type;
     this.candidateLists = new ArrayList<CandidateList>();
-    this.votes = new ArrayList<Vote>();
     this.department = null;
   }
 
@@ -38,7 +36,6 @@ public class Election implements Serializable {
     this.endDate = endDate;
     this.type = type;
     this.candidateLists = new ArrayList<CandidateList>();
-    this.votes = new ArrayList<Vote>();
     this.department = department;
   }
 
@@ -80,9 +77,6 @@ public class Election implements Serializable {
   public ArrayList<CandidateList> getCandidateLists() { return candidateLists; }
   public void setCandidateLists(ArrayList<CandidateList> candidateLists) { this.candidateLists = candidateLists; }
 
-  public ArrayList<Vote> getVotes() { return votes; }
-  public void setVotes(ArrayList<Vote> votes) { this.votes = votes; }
-
   public Department getDepartment() {
     return department;
   }
@@ -113,7 +107,6 @@ public class Election implements Serializable {
             ",endDate=" + endDate +
             ",type=" + type +
             ",candidateLists=" + candidateLists +
-            ",votes=" + votes +
             '}';
   }
 

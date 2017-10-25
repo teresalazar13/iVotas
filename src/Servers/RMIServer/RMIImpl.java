@@ -397,27 +397,21 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         for (Vote vote : electionVotes) {
           if (vote.getCandidateList() == null) {
             blankVotes++;
-            System.out.println(blankVotes);
           }
           for (CandidateResults candidateResults : candidatesResults) {
-            System.out.println(candidateResults);
             if (vote.getCandidateList() != null) {
               if (vote.getCandidateList().getName().equals(candidateResults.getCandidateList().getName())) {
                 candidateResults.setNumberOfVotes(candidateResults.getNumberOfVotes() + 1);
-                candidateResults.setPercentage(candidateResults.getNumberOfVotes() / numberOfVotes);
+                float percentage = ((float)candidateResults.getNumberOfVotes() / numberOfVotes) * 100;
+                candidateResults.setPercentage(Math.round(percentage));
               }
             }
           }
         }
 
-        System.out.println("...............................");
-
-        long percentageOfBlankVotes = (blankVotes / electionVotes.size()) * 100;
-        System.out.println("============================");
-        System.out.println(percentageOfBlankVotes);
-        System.out.println("============================");
+        float percentageOfBlankVotes = ((float) blankVotes / electionVotes.size()) * 100.0f;
         ElectionResult electionResult = new ElectionResult(
-                election, candidatesResults, blankVotes, (int) percentageOfBlankVotes, 0, 0);
+                election, candidatesResults, blankVotes, (Math.round(percentageOfBlankVotes)), 0, 0);
         System.out.println(electionResult);
         res += electionResult.toString() + "\n\n";
       }
