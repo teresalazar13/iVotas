@@ -199,21 +199,28 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return true;
   }
 
-  public synchronized void createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException {
+  public synchronized int createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException {
+    if (startDate < currentTimestamp()) {
+      return 2;
+    }
     Election election = new Election(name, description, startDate, endDate, type);
     this.elections.add(election);
     this.updateFile(this.elections, "Elections");
+    return 1;
   }
 
-  public synchronized boolean createStudentsElection(String name, String description, long startDate, long endDate, int type, String departmentName) throws RemoteException {
+  public synchronized int createStudentsElection(String name, String description, long startDate, long endDate, int type, String departmentName) throws RemoteException {
+    if (startDate < currentTimestamp()) {
+      return 3;
+    }
     Department department = getDepartmentByName(departmentName);
     if (department == null) {
-      return false;
+      return 2;
     }
     Election election = new Election(name, description, startDate, endDate, type, department);
     this.elections.add(election);
     this.updateFile(this.elections, "Elections");
-    return true;
+    return 1;
   }
 
   public synchronized void createCandidateList(String name, ArrayList<User> users, Election election) throws RemoteException {
@@ -357,8 +364,27 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
   public synchronized String detailsOfPastElections() throws RemoteException {
     String res = "";
-    for (int i = 0; i < electionResults.size(); i++) {
-      res += electionResults.get(i).getElectionResults();
+    for (int i = 0; i < elections.size(); i++) {
+      if (elections.get(i).getEndDate() < currentTimestamp()) {
+        int numberOfVotes = elections.get(i).getVotes().size();
+        ArrayList<CandidateResults> candidatesResults = new ArrayList<>();
+        for (int e = 0; e < elections.get(i).getCandidateLists().size(); e++) {
+          CandidateResults candidateResults = new CandidateResults(elections.get(i).getCandidateLists().get(e), 0, 0);
+          candidatesResults.add(candidateResults);
+        }
+        for (int j = 0; j < elections.get(i).getVotes().size(); j++) {
+          Vote vote = elections.get(i).getVotes().get(j);
+          for (int h = 0; h < candidatesResults.size(); h++) {
+            if (vote.getCandidateList().getName().equals(candidatesResults.get(h).getCandidateList().getName())) {
+              candidatesResults.get(h).setNumberOfVotes(candidatesResults.get(h).getNumberOfVotes() + 1);
+              candidatesResults.get(h).setPercentage(candidatesResults.get(h).getNumberOfVotes() / numberOfVotes);
+            }
+          }
+        }
+        ElectionResult electionResult = new ElectionResult(
+                elections.get(i), candidatesResults, 0, 0, 0, 0);
+        res += electionResult.toString() + "\n\n";
+      }
     }
     return res;
   }
@@ -623,6 +649,11 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     Calendar currentDate = Calendar.getInstance();
 
     try {
+      /*System.out.println(Calendar.DAY_OF_MONTH);
+      System.out.println(Calendar.MONTH);
+      System.out.println(Calendar.YEAR);
+      System.out.println(Calendar.HOUR_OF_DAY);
+      System.out.println(Calendar.MINUTE); */
       date = simpleDateFormat.parse(currentDate.get(Calendar.DAY_OF_MONTH) + "/" +
               currentDate.get(Calendar.MONTH) + "/" +
               currentDate.get(Calendar.YEAR) + " " +

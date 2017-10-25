@@ -31,9 +31,9 @@ public interface RMIInterface extends Remote {
 
   void removeFaculty(Faculty faculty) throws RemoteException;
 
-  void createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException;
+  int createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException;
 
-  boolean createStudentsElection(String name, String description, long startDate, long endDate, int type, String departmentName) throws RemoteException;
+  int createStudentsElection(String name, String description, long startDate, long endDate, int type, String departmentName) throws RemoteException;
 
   void createCandidateList(String name, ArrayList<User> users, Election election) throws RemoteException;
 
