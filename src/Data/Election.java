@@ -18,6 +18,7 @@ public class Election implements Serializable {
 
   public Election() {}
 
+  // Election for Conselho Geral
   public Election(String name, String description, long startDate, long endDate, int type) {
     this.name = name;
     this.description = description;
@@ -29,6 +30,7 @@ public class Election implements Serializable {
     this.department = null;
   }
 
+  // Election for Nucleo de Estudantes
   public Election(String name, String description, long startDate, long endDate, int type, Department department) {
     this.name = name;
     this.description = description;

@@ -1,6 +1,8 @@
-import Data.*;
-import Servers.RMIServer.*;
+package Servers.RMIServer;
 
+import Data.*;
+
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
@@ -9,8 +11,8 @@ import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-public class Admin {
 
+public class Admin {
   // ASK - terminar eleicao pode ser so sempre que precisamos de saber se eleicao acabou comparar end date com a data de agora
   // ASK - temos que nao permitir criar uma eleicao no tempo passado? E que depois nao da para testar...
   // TODO - configs em txt - portas, ips
@@ -36,7 +38,7 @@ public class Admin {
     // System.setSecurityManager(new RMISecurityManager());
 
     if(args.length != 2) {
-      System.out.println("java Admin 1 port backupPort");
+      System.out.println("java Servers.RMIServer.Admin 1 port backupPort");
       System.exit(0);
     }
 
@@ -486,10 +488,12 @@ public class Admin {
     System.out.println("Trying to connect to port " + a.port);
     try {
       RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(a.port).lookup("ivotas");
+      r.addAdmin(a);
       r.remote_print("New client");
       System.out.println("Successfully connected to port " + a.port);
       menu(r, a);
     } catch (Exception e) {
+      e.printStackTrace();
       System.out.println("Failed to connect to port " + a.port);
       try {
         TimeUnit.SECONDS.sleep(1);
@@ -542,8 +546,8 @@ public class Admin {
     int month = getValidInteger("Month: ", 1, 12);
     int year = getValidInteger("Year: ", 2017, 2020);
     int hour = getValidInteger("Hour: ", 0,23);
-    int minute = getValidInteger("Minute: ", 0,31);
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/M/yyyy hh:mm:ss");
+    int minute = getValidInteger("Minute: ", 0,59);
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
 
     long date = 0;
     try {
@@ -561,6 +565,10 @@ public class Admin {
     System.out.println(field);
     String res = sc.next();
     return res;
+  }
+
+  public void printTableStatus() {
+    System.out.println("NEW TABLE");
   }
 
   public int getPort() {

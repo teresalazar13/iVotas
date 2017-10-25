@@ -51,6 +51,8 @@ public interface RMIInterface extends Remote {
 
   Vote getVoteByUserAndElection(User user, Election election) throws RemoteException;
 
+  boolean voteIsValid(User user, VotingTable votingTable, CandidateList candidateList) throws RemoteException;
+
   String detailsOfPastElections() throws RemoteException;
 
   User getUserByName(String userName) throws RemoteException;
@@ -64,6 +66,14 @@ public interface RMIInterface extends Remote {
   Faculty getFacultyByDepartmentName(String department) throws RemoteException;
 
   CandidateList getCandidateListByName(String listName) throws RemoteException;
+
+  VotingTable getVotingTableById(int id) throws RemoteException;
+
+  void getStatus() throws RemoteException;
+
+  void addAdmin(Admin admin) throws RemoteException;
+
+  ArrayList<Election> getElections() throws RemoteException;
 
   String prettyPrint(int option) throws RemoteException;
 

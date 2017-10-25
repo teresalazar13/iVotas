@@ -20,7 +20,7 @@ public class FileWrapper {
 
   public FileWrapper() throws IOException, ClassNotFoundException {
 
-    /*Department department1 = new Department("EngenhariaInformatica");
+    Department department1 = new Department("EngenhariaInformatica");
     ArrayList<Department> departments = new ArrayList<Department>();
     departments.add(department1);
 
@@ -33,7 +33,7 @@ public class FileWrapper {
     User user2= new User("Test", "123", department1, faculty1, "9140975", "Rua X", "444",
             "expireDate", 1 );
     User user3= new User("Machado", "123", department1, faculty1, "9140975", "Rua X", "444",
-            "expireDate", 1 );
+            "expireDate", 2 );
     ArrayList<User> users = new ArrayList<User>();
     users.add(user1);
     users.add(user2);
@@ -44,8 +44,8 @@ public class FileWrapper {
     long startDate = 0;
     long endDate = 0;
     try {
-      startDate = simpleDateFormat.parse("10/10/2017 11:30:10").getTime();
-      endDate = simpleDateFormat.parse("10/10/2017 18:30:10").getTime();
+      startDate = simpleDateFormat.parse("24/9/2017 16:15:00").getTime();
+      endDate = simpleDateFormat.parse("24/9/2017 16:20:00").getTime();
     }
     catch (ParseException e) {
       e.printStackTrace();
@@ -86,7 +86,7 @@ public class FileWrapper {
     writeFile(candidateLists,"CandidateLists");
     writeFile(votingTables,"VotingTables");
     writeFile(votes,"Votes");
-    writeFile(electionResults,"ElectionResults"); */
+    writeFile(electionResults,"ElectionResults");
 
     ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
     ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");
