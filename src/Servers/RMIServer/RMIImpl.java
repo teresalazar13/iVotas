@@ -2,8 +2,6 @@ package Servers.RMIServer;
 
 import Data.*;
 
-// começa como secundario a espera. se nao recebe nenhum começa primario
-
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -15,6 +13,9 @@ import java.rmi.registry.Registry;
 import java.net.*;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 
 public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
@@ -289,6 +290,8 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   public synchronized int updateElection(String electionName, Object toChange, int type) throws RemoteException {
     for (int i = 0; i < elections.size(); i++) {
       if (elections.get(i).getName().equals(electionName)) {
+        if (elections.get(i).getStartDate() < currentTimestamp()) // Election already started
+          return 4;
         if (type == 1) {
           elections.get(i).setName((String) toChange);
         }
@@ -299,13 +302,15 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
           elections.get(i).setStartDate((long) toChange);
         }
         else {
+          if ((long) toChange <= elections.get(i).getStartDate()) // Cant end election before it started
+            return 3;
           elections.get(i).setEndDate((long) toChange);
         }
         updateFile(this.elections, "Elections");
         return 1;
       }
     }
-    return 2;
+    return 2; // No elections with that name
   }
 
   public synchronized void removeDepartment(Department department) throws RemoteException {
@@ -423,6 +428,83 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return null;
   }
 
+  public synchronized String prettyPrint(int option) throws RemoteException {
+    String res = "";
+    if (option == 1)
+      res = printUsers();
+    else if (option == 2)
+      res = printFaculties();
+    else if (option == 3)
+      res = printDepartments();
+    else if (option == 4)
+      res = printElections();
+    else if (option == 5)
+      res = printCandidateLists();
+    else
+      res = printVotingTables();
+    return res;
+  }
+
+  public synchronized String printUsers() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < users.size(); i++) {
+      res += users.get(i).prettyPrint();
+    }
+    if (res == "")
+      return "There are no users";
+    return res;
+  }
+
+  public synchronized String printFaculties() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < faculties.size(); i++) {
+      res += faculties.get(i).prettyPrint();
+    }
+    if (res == "")
+      return "There are no faculties";
+    return res;
+  }
+
+  public synchronized String printDepartments() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < departments.size(); i++) {
+      res += departments.get(i).prettyPrint();
+    }
+    if (res == "")
+      return "There are no departments";
+    return res;
+  }
+
+  public synchronized String printElections() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < elections.size(); i++) {
+      res += elections.get(i).prettyPrint();
+    }
+    if (res == "")
+      return "There are no elections";
+    return res;
+  }
+
+  public synchronized String printCandidateLists() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < candidateLists.size(); i++) {
+      res += candidateLists.get(i).prettyPrint();
+    }
+    if (res == "")
+      return "There are no candidate lists";
+    return res;
+  }
+
+  public synchronized String printVotingTables() throws RemoteException {
+    String res = "";
+    for (int i = 0; i < votingTables.size(); i++) {
+      res += votingTables.get(i).prettyPrint();
+    }
+    if (res == "")
+      return "There are no voting tables";
+    return res;
+  }
+
   public synchronized VotingTable getVotingTableById(int id) {
     for (VotingTable votingTable : this.votingTables) {
       if (votingTable.getId() == id) {
@@ -528,21 +610,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     updateFile(this.votes, "Votes");
   }
 
-  public synchronized void updateFile(Object object, String className) {
-    try {
-      this.data.writeFile(object, className);
-    } catch(IOException e) {
-      System.out.println("IOException: Error writing in " + className + " file");
-    } catch(ClassNotFoundException e) {
-      System.out.println("ClassNotFoundException: Error writing in " + className + " file");
-    }
-    System.out.println(object);
-  }
-
-  public synchronized void remote_print(String s) throws RemoteException {
-    System.out.println("Server: " + s);
-  }
-
   private long currentTimestamp() {
     long date = 0;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
@@ -559,6 +626,21 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
 
     return date;
+  }
+
+  public synchronized void updateFile(Object object, String className) {
+    try {
+      this.data.writeFile(object, className);
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in " + className + " file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in " + className + " file");
+    }
+    System.out.println(object);
+  }
+
+  public synchronized void remote_print(String s) throws RemoteException {
+    System.out.println("Server: " + s);
   }
 
   public synchronized boolean voteIsValid(User user, VotingTable votingTable, CandidateList candidateList) throws RemoteException {

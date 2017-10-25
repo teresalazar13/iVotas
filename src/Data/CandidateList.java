@@ -53,6 +53,14 @@ public class CandidateList implements Serializable {
     this.usersType = usersType;
   }
 
+  public String prettyPrint() {
+    String res = "\n\nName: " + this.name + "\nUsers: ";
+    for (int i = 0; i < users.size(); i++) {
+      res += users.get(i).getName() + ", ";
+    }
+    return res.substring(0, res.length() - 2);
+  }
+
   @Override
   public String toString() {
     return "CandidateList{" +

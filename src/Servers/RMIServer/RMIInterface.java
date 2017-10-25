@@ -74,4 +74,9 @@ public interface RMIInterface extends Remote {
   void addAdmin(Admin admin) throws RemoteException;
 
   ArrayList<Election> getElections() throws RemoteException;
+
+  String prettyPrint(int option) throws RemoteException;
+
+  String printUsers() throws RemoteException;
+
 }
