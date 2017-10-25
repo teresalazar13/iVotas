@@ -43,8 +43,6 @@ class TCPClient {
         // set current username to log in
         synchronized (votingTerminalMenu.getT()) {
           votingTerminalMenu.setCurrentUsername(messageFromServer);
-          System.out.println(messageFromServer);
-          System.out.println(votingTerminalMenu.getCurrentUsername());
           votingTerminalMenu.getT().notify();
         }
 
@@ -92,7 +90,6 @@ class TCPClient {
           votingTerminalMenu.getT().notify();
         }
 
-        System.out.println("Resumed");
       }
     } catch (IOException e) {
       if(inFromServer == null)
@@ -207,6 +204,7 @@ class VotingTerminalMenu implements Runnable {
           }
         }
 
+        // Choose the list to vote
         String listNameToVote = votingMenu();
         this.outToServer.println("type | vote ; " +
                 "election | " + electionInfo.get("name") + " ; " +
@@ -243,6 +241,7 @@ class VotingTerminalMenu implements Runnable {
             "Password: ");
     password = sc.nextLine();
     messageToServer += password + " ; ";
+    System.out.println(messageToServer);
 
     return messageToServer;
   }
@@ -261,9 +260,6 @@ class VotingTerminalMenu implements Runnable {
         System.out.println("Please write an integer between 0 and " + (maximum-1));
       }
       else {
-        System.out.println("..............");
-        System.out.println(option);
-        System.out.println("..............");
         return option;
       }
     }
