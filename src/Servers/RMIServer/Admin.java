@@ -13,7 +13,6 @@ import java.text.SimpleDateFormat;
 
 
 public class Admin implements Serializable {
-  // TODO - see details of past elections
   // TODO - configs em txt - portas, ips
   // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
@@ -472,7 +471,7 @@ public class Admin implements Serializable {
 
   public static void pastElections(RMIInterface r, Admin a) {
     try {
-      System.out.println("Details of all Elections");
+      System.out.println("Details of all past Elections");
       System.out.println(r.detailsOfPastElections());
     }
     catch(RemoteException e) {

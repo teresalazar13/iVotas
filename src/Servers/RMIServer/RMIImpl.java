@@ -364,8 +364,27 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
   public synchronized String detailsOfPastElections() throws RemoteException {
     String res = "";
-    for (int i = 0; i < electionResults.size(); i++) {
-      res += electionResults.get(i).getElectionResults();
+    for (int i = 0; i < elections.size(); i++) {
+      if (elections.get(i).getEndDate() < currentTimestamp()) {
+        int numberOfVotes = elections.get(i).getVotes().size();
+        ArrayList<CandidateResults> candidatesResults = new ArrayList<>();
+        for (int e = 0; e < elections.get(i).getCandidateLists().size(); e++) {
+          CandidateResults candidateResults = new CandidateResults(elections.get(i).getCandidateLists().get(e), 0, 0);
+          candidatesResults.add(candidateResults);
+        }
+        for (int j = 0; j < elections.get(i).getVotes().size(); j++) {
+          Vote vote = elections.get(i).getVotes().get(j);
+          for (int h = 0; h < candidatesResults.size(); h++) {
+            if (vote.getCandidateList().getName().equals(candidatesResults.get(h).getCandidateList().getName())) {
+              candidatesResults.get(h).setNumberOfVotes(candidatesResults.get(h).getNumberOfVotes() + 1);
+              candidatesResults.get(h).setPercentage(candidatesResults.get(h).getNumberOfVotes() / numberOfVotes);
+            }
+          }
+        }
+        ElectionResult electionResult = new ElectionResult(
+                elections.get(i), candidatesResults, 0, 0, 0, 0);
+        res += electionResult.toString() + "\n\n";
+      }
     }
     return res;
   }
