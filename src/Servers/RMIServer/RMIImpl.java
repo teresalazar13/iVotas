@@ -3,6 +3,7 @@ package Servers.RMIServer;
 import Data.*;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.text.ParseException;
@@ -12,6 +13,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.net.*;
 import java.util.Calendar;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -362,27 +364,61 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return vote.getDepartment().getName();
   }
 
+  private synchronized ArrayList<Vote> votesOfElection(Election election) {
+    ArrayList<Vote> votes = new ArrayList<>();
+
+    for (Vote vote : this.votes) {
+      if (vote.getElection().getName().equals(election.getName())) {
+        votes.add(vote);
+      }
+    }
+
+    return votes;
+  }
+
   public synchronized String detailsOfPastElections() throws RemoteException {
+    System.out.println(".......................................");
     String res = "";
-    for (int i = 0; i < elections.size(); i++) {
-      if (elections.get(i).getEndDate() < currentTimestamp()) {
-        int numberOfVotes = elections.get(i).getVotes().size();
+
+    for (Election election : this.elections) {
+      ArrayList<Vote> electionVotes = this.votesOfElection(election);
+
+      if (election.getEndDate() < currentTimestamp()) {
+        int numberOfVotes = electionVotes.size();
+        System.out.println(numberOfVotes);
         ArrayList<CandidateResults> candidatesResults = new ArrayList<>();
-        for (int e = 0; e < elections.get(i).getCandidateLists().size(); e++) {
-          CandidateResults candidateResults = new CandidateResults(elections.get(i).getCandidateLists().get(e), 0, 0);
+
+        for (CandidateList candidateList : election.getCandidateLists()) {
+          CandidateResults candidateResults = new CandidateResults(candidateList, 0, 0);
           candidatesResults.add(candidateResults);
         }
-        for (int j = 0; j < elections.get(i).getVotes().size(); j++) {
-          Vote vote = elections.get(i).getVotes().get(j);
-          for (int h = 0; h < candidatesResults.size(); h++) {
-            if (vote.getCandidateList().getName().equals(candidatesResults.get(h).getCandidateList().getName())) {
-              candidatesResults.get(h).setNumberOfVotes(candidatesResults.get(h).getNumberOfVotes() + 1);
-              candidatesResults.get(h).setPercentage(candidatesResults.get(h).getNumberOfVotes() / numberOfVotes);
+
+        int blankVotes = 0;
+        for (Vote vote : electionVotes) {
+          if (vote.getCandidateList() == null) {
+            blankVotes++;
+            System.out.println(blankVotes);
+          }
+          for (CandidateResults candidateResults : candidatesResults) {
+            System.out.println(candidateResults);
+            if (vote.getCandidateList() != null) {
+              if (vote.getCandidateList().getName().equals(candidateResults.getCandidateList().getName())) {
+                candidateResults.setNumberOfVotes(candidateResults.getNumberOfVotes() + 1);
+                candidateResults.setPercentage(candidateResults.getNumberOfVotes() / numberOfVotes);
+              }
             }
           }
         }
+
+        System.out.println("...............................");
+
+        long percentageOfBlankVotes = (blankVotes / electionVotes.size()) * 100;
+        System.out.println("============================");
+        System.out.println(percentageOfBlankVotes);
+        System.out.println("============================");
         ElectionResult electionResult = new ElectionResult(
-                elections.get(i), candidatesResults, 0, 0, 0, 0);
+                election, candidatesResults, blankVotes, (int) percentageOfBlankVotes, 0, 0);
+        System.out.println(electionResult);
         res += electionResult.toString() + "\n\n";
       }
     }
