@@ -10,6 +10,15 @@ public class Vote implements Serializable {
 
   public Vote() {}
 
+  // blank vote
+  public Vote(User user, Election election, Department department) {
+    this.user = user;
+    this.election = election;
+    this.candidateList = null;
+    this.department = department;
+  }
+
+  // vote on list
   public Vote(User user, Election election, CandidateList candidateList, Department department) {
     this.user = user;
     this.election = election;

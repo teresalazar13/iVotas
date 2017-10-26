@@ -272,8 +272,14 @@ class VotingTerminalMenu implements Runnable {
       System.out.println("[" + i + "]" + "--> " + this.candidateListsName.get(i) );
     }
 
+    System.out.println("[" + this.candidateListsName.size() + "]" + "--> Blank Vote");
+
     System.out.println("List to vote: ");
-    int list = getValidInteger(this.candidateListsName.size());
+    int list = getValidInteger(this.candidateListsName.size()+1);
+
+    if (list == this.candidateListsName.size()) {
+      return "blank";
+    }
 
     return this.candidateListsName.get(list);
   }

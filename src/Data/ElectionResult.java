@@ -8,14 +8,18 @@ public class ElectionResult implements Serializable {
   private ArrayList<CandidateResults> candidatesResults;
   private int numberOfEmptyVotes;
   private int percentageOfEmptyVotes;
+  private int numberOfNullVotes;
+  private int percentageOfNullVotes;
 
   public ElectionResult() {}
 
-  public ElectionResult(Election election, ArrayList<CandidateResults> candidatesResults, int numberOfEmptyVotes, int percentageOfEmptyVotes) {
+  public ElectionResult(Election election, ArrayList<CandidateResults> candidatesResults, int numberOfEmptyVotes, int percentageOfEmptyVotes, int numberOfNullVotes, int percentageOfNullVotes) {
     this.election = election;
     this.candidatesResults = candidatesResults;
     this.numberOfEmptyVotes = numberOfEmptyVotes;
     this.percentageOfEmptyVotes = percentageOfEmptyVotes;
+    this.numberOfNullVotes = numberOfNullVotes;
+    this.percentageOfNullVotes = percentageOfNullVotes;
   }
 
   public Election getElection() {
@@ -50,7 +54,23 @@ public class ElectionResult implements Serializable {
     this.percentageOfEmptyVotes = percentageOfEmptyVotes;
   }
 
-  public String getElectionResults() {
+  public int getNumberOfNullVotes() {
+    return numberOfNullVotes;
+  }
+
+  public void setNumberOfNullVotes(int numberOfNullVotes) {
+    this.numberOfNullVotes = numberOfNullVotes;
+  }
+
+  public int getPercentageOfNullVotes() {
+    return percentageOfNullVotes;
+  }
+
+  public void setPercentageOfNullVotes(int percentageOfNullVotes) {
+    this.percentageOfNullVotes = percentageOfNullVotes;
+  }
+
+  public String toString() {
     String res = "Election: " + election.getName() + "\n";
     for (int i = 0; i < candidatesResults.size(); i++) {
       CandidateResults candidateResult = candidatesResults.get(i);
@@ -58,16 +78,7 @@ public class ElectionResult implements Serializable {
               " --- Number of votes: " + candidateResult.getNumberOfVotes() +
               " --- Percentage: " + candidateResult.getPercentage() + "\n";
     }
-    return res += "Empty votes --- Number of votes: " + numberOfEmptyVotes + " --- Percentage: " + percentageOfEmptyVotes;
-  }
-
-  @Override
-  public String toString() {
-    return "ElectionResult{" +
-            "election=" + election +
-            ", candidatesResults=" + candidatesResults +
-            ", numberOfEmptyVotes=" + numberOfEmptyVotes +
-            ", percentageOfEmptyVotes=" + percentageOfEmptyVotes +
-            '}';
+    return res += "Empty votes --- Number of votes: " + numberOfEmptyVotes + " --- Percentage: " + percentageOfEmptyVotes
+            + " Null votes --- Number of null votes: " + numberOfNullVotes + " --- Percentage: " + percentageOfNullVotes;
   }
 }

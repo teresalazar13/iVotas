@@ -17,7 +17,6 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
   // TODO - configs em txt - portas, ips
   // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
-  // TODO - Policies
   // TODO - getValidString
   // TODO - expire date
 
@@ -290,17 +289,21 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
             "3 back", 1, 2);
     try {
       if (type == 2) {
-        r.createElection(name, description, startDate, endDate, type);
-        System.out.println("Election successfully created");
+        int success = r.createElection(name, description, startDate, endDate, type);
+        if (success == 1)
+          System.out.println("Election successfully created");
+        else
+          System.out.println("Error creating election. You can't create an election in the past");
       }
       else {
         String departmentName = getValidString("Department: ");
-        if (r.createStudentsElection(name, description, startDate, endDate, type, departmentName)) {
+        int success = r.createStudentsElection(name, description, startDate, endDate, type, departmentName);
+        if (success == 1)
           System.out.println("Election successfully created");
-        }
-        else {
+        else if (success == 2)
           System.out.println("Error: there isn't a department with that name. Election wasn't created.");
-        }
+        else
+          System.out.println("Error creating election. You can't create an election in the past");
       }
 
     }
@@ -476,7 +479,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
 
   public static void pastElections(RMIInterface r, Admin a) {
     try {
-      System.out.println("Details of all Elections");
+      System.out.println("Details of all past Elections");
       System.out.println(r.detailsOfPastElections());
     }
     catch(RemoteException e) {
@@ -510,7 +513,6 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       System.out.println("Successfully connected to port " + a.port);
       menu(r, a);
     } catch (Exception e) {
-      e.printStackTrace();
       System.out.println("Failed to connect to port " + a.port);
       try {
         TimeUnit.SECONDS.sleep(1);
@@ -549,7 +551,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
         sc.next();
       }
       int option = sc.nextInt();
-      if (maximum < option || option <= 0) {
+      if (maximum < option || option < minimum) {
         System.out.println("Please write an integer between " + minimum + " and " + maximum);
       }
       else {
@@ -583,6 +585,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
     String res = sc.next();
     return res;
   }
+
 
   public int getPort() {
     return port;
