@@ -10,6 +10,7 @@ import java.rmi.registry.LocateRegistry;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class TCPServer {
   private int port;
@@ -30,7 +31,8 @@ public class TCPServer {
 
   // arg[0] -> server port
   // arg[1] -> main rmi port
-  // arg[2] -> voting table
+  // arg[2] -> backup rmi
+  // arg[3] -> voting table
   public static void main(String args[]) {
     System.setProperty("java.rmi.server.hostname", "192.168.1.78");
     VotingTable votingTable = null;
@@ -128,6 +130,7 @@ public class TCPServer {
 // Thread to handle comm with client
 class Connection extends Thread {
   private int thread_number;
+  private Socket clientSocket;
   private BufferedReader bufferedReader;
   private PrintWriter outToServer;
   private ArrayList<String> votingTableMenuMessages;
@@ -143,7 +146,7 @@ class Connection extends Thread {
     this.rmi = rmi;
 
     try {
-      Socket clientSocket = aClientSocket;
+      this.clientSocket = aClientSocket;
       this.bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
       this.outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
       this.start();
@@ -153,70 +156,77 @@ class Connection extends Thread {
   }
 
   public void run() {
-    try {
       while (true) {
-        // Wait for client
-        synchronized (this) {
-          this.wait();
-        }
+        try {
+          // Wait for client
+          synchronized (this) {
+            this.wait();
+          }
 
-        // Var to store client messages
-        String message;
+          // Vars
+          String message;
+          String clientResponse = null;
+          Map<String, String> protocolValues;
 
-        // Identify user at table
-        synchronized (this) {
-          message = votingTableMenuMessages.get(0);
-          votingTableMenuMessages.remove(0);
+          // Identify user at table
+          synchronized (this) {
+            message = votingTableMenuMessages.get(0);
+            votingTableMenuMessages.remove(0);
+            this.getOut().println(message);
+          }
+
+          synchronized (this) {
+            // set timeout at 120s
+            this.clientSocket.setSoTimeout(120000);
+            clientResponse = bufferedReader.readLine();
+          }
+          protocolValues = parseProtocolMessage(clientResponse);
+
+          // Check if login is valid
+          boolean validLogin = loginIsValid(protocolValues);
+
+          // Send sucess login message
+          message = "type | status ; logged | " + validLogin;
           this.getOut().println(message);
-        }
 
-        // Read client login message
-        String clientResponse = null;
-        Map<String, String> protocolValues;
-        synchronized (this) {
+          // Send election info to client
+          message = "type | voting ; election | " + this.tableServer.getVotingTable().getElection().toStringClient();
+          this.getOut().println(message);
+
+          // Read user voting option
           clientResponse = bufferedReader.readLine();
+
+          // Socket back to normal
+          this.clientSocket.setSoTimeout(0);
+
+          protocolValues = parseProtocolMessage(clientResponse);
+
+          // Vote search fields
+          User user = this.searchUserByName(protocolValues.get("username"));
+          CandidateList voteList;
+
+          // Check if vote is valid
+          if ("blank".equals(protocolValues.get("choice"))) {
+            message = this.voteIsValid(user, null, this.tableServer);
+          } else {
+            voteList = this.searchCandidateListByName(protocolValues.get("choice"));
+            message = this.voteIsValid(user, voteList, this.tableServer);
+          }
+
+          this.getOut().println(message);
+        } catch (InterruptedException e) {
+          System.out.println("Exception in locking thread");
+          this.close();
+          break;
+        } catch(SocketTimeoutException e) {
+          this.getOut().println("type | timeout");
+        } catch (Exception e) {
+          System.out.println(e.getMessage());
+          System.out.println("Client disconnected");
+          this.close();
+          break;
         }
-
-        protocolValues = parseProtocolMessage(clientResponse);
-
-        // Check if login is valid
-        boolean validLogin = loginIsValid(protocolValues);
-
-        // Send sucess login message
-        message = "type | status ; logged | " + validLogin;
-        this.getOut().println(message);
-
-        // Send election info to client
-        message = "type | voting ; election | " + this.tableServer.getVotingTable().getElection().toStringClient();
-        this.getOut().println(message);
-
-        // Read user voting option
-        clientResponse = bufferedReader.readLine();
-
-        System.out.println(clientResponse);
-        protocolValues = parseProtocolMessage(clientResponse);
-
-        // Vote search fields
-        User user = this.searchUserByName(protocolValues.get("username"));
-        CandidateList voteList;
-
-        // Check if vote is valid
-        if ("blanck".equals(protocolValues.get("choice"))) {
-          message = this.voteIsValid(user, null, this.tableServer);
-        } else {
-          voteList = this.searchCandidateListByName(protocolValues.get("choice"));
-          message = this.voteIsValid(user, voteList, this.tableServer);
-        }
-
-        this.getOut().println(message);
       }
-    } catch (InterruptedException e) {
-      System.out.println("Exception in locking thread");
-      this.close();
-    } catch (Exception e) {
-      System.out.println("Client disconnected");
-      this.close();
-    }
   }
 
   private Map<String, String> parseProtocolMessage(String protocolMessage) {
@@ -232,28 +242,6 @@ class Connection extends Thread {
     }
 
     return protocolValues;
-  }
-
-  private String identifyAction(RMIInterface rmi, String key, String field, String value) {
-    // response will always return the status of the pretended action
-    String response = "type | status ; ";
-
-    if ("search".equals(key)) {
-      response += "search | ";
-
-      try {
-        User user = rmi.searchUser(field, value);
-        if (user != null) {
-          response += "success ; user | " + user.getName() + " ; ";
-        } else {
-          response += "failure ; ";
-        }
-      } catch (RemoteException e) {
-        e.printStackTrace();
-      }
-    }
-
-    return response;
   }
 
   public PrintWriter getOut() {
@@ -467,7 +455,7 @@ class Menu extends Thread {
         if (lockedTerminalIndex != -1) {
           // send user to voting terminal
           synchronized (this.votingTerminals.get(lockedTerminalIndex)) {
-            this.votingTableMenuMessages.add(user.getName());
+            this.votingTableMenuMessages.add("type | search ; user | " + user.getName());
             this.votingTerminals.get(this.getLockedTerminal()).notify();
           }
         } else {
@@ -628,4 +616,3 @@ class Menu extends Thread {
     return user;
   }
 }
-
