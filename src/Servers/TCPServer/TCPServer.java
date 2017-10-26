@@ -32,7 +32,7 @@ public class TCPServer {
   // arg[1] -> main rmi port
   // arg[2] -> voting table
   public static void main(String args[]) {
-    System.setProperty("java.rmi.server.hostname","192.168.1.78");
+    System.setProperty("java.rmi.server.hostname", "192.168.1.78");
     VotingTable votingTable = null;
     TCPServer tableServer = null;
     RMIInterface rmi = null;
@@ -46,10 +46,12 @@ public class TCPServer {
     // get voting table by id
     // TODO-> deal with method rmi, the server could go down??
     try {
-      votingTable = rmi.getVotingTableById(Integer.parseInt(args[2]));
+      votingTable = rmi.getVotingTableById(Integer.parseInt(args[3]));
       tableServer.setVotingTable(votingTable);
+      rmi.notifyAdmins("New voting table with id " + votingTable.getId() + " of election " + votingTable.getElection().getName());
     } catch (IOException | NullPointerException e) {
       System.out.println("Unable to retrieve voting table");
+      return;
     }
 
     try {
@@ -59,7 +61,7 @@ public class TCPServer {
       System.out.println("LISTEN SOCKET = " + listenSocket);
 
       System.out.println(rmi);
-      Menu menu = new Menu(votingTableMenuMessages, threads, rmi, tableServer);
+      Menu menu = new Menu(votingTableMenuMessages, threads, rmi, tableServer, votingTable.getId());
 
       // thread to accept new client connections
       while(true) {
@@ -155,7 +157,7 @@ class Connection extends Thread {
       while (true) {
         // Wait for client
         synchronized (this) {
-            this.wait();
+          this.wait();
         }
 
         // Var to store client messages
@@ -439,18 +441,20 @@ class Menu extends Thread {
   private CopyOnWriteArrayList<Connection> votingTerminals;
   private RMIInterface rmi;
   private TCPServer tableServer;
+  private int votingTableId;
 
-  public Menu (ArrayList<String> votingTableMenuMessages, CopyOnWriteArrayList<Connection> votingTerminals, RMIInterface rmi, TCPServer tableServer) {
+  public Menu (ArrayList<String> votingTableMenuMessages, CopyOnWriteArrayList<Connection> votingTerminals, RMIInterface rmi, TCPServer tableServer, int votingTableId) {
     this.votingTableMenuMessages = votingTableMenuMessages;
     this.votingTerminals = votingTerminals;
     this.rmi = rmi;
     this.tableServer = tableServer;
+    this.votingTableId = votingTableId;
     this.start();
   }
 
   public void run() {
     while (true) {
-      ArrayList<String> search = this.votingTableMenu();
+      ArrayList<String> search = this.votingTableMenu(votingTableId);
       User user = null;
 
       // search user by field in voting table
@@ -493,7 +497,8 @@ class Menu extends Thread {
       }
     }
   }
-  private ArrayList<String> votingTableMenu() {
+
+  private ArrayList<String> votingTableMenu(int votingTableId) {
     Scanner sc = new Scanner(System.in);
     ArrayList<String> search = new ArrayList<>();
 
@@ -539,7 +544,13 @@ class Menu extends Thread {
           System.out.println("Expire Date ");
           break;
         case 8:
-          return null;
+          try {
+            rmi.notifyAdmins("Voting table with id " + votingTableId + " off");
+          }
+          catch (RemoteException e) {
+            System.out.println("Remote exception notifying admins of voting table off.");
+          }
+          System.exit(0);
         default:
           break;
       }

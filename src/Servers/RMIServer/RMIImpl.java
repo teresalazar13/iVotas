@@ -3,7 +3,6 @@ package Servers.RMIServer;
 import Data.*;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.text.ParseException;
@@ -13,11 +12,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.net.*;
 import java.util.Calendar;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 
 public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
@@ -30,7 +25,8 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   private ArrayList<VotingTable> votingTables;
   private ArrayList<Vote> votes;
   private ArrayList<ElectionResult> electionResults;
-  private ArrayList<Admin> admins;
+
+  private ArrayList<AdminInterface> admins;
 
   public RMIImpl() throws RemoteException {
     super();
@@ -78,6 +74,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       RMIImpl server = new RMIImpl();
       NewThread thread = new NewThread("CheckRMIServerStatus", UDPPort);
 
+      /*
       System.out.println(server.users);
       System.out.println(server.faculties);
       System.out.println(server.departments);
@@ -85,6 +82,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       System.out.println(server.votingTables);
       System.out.println(server.votes);
       System.out.println(server.electionResults);
+      */
 
       Registry reg = LocateRegistry.createRegistry(registryPort);
       reg.rebind("ivotas", server);
@@ -650,16 +648,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return false;
   }
 
-  public synchronized void getStatus() throws RemoteException {
-    for (int i = 0; i < admins.size(); i++) {
-      admins.get(i).printTableStatus();
-    }
-  }
-
-  public synchronized void addAdmin(Admin admin) throws RemoteException {
-    this.admins.add(admin);
-  }
-
   public synchronized void vote(User user, Election election, CandidateList candidateList, Department department) throws RemoteException {
     Vote vote;
 
@@ -671,6 +659,16 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
     this.votes.add(vote);
     updateFile(this.votes, "Votes");
+
+    int numberOfVotes = 0;
+    for (int i = 0; i < this.votes.size(); i++) {
+      if (votes.get(i).getElection().getName().equals(election.getName())) {
+        numberOfVotes += 1;
+      }
+    }
+
+    notifyAdmins("New vote on election " + election.getName() +
+            ". \nCurrent number of votes " + numberOfVotes);
   }
 
   private long currentTimestamp() {
@@ -740,6 +738,18 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
 
     return false;
+  }
+
+  public synchronized void subscribe(String name, AdminInterface c) throws RemoteException {
+    System.out.println("Subscribing " + name);
+    this.admins.add(c);
+  }
+
+  public synchronized void notifyAdmins(String s) throws RemoteException {
+    for (int i = 0; i < this.admins.size(); i++) {
+      System.out.println("Sending print to admin.");
+      this.admins.get(i).print_on_client(s);
+    }
   }
 
   public synchronized  ArrayList<Election> getElections() throws RemoteException { return elections; }
