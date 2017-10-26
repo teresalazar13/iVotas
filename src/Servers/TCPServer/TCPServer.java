@@ -82,6 +82,7 @@ public class TCPServer {
 
     while (true) {
       try {
+        // primeiro arg é o ip
         rmi = (RMIInterface) LocateRegistry.getRegistry(this.getPort()).lookup("ivotas");
         //r.addAdmin(a);
         rmi.remote_print("New client");
@@ -194,10 +195,15 @@ class Connection extends Thread {
 
         // Vote search fields
         User user = this.searchUserByName(protocolValues.get("username"));
-        CandidateList voteList = this.searchCandidateListByName(protocolValues.get("choice"));
+        CandidateList voteList;
 
         // Check if vote is valid
-        message = this.voteIsValid(user, voteList, this.tableServer);
+        if ("blanck".equals(protocolValues.get("choice"))) {
+          message = this.voteIsValid(user, null, this.tableServer);
+        } else {
+          voteList = this.searchCandidateListByName(protocolValues.get("choice"));
+          message = this.voteIsValid(user, voteList, this.tableServer);
+        }
 
         this.getOut().println(message);
       }
@@ -391,7 +397,7 @@ class Connection extends Thread {
     String voteIsValid = "type | status ; vote | ";
 
     while (true) {
-      System.out.println("that");
+
       try {
         if (rmi.voteIsValid(user, this.tableServer.getVotingTable(), voteList)) {
           voteIsValid += "success ;";
