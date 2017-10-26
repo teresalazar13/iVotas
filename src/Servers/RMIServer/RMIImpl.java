@@ -675,11 +675,11 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     Calendar currentDate = Calendar.getInstance();
 
     try {
-      /*System.out.println(Calendar.DAY_OF_MONTH);
+      System.out.println(Calendar.DAY_OF_MONTH);
       System.out.println(Calendar.MONTH);
       System.out.println(Calendar.YEAR);
       System.out.println(Calendar.HOUR_OF_DAY);
-      System.out.println(Calendar.MINUTE); */
+      System.out.println(Calendar.MINUTE);
       date = simpleDateFormat.parse(currentDate.get(Calendar.DAY_OF_MONTH) + "/" +
               currentDate.get(Calendar.MONTH) + "/" +
               currentDate.get(Calendar.YEAR) + " " +
