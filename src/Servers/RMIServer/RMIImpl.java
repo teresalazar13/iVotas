@@ -13,9 +13,6 @@ import java.rmi.registry.Registry;
 import java.net.*;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 
 public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
@@ -28,7 +25,8 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   private ArrayList<VotingTable> votingTables;
   private ArrayList<Vote> votes;
   private ArrayList<ElectionResult> electionResults;
-  private ArrayList<Admin> admins;
+
+  private ArrayList<AdminInterface> admins;
 
   public RMIImpl() throws RemoteException {
     super();
@@ -594,16 +592,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return false;
   }
 
-  public synchronized void getStatus() throws RemoteException {
-    for (int i = 0; i < admins.size(); i++) {
-      admins.get(i).printTableStatus();
-    }
-  }
-
-  public synchronized void addAdmin(Admin admin) throws RemoteException {
-    this.admins.add(admin);
-  }
-
   public synchronized void vote(User user, Election election, CandidateList candidateList, Department department) throws RemoteException {
     Vote vote = new Vote(user, election, candidateList, department);
     this.votes.add(vote);
@@ -666,6 +654,11 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
 
     return false;
+  }
+
+  public synchronized void subscribe(String name, AdminInterface c) throws RemoteException {
+    System.out.println("Subscribing " + name);
+    this.admins.add(c);
   }
 
   public synchronized  ArrayList<Election> getElections() throws RemoteException { return elections; }
