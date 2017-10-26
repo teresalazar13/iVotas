@@ -5,6 +5,7 @@ import Data.*;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -12,7 +13,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 
-public class Admin implements Serializable {
+public class Admin extends UnicastRemoteObject implements AdminInterface, Serializable {
+  // TODO - admins perdem-se ao trocar de servidores
   // TODO - configs em txt - portas, ips
   // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
@@ -22,11 +24,13 @@ public class Admin implements Serializable {
   private int port;
   private int mainPort;
   private int backupPort;
+  private boolean notify;
 
-  public Admin(int port, int mainPort, int backupPort) {
+  public Admin(int port, int mainPort, int backupPort) throws RemoteException {
     this.port = port;
     this.mainPort = mainPort;
     this.backupPort = backupPort;
+    this.notify = false;
   }
 
   public static void main(String args[]) {
@@ -41,9 +45,13 @@ public class Admin implements Serializable {
 
     int mainPort = Integer.parseInt(args[0]);
     int backupPort = Integer.parseInt(args[1]);
-
-    Admin a = new Admin(mainPort, mainPort, backupPort);
-    connectRMIInterface(a);
+    try {
+      Admin a = new Admin(mainPort, mainPort, backupPort);
+      connectRMIInterface(a);
+    }
+    catch (RemoteException e) {
+      System.out.println("Error creating admin.");
+    }
   }
 
   public static void menu(RMIInterface r, Admin a) {
@@ -59,7 +67,8 @@ public class Admin implements Serializable {
               "7 - Know where a User has voted\n" +
               "8 - See details of past elections\n" +
               "9 - Print Data\n" +
-              "11 to quit", 1, 9);
+              "10 - Print Notifications\n" +
+              "11 to quit", 1, 11);
       switch (option) {
         case 1:
           createUser(r, a);
@@ -87,14 +96,13 @@ public class Admin implements Serializable {
           break;
         case 9:
           printData(r, a);
-        case 10:
-          try {
-            r.remote_print("XXXXXXXX");
-          } catch (Exception e) {
-            System.out.println("Fail on Server");
-            connectRMIInterface(a);
-          }
           break;
+        case 10:
+          printNotifications(r, a);
+          break;
+        case 11:
+          System.out.println("Bye!");
+          System.exit(0);
         default:
           return;
       }
@@ -480,6 +488,31 @@ public class Admin implements Serializable {
     }
   }
 
+  public static void printNotifications(RMIInterface r, Admin a) {
+    try {
+      r.subscribe("localhost", (AdminInterface) a);
+      System.out.println("Client sent subscription to server");
+      a.setNotify(true);
+      while(true) {
+        try {
+          TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+          System.out.println("Error sleeping");
+        }
+      }
+    }
+    catch(RemoteException e) {
+      System.out.println("Error subscribing.");
+      connectRMIInterface(a);
+    }
+  }
+
+  public void print_on_client(String s) throws RemoteException {
+    if (this.notify) {
+      System.out.println("> " + s);
+    }
+  }
+
   public static void updatePort(Admin a) {
     if (a.getPort() == a.mainPort) a.setPort(a.backupPort);
     else a.setPort(a.mainPort);
@@ -489,7 +522,6 @@ public class Admin implements Serializable {
     System.out.println("Trying to connect to port " + a.port);
     try {
       RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(a.port).lookup("ivotas");
-      r.addAdmin(a);
       r.remote_print("New client");
       System.out.println("Successfully connected to port " + a.port);
       menu(r, a);
@@ -541,13 +573,6 @@ public class Admin implements Serializable {
     }
   }
 
-  public static String getValidString(String field) {
-    System.out.println(field);
-    Scanner sc = new Scanner(System.in);
-    String res = sc.next();
-    return res;
-  }
-
   public static long createDate() {
     int day = getValidInteger("Day: ", 1,31);
     int month = getValidInteger("Month: ", 1, 12);
@@ -567,8 +592,19 @@ public class Admin implements Serializable {
     return date;
   }
 
-  public void printTableStatus() {
-    System.out.println("NEW TABLE");
+  public static String getValidString(String field) {
+    Scanner sc = new Scanner(System.in);
+    System.out.println(field);
+    String res = sc.next();
+    return res;
+  }
+
+  public boolean isNotify() {
+    return notify;
+  }
+
+  public void setNotify(boolean notify) {
+    this.notify = notify;
   }
 
   public int getPort() {

@@ -44,7 +44,7 @@ public class FileWrapper {
     long startDate = 0;
     long endDate = 0;
     try {
-      startDate = simpleDateFormat.parse("24/9/2017 16:15:00").getTime();
+      startDate = simpleDateFormat.parse("5/9/2017 16:15:00").getTime();
       endDate = simpleDateFormat.parse("24/9/2017 16:20:00").getTime();
     }
     catch (ParseException e) {

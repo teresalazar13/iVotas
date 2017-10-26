@@ -4,7 +4,6 @@ import Data.*;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.List;
 
 
 public interface RMIInterface extends Remote {
@@ -69,13 +68,13 @@ public interface RMIInterface extends Remote {
 
   VotingTable getVotingTableById(int id) throws RemoteException;
 
-  void getStatus() throws RemoteException;
-
-  void addAdmin(Admin admin) throws RemoteException;
-
   ArrayList<Election> getElections() throws RemoteException;
 
   String prettyPrint(int option) throws RemoteException;
 
   String printUsers() throws RemoteException;
+
+  void subscribe(String name, AdminInterface client) throws RemoteException;
+
+  void notifyAdmins(String s) throws RemoteException;
 }
