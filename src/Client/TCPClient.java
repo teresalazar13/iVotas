@@ -1,3 +1,5 @@
+package Client;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -118,7 +120,7 @@ class TCPClient {
       }
     } catch (IOException e) {
       if(inFromServer == null)
-        System.out.println("\nUsage: java TCPClient <host> <port>\n");
+        System.out.println("\nUsage: java Client.TCPClient <host> <port>\n");
         System.out.println(e.getMessage());
     } finally {
       try {

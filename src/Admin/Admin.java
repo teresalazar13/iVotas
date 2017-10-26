@@ -1,6 +1,8 @@
-package Servers.RMIServer;
+package Admin;
 
 import Data.*;
+import Servers.RMIServer.AdminInterface;
+import Servers.RMIServer.RMIInterface;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
@@ -14,12 +16,9 @@ import java.text.SimpleDateFormat;
 
 
 public class Admin extends UnicastRemoteObject implements AdminInterface, Serializable {
-  // TODO - admins perdem-se ao trocar de servidores
-  // TODO - configs em txt - portas, ips
+  // TODO - configs em txt
   // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
-  // TODO - getValidString
-  // TODO - expire date
 
   private int port;
   private int mainPort;
@@ -39,7 +38,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
     // System.setSecurityManager(new RMISecurityManager());
 
     if(args.length != 2) {
-      System.out.println("java Servers.RMIServer.Admin 1 port backupPort");
+      System.out.println("java Admin 1 port backupPort");
       System.exit(0);
     }
 
@@ -495,6 +494,12 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       a.setNotify(true);
       while(true) {
         try {
+          try {
+            r.remote_print("testing");
+          }
+          catch (RemoteException e) {
+            connectRMIInterface(a);
+          }
           TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
           System.out.println("Error sleeping");
