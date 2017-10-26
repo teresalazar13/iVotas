@@ -14,12 +14,9 @@ import java.text.SimpleDateFormat;
 
 
 public class Admin extends UnicastRemoteObject implements AdminInterface, Serializable {
-  // TODO - admins perdem-se ao trocar de servidores
-  // TODO - configs em txt - portas, ips
+  // TODO - configs em txt
   // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
-  // TODO - getValidString
-  // TODO - expire date
 
   private int port;
   private int mainPort;
@@ -495,6 +492,12 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       a.setNotify(true);
       while(true) {
         try {
+          try {
+            r.remote_print("testing");
+          }
+          catch (RemoteException e) {
+            connectRMIInterface(a);
+          }
           TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
           System.out.println("Error sleeping");
