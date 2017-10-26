@@ -34,15 +34,18 @@ class TCPClient {
       // create streams for writing to and reading from the socket
       inFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-      // read from keyboard and write to the server
+      // Thread that reads from keyboard and write to the server
       VotingTerminalMenu votingTerminalMenu = new VotingTerminalMenu("votingTerminalMenu", socket);
 
       // the main thread loops reading from the server and writing to System.out
       String messageFromServer;
+      Map<String, String> protocolValues;
+
       while((messageFromServer = inFromServer.readLine()) != null) {
         // set current username to log in
         synchronized (votingTerminalMenu.getT()) {
-          votingTerminalMenu.setCurrentUsername(messageFromServer);
+          protocolValues = client.parseProcolMessage(messageFromServer);
+          votingTerminalMenu.setCurrentUsername(protocolValues.get("user"));
           votingTerminalMenu.getT().notify();
         }
 
@@ -50,7 +53,18 @@ class TCPClient {
         messageFromServer = inFromServer.readLine();
 
         boolean loginState;
-        Map<String, String> protocolValues = client.parseProcolMessage(messageFromServer);
+        protocolValues = client.parseProcolMessage(messageFromServer);
+        if ("timeout".equals(protocolValues.get("type"))) {
+          System.out.println("aoiefjaoifjdos ijsdopifjdsoi jfsodpifjdopsifj");
+          votingTerminalMenu.setInterrupt(true);
+          votingTerminalMenu.getT().stop();
+          votingTerminalMenu = new VotingTerminalMenu("votingTerminalMenu", socket);
+
+
+          continue;
+        }
+
+        System.out.println("nao devia ter passado main");
         loginState = Boolean.parseBoolean(protocolValues.get("logged"));
 
         while (!loginState) {
@@ -59,8 +73,18 @@ class TCPClient {
           }
 
           messageFromServer = inFromServer.readLine();
+          if ("timeout".equals(protocolValues.get("type"))) {
+            break;
+          }
           protocolValues = client.parseProcolMessage(messageFromServer);
           loginState = Boolean.parseBoolean(protocolValues.get("logged"));
+        }
+        if ("timeout".equals(protocolValues.get("type"))) {
+          votingTerminalMenu.setInterrupt(true);
+          synchronized (votingTerminalMenu.getT()) {
+            votingTerminalMenu.getT().notify();
+          }
+          continue;
         }
 
         // get election info
@@ -160,6 +184,7 @@ class VotingTerminalMenu implements Runnable {
   private String currentUsername;
   private boolean voteState;
   private boolean loginState;
+  private boolean interrupt;
   private Map<String, String> electionInfo;
   private ArrayList<String> candidateListsName;
   private String threadName;
@@ -171,6 +196,7 @@ class VotingTerminalMenu implements Runnable {
     this.currentUsername = null;
     this.loginState = false;
     this.voteState= false;
+    this.interrupt = true;
     this.electionInfo = null;
     this.candidateListsName = null;
     this.threadName = threadName;
@@ -193,16 +219,34 @@ class VotingTerminalMenu implements Runnable {
           this.getT().wait();
         }
 
-        // Ask or password and send it to the server
+        // Ask for password and send it to the server
         String messageToServer;
         while (!this.loginState) {
           messageToServer = this.menu();
           this.outToServer.println(messageToServer);
+          System.out.println("hey there");
 
           synchronized (this.getT()) {
             this.getT().wait();
           }
+          System.out.println("passed");
+
+          if (this.interrupt) {
+            System.out.println("hell yeah reached here");
+            break;
+          }
         }
+        if (this.interrupt) {
+          // clean vars received
+          this.setLoginState(false);
+          this.setVoteState(false);
+          this.setInterrupt(false);
+          this.setCurrentUsername(null);
+          this.setElectionInfo(null);
+          this.setCandidateListsName(null);
+          continue;
+        }
+        System.out.println("nao passou e ainda bem");
 
         // Choose the list to vote
         String listNameToVote = votingMenu();
@@ -215,6 +259,16 @@ class VotingTerminalMenu implements Runnable {
         synchronized (this.getT()) {
           this.getT().wait();
         }
+        if (this.interrupt) {
+          // clean vars received
+          this.setLoginState(false);
+          this.setVoteState(false);
+          this.setInterrupt(false);
+          this.setCurrentUsername(null);
+          this.setElectionInfo(null);
+          this.setCandidateListsName(null);
+          continue;
+        }
         if (!this.voteState) {
           System.out.println("You cannot vote, you have already voted or can't vote on this election/list");
         }
@@ -222,6 +276,7 @@ class VotingTerminalMenu implements Runnable {
         // clean vars received
         this.setLoginState(false);
         this.setVoteState(false);
+        this.setInterrupt(false);
         this.setCurrentUsername(null);
         this.setElectionInfo(null);
         this.setCandidateListsName(null);
@@ -300,4 +355,7 @@ class VotingTerminalMenu implements Runnable {
 
   public boolean isVoteState() { return voteState; }
   public void setVoteState(boolean voteState) { this.voteState = voteState; }
+
+  public boolean isInterrupt() { return interrupt; }
+  public void setInterrupt(boolean interrupt) { this.interrupt = interrupt; }
 }
