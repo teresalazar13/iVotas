@@ -28,7 +28,9 @@ public class TCPServer {
     this.status = status;
   }
 
-  //
+  // arg[0] -> server port
+  // arg[1] -> main rmi port
+  // arg[2] -> voting table
   public static void main(String args[]) {
     System.setProperty("java.rmi.server.hostname","192.168.1.78");
     VotingTable votingTable = null;
@@ -37,7 +39,7 @@ public class TCPServer {
 
     ArrayList<String> votingTableMenuMessages = new ArrayList<>();
     CopyOnWriteArrayList <Connection> threads = new CopyOnWriteArrayList<>();
-    tableServer = new TCPServer(Integer.parseInt(args[0]), Integer.parseInt(args[0]), Integer.parseInt(args[1]), null, threads, true);
+    tableServer = new TCPServer(Integer.parseInt(args[1]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), null, threads, true);
 
     rmi = tableServer.connectRMIInterface();
 
@@ -51,10 +53,9 @@ public class TCPServer {
     }
 
     try {
-      int serverPort = 6000;
-      System.out.println("Listening on port 6000");
+      System.out.println("Listening on port" + args[2]);
 
-      ServerSocket listenSocket = new ServerSocket(serverPort);
+      ServerSocket listenSocket = new ServerSocket(Integer.parseInt(args[0]));
       System.out.println("LISTEN SOCKET = " + listenSocket);
 
       System.out.println(rmi);
