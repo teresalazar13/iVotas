@@ -74,6 +74,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       RMIImpl server = new RMIImpl();
       NewThread thread = new NewThread("CheckRMIServerStatus", UDPPort);
 
+      /*
       System.out.println(server.users);
       System.out.println(server.faculties);
       System.out.println(server.departments);
@@ -81,6 +82,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       System.out.println(server.votingTables);
       System.out.println(server.votes);
       System.out.println(server.electionResults);
+      */
 
       Registry reg = LocateRegistry.createRegistry(registryPort);
       reg.rebind("ivotas", server);
@@ -675,11 +677,11 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     Calendar currentDate = Calendar.getInstance();
 
     try {
-      System.out.println(Calendar.DAY_OF_MONTH);
+      /*System.out.println(Calendar.DAY_OF_MONTH);
       System.out.println(Calendar.MONTH);
       System.out.println(Calendar.YEAR);
       System.out.println(Calendar.HOUR_OF_DAY);
-      System.out.println(Calendar.MINUTE);
+      System.out.println(Calendar.MINUTE); */
       date = simpleDateFormat.parse(currentDate.get(Calendar.DAY_OF_MONTH) + "/" +
               currentDate.get(Calendar.MONTH) + "/" +
               currentDate.get(Calendar.YEAR) + " " +

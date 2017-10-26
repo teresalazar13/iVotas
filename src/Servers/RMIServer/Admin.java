@@ -67,7 +67,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
               "7 - Know where a User has voted\n" +
               "8 - See details of past elections\n" +
               "9 - Print Data\n" +
-              "10 - Print notifications\n" +
+              "10 - Print Notifications\n" +
               "11 to quit", 1, 11);
       switch (option) {
         case 1:
@@ -96,16 +96,13 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
           break;
         case 9:
           printData(r, a);
+          break;
         case 10:
           printNotifications(r, a);
           break;
-        case 12:
-          try {
-            r.remote_print("XXXXXXXX");
-          } catch (Exception e) {
-            System.out.println("Fail on Server");
-            connectRMIInterface(a);
-          }
+        case 11:
+          System.out.println("Bye!");
+          System.exit(0);
         default:
           return;
       }
