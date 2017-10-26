@@ -10,6 +10,7 @@ import java.rmi.registry.LocateRegistry;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class TCPServer {
   private int port;
@@ -30,7 +31,8 @@ public class TCPServer {
 
   // arg[0] -> server port
   // arg[1] -> main rmi port
-  // arg[2] -> voting table
+  // arg[2] -> backup rmi
+  // arg[3] -> voting table
   public static void main(String args[]) {
     System.setProperty("java.rmi.server.hostname","192.168.1.78");
     VotingTable votingTable = null;
@@ -46,7 +48,7 @@ public class TCPServer {
     // get voting table by id
     // TODO-> deal with method rmi, the server could go down??
     try {
-      votingTable = rmi.getVotingTableById(Integer.parseInt(args[2]));
+      votingTable = rmi.getVotingTableById(Integer.parseInt(args[3]));
       tableServer.setVotingTable(votingTable);
     } catch (IOException | NullPointerException e) {
       System.out.println("Unable to retrieve voting table");
@@ -159,25 +161,21 @@ class Connection extends Thread {
             this.wait();
           }
 
-          // Var to store client messages
+          // Vars
           String message;
+          String clientResponse = null;
+          Map<String, String> protocolValues;
 
           // Identify user at table
           synchronized (this) {
             message = votingTableMenuMessages.get(0);
-            System.out.println("----------------------------");
-            System.out.println(message);
-            System.out.println("----------------------------");
             votingTableMenuMessages.remove(0);
             this.getOut().println(message);
           }
 
-          // Read client login message
-          String clientResponse = null;
-          Map<String, String> protocolValues;
-
           synchronized (this) {
-            clientSocket.setSoTimeout(5000);
+            // set timeout at 120s
+            this.clientSocket.setSoTimeout(120000);
             clientResponse = bufferedReader.readLine();
           }
           protocolValues = parseProtocolMessage(clientResponse);
@@ -194,10 +192,11 @@ class Connection extends Thread {
           this.getOut().println(message);
 
           // Read user voting option
-          clientSocket.setSoTimeout(5000);
           clientResponse = bufferedReader.readLine();
 
-          System.out.println(clientResponse);
+          // Socket back to normal
+          this.clientSocket.setSoTimeout(0);
+
           protocolValues = parseProtocolMessage(clientResponse);
 
           // Vote search fields
@@ -205,7 +204,7 @@ class Connection extends Thread {
           CandidateList voteList;
 
           // Check if vote is valid
-          if ("blanck".equals(protocolValues.get("choice"))) {
+          if ("blank".equals(protocolValues.get("choice"))) {
             message = this.voteIsValid(user, null, this.tableServer);
           } else {
             voteList = this.searchCandidateListByName(protocolValues.get("choice"));
@@ -218,9 +217,6 @@ class Connection extends Thread {
           this.close();
           break;
         } catch(SocketTimeoutException e) {
-          System.out.println("============================================0");
-          System.out.println(e.getMessage());
-          System.out.println("============================================0");
           this.getOut().println("type | timeout");
         } catch (Exception e) {
           System.out.println(e.getMessage());
@@ -327,7 +323,6 @@ class Connection extends Thread {
         message = "type | status ; logged | " + validLogin;
         this.getOut().println(message);
 
-        this.clientSocket.setSoTimeout(5000);
         clientResponse = this.bufferedReader.readLine();
         protocolValues = parseProtocolMessage(clientResponse);
         validLogin = this.authUser(protocolValues);
@@ -610,4 +605,3 @@ class Menu extends Thread {
     return user;
   }
 }
-

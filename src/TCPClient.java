@@ -55,16 +55,12 @@ class TCPClient {
         boolean loginState;
         protocolValues = client.parseProcolMessage(messageFromServer);
         if ("timeout".equals(protocolValues.get("type"))) {
-          System.out.println("aoiefjaoifjdos ijsdopifjdsoi jfsodpifjdopsifj");
-          votingTerminalMenu.setInterrupt(true);
+          System.out.println("You were idle for too long, if you want to vote go back to the voting table");
           votingTerminalMenu.getT().stop();
           votingTerminalMenu = new VotingTerminalMenu("votingTerminalMenu", socket);
-
-
           continue;
         }
 
-        System.out.println("nao devia ter passado main");
         loginState = Boolean.parseBoolean(protocolValues.get("logged"));
 
         while (!loginState) {
@@ -80,10 +76,9 @@ class TCPClient {
           loginState = Boolean.parseBoolean(protocolValues.get("logged"));
         }
         if ("timeout".equals(protocolValues.get("type"))) {
-          votingTerminalMenu.setInterrupt(true);
-          synchronized (votingTerminalMenu.getT()) {
-            votingTerminalMenu.getT().notify();
-          }
+          System.out.println("You were idle for too long, if you want to vote go back to the voting table");
+          votingTerminalMenu.getT().stop();
+          votingTerminalMenu = new VotingTerminalMenu("votingTerminalMenu", socket);
           continue;
         }
 
@@ -107,6 +102,12 @@ class TCPClient {
         messageFromServer = inFromServer.readLine();
         protocolValues = client.parseProcolMessage(messageFromServer);
 
+        if ("timeout".equals(protocolValues.get("type"))) {
+          System.out.println("You were idle for too long, if you want to vote go back to the voting table");
+          votingTerminalMenu.getT().stop();
+          votingTerminalMenu = new VotingTerminalMenu("votingTerminalMenu", socket);
+          continue;
+        }
         if ("success".equals(protocolValues.get("vote"))) {
           votingTerminalMenu.setVoteState(true);
         }
@@ -224,29 +225,12 @@ class VotingTerminalMenu implements Runnable {
         while (!this.loginState) {
           messageToServer = this.menu();
           this.outToServer.println(messageToServer);
-          System.out.println("hey there");
 
           synchronized (this.getT()) {
             this.getT().wait();
           }
-          System.out.println("passed");
-
-          if (this.interrupt) {
-            System.out.println("hell yeah reached here");
-            break;
-          }
         }
-        if (this.interrupt) {
-          // clean vars received
-          this.setLoginState(false);
-          this.setVoteState(false);
-          this.setInterrupt(false);
-          this.setCurrentUsername(null);
-          this.setElectionInfo(null);
-          this.setCandidateListsName(null);
-          continue;
-        }
-        System.out.println("nao passou e ainda bem");
+        System.out.println("hey");
 
         // Choose the list to vote
         String listNameToVote = votingMenu();
@@ -259,16 +243,7 @@ class VotingTerminalMenu implements Runnable {
         synchronized (this.getT()) {
           this.getT().wait();
         }
-        if (this.interrupt) {
-          // clean vars received
-          this.setLoginState(false);
-          this.setVoteState(false);
-          this.setInterrupt(false);
-          this.setCurrentUsername(null);
-          this.setElectionInfo(null);
-          this.setCandidateListsName(null);
-          continue;
-        }
+
         if (!this.voteState) {
           System.out.println("You cannot vote, you have already voted or can't vote on this election/list");
         }
