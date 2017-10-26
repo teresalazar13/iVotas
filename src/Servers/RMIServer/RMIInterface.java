@@ -75,4 +75,6 @@ public interface RMIInterface extends Remote {
   String printUsers() throws RemoteException;
 
   void subscribe(String name, AdminInterface client) throws RemoteException;
+
+  void notifyAdmins(String s) throws RemoteException;
 }

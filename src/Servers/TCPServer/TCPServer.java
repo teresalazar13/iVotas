@@ -30,7 +30,7 @@ public class TCPServer {
 
   //
   public static void main(String args[]) {
-    System.setProperty("java.rmi.server.hostname","192.168.1.78");
+    System.setProperty("java.rmi.server.hostname", "192.168.1.78");
     VotingTable votingTable = null;
     TCPServer tableServer = null;
     RMIInterface rmi = null;
@@ -46,8 +46,10 @@ public class TCPServer {
     try {
       votingTable = rmi.getVotingTableById(Integer.parseInt(args[2]));
       tableServer.setVotingTable(votingTable);
+      rmi.notifyAdmins("New voting table with id " + votingTable.getId() + " of election " + votingTable.getElection().getName());
     } catch (IOException | NullPointerException e) {
       System.out.println("Unable to retrieve voting table");
+      return;
     }
 
     try {
@@ -154,7 +156,7 @@ class Connection extends Thread {
       while (true) {
         // Wait for client
         synchronized (this) {
-            this.wait();
+          this.wait();
         }
 
         // Var to store client messages

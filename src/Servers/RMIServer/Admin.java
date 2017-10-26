@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 
 
 public class Admin extends UnicastRemoteObject implements AdminInterface, Serializable {
+  // TODO - admins perdem-se ao trocar de servidores
   // TODO - configs em txt - portas, ips
   // TODO - correr em Terminal
   // TODO - Adicionar mais dados default a BD
@@ -23,11 +24,13 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
   private int port;
   private int mainPort;
   private int backupPort;
+  private boolean notify;
 
   public Admin(int port, int mainPort, int backupPort) throws RemoteException {
     this.port = port;
     this.mainPort = mainPort;
     this.backupPort = backupPort;
+    this.notify = false;
   }
 
   public static void main(String args[]) {
@@ -492,11 +495,24 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
     try {
       r.subscribe("localhost", (AdminInterface) a);
       System.out.println("Client sent subscription to server");
+      a.setNotify(true);
+      while(true) {
+        try {
+          TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+          System.out.println("Error sleeping");
+        }
+      }
     }
     catch(RemoteException e) {
       System.out.println("Error subscribing.");
       connectRMIInterface(a);
-      return;
+    }
+  }
+
+  public void print_on_client(String s) throws RemoteException {
+    if (this.notify) {
+      System.out.println("> " + s);
     }
   }
 
@@ -586,6 +602,13 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
     return res;
   }
 
+  public boolean isNotify() {
+    return notify;
+  }
+
+  public void setNotify(boolean notify) {
+    this.notify = notify;
+  }
 
   public int getPort() {
     return port;
