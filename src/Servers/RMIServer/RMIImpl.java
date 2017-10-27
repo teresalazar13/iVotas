@@ -49,16 +49,10 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
   }
 
-  // The backup server will be a client that will send a message to the main server every 5 seconds. The main server has
-  // 1 second to reply to the backup server. If it doesn't reply we have to turn the backup server into the main server.
-  // The backup server then has to read the object files to get the updated data.
-
-  // args server => localhost 6789 7000
-  // args backup => localhost 6789 8000
 
   public static void main(String args[]) {
     if(args.length != 3) {
-      System.out.println("java RMIIMpl IPAddress UDPPort RegistryPort");
+      System.out.println("java -jar dataserver.jar IPAddress UDPPort RMIPort");
       System.exit(0);
     }
 
@@ -122,7 +116,14 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
   }
 
-  private static void backupServer(String aHostName,int UDPPort, int registryPort) {
+
+  /**
+   * The backup server will be a client that will send a message to the main server every 5 seconds.
+   * The main server has 1 second to reply to the backup server.
+   * If it doesn't reply we have to turn the backup server into the main server.
+   * The backup server then has to read the object files to get the updated data.
+   * */
+  private static void backupServer(String aHostName, int UDPPort, int registryPort) {
 
     DatagramSocket aSocket = null;
 

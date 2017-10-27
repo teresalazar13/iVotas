@@ -29,12 +29,19 @@ public class TCPServer {
     this.status = status;
   }
 
-  // arg[0] -> server port
-  // arg[1] -> main rmi port
-  // arg[2] -> backup rmi
-  // arg[3] -> voting table
-  // arg[4] ->ip na rede
   public static void main(String args[]) {
+
+    if(args.length != 5) {
+      System.out.println("java -jar server.jar IPAddress serverPort RMIPort RMIBackupPort VotingTableID");
+      System.exit(0);
+    }
+
+    String IPAddress = args[0];
+    int serverPort = Integer.parseInt(args[1]);
+    int RMIPort = Integer.parseInt(args[2]);
+    int RMIbackupPort = Integer.parseInt(args[3]);
+    int VotingTableID = Integer.parseInt(args[4]);
+
     System.setProperty("java.rmi.server.hostname", "192.168.1.78");
     VotingTable votingTable = null;
     TCPServer tableServer = null;
@@ -42,36 +49,34 @@ public class TCPServer {
 
     ArrayList<String> votingTableMenuMessages = new ArrayList<>();
     CopyOnWriteArrayList <Connection> threads = new CopyOnWriteArrayList<>();
-    tableServer = new TCPServer(Integer.parseInt(args[1]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), null, threads, true);
+    tableServer = new TCPServer(RMIPort, RMIPort, RMIbackupPort, null, threads, true);
 
-    rmi = tableServer.connectRMIInterface(args[4]);
+    rmi = tableServer.connectRMIInterface(IPAddress);
 
-    // get voting table by id
-    // TODO-> deal with method rmi, the server could go down??
     try {
-      votingTable = rmi.getVotingTableById(Integer.parseInt(args[3]));
+      votingTable = rmi.getVotingTableById(VotingTableID);
       tableServer.setVotingTable(votingTable);
       rmi.notifyAdmins("New voting table with id " + votingTable.getId() + " of election " + votingTable.getElection().getName());
     } catch (IOException | NullPointerException e) {
       System.out.println("Unable to retrieve voting table");
-      tableServer.connectRMIInterface(args[4]);
+      tableServer.connectRMIInterface(IPAddress);
       return;
     }
 
     try {
-      System.out.println("Listening on port" + args[2]);
+      System.out.println("Listening on port " + serverPort);
 
-      ServerSocket listenSocket = new ServerSocket(Integer.parseInt(args[0]));
+      ServerSocket listenSocket = new ServerSocket(serverPort);
       System.out.println("LISTEN SOCKET = " + listenSocket);
 
       System.out.println(rmi);
-      Menu menu = new Menu(votingTableMenuMessages, threads, rmi, tableServer, votingTable.getId(), args[4]);
+      Menu menu = new Menu(votingTableMenuMessages, threads, rmi, tableServer, votingTable.getId(), IPAddress);
 
-      // thread to accept new client connections
+      // Thread to accept new client connections
       while(true) {
         Socket clientSocket = listenSocket.accept();
         System.out.println("CLIENT_SOCKET (created at accept()) = " + clientSocket);
-        Connection thread = new Connection(clientSocket, tableServer.votingTerminals.size(), args[4], tableServer, votingTableMenuMessages, threads, rmi);
+        Connection thread = new Connection(clientSocket, tableServer.votingTerminals.size(), IPAddress, tableServer, votingTableMenuMessages, threads, rmi);
         tableServer.votingTerminals.add(thread);
       }
     } catch(IOException e) {
@@ -83,6 +88,7 @@ public class TCPServer {
     if (server.getPort() == server.getMainRmiPort()) server.setPort(server.getBackupRmiPort());
     else server.setPort(server.getMainRmiPort());
   }
+
   private RMIInterface connectRMIInterface(String ip) {
     RMIInterface rmi = null;
     boolean passed = false;
@@ -132,7 +138,7 @@ public class TCPServer {
 // Thread to handle comm with client
 class Connection extends Thread {
   private int thread_number;
-  String ip;
+  private String ip;
   private Socket clientSocket;
   private BufferedReader bufferedReader;
   private PrintWriter outToServer;
@@ -160,77 +166,76 @@ class Connection extends Thread {
   }
 
   public void run() {
-      while (true) {
-        try {
-          // Wait for client
-          synchronized (this) {
-            this.wait();
-          }
-
-          // Vars
-          String message;
-          String clientResponse = null;
-          Map<String, String> protocolValues;
-
-          // Identify user at table
-          synchronized (this) {
-            message = votingTableMenuMessages.get(0);
-            votingTableMenuMessages.remove(0);
-            this.getOut().println(message);
-          }
-
-          synchronized (this) {
-            // set timeout at 120s
-            this.clientSocket.setSoTimeout(120000);
-            clientResponse = bufferedReader.readLine();
-          }
-          protocolValues = parseProtocolMessage(clientResponse);
-
-          // Check if login is valid
-          boolean validLogin = loginIsValid(protocolValues);
-
-          // Send sucess login message
-          message = "type | status ; logged | " + validLogin;
-          this.getOut().println(message);
-
-          // Send election info to client
-          message = "type | voting ; election | " + this.tableServer.getVotingTable().getElection().toStringClient();
-          this.getOut().println(message);
-
-          // Read user voting option
-          clientResponse = bufferedReader.readLine();
-
-          // Socket back to normal
-          this.clientSocket.setSoTimeout(0);
-
-          protocolValues = parseProtocolMessage(clientResponse);
-
-          // Vote search fields
-          User user = this.searchUserByName(protocolValues.get("username"));
-          CandidateList voteList;
-
-          // Check if vote is valid
-          if ("blank".equals(protocolValues.get("choice"))) {
-            message = this.voteIsValid(user, null, this.tableServer);
-          } else {
-            voteList = this.searchCandidateListByName(protocolValues.get("choice"));
-            message = this.voteIsValid(user, voteList, this.tableServer);
-          }
-
-          this.getOut().println(message);
-        } catch (InterruptedException e) {
-          System.out.println("Exception in locking thread");
-          this.close();
-          break;
-        } catch(SocketTimeoutException e) {
-          this.getOut().println("type | timeout");
-        } catch (Exception e) {
-          System.out.println(e.getMessage());
-          System.out.println("Client disconnected");
-          this.close();
-          break;
+    while (true) {
+      try {
+        // Wait for client
+        synchronized (this) {
+          this.wait();
         }
+
+        String message;
+        String clientResponse = null;
+        Map<String, String> protocolValues;
+
+        // Identify user at table
+        synchronized (this) {
+          message = votingTableMenuMessages.get(0);
+          votingTableMenuMessages.remove(0);
+          this.getOut().println(message);
+        }
+
+        synchronized (this) {
+          // Set timeout of 120s
+          this.clientSocket.setSoTimeout(120000);
+          clientResponse = bufferedReader.readLine();
+        }
+        protocolValues = parseProtocolMessage(clientResponse);
+
+        // Check if login is valid
+        boolean validLogin = loginIsValid(protocolValues);
+
+        // Send sucess login message
+        message = "type | status ; logged | " + validLogin;
+        this.getOut().println(message);
+
+        // Send election info to client
+        message = "type | voting ; election | " + this.tableServer.getVotingTable().getElection().toStringClient();
+        this.getOut().println(message);
+
+        // Read user voting option
+        clientResponse = bufferedReader.readLine();
+
+        // Socket back to normal
+        this.clientSocket.setSoTimeout(0);
+
+        protocolValues = parseProtocolMessage(clientResponse);
+
+        // Vote search fields
+        User user = this.searchUserByName(protocolValues.get("username"));
+        CandidateList voteList;
+
+        // Check if vote is valid
+        if ("blank".equals(protocolValues.get("choice"))) {
+          message = this.voteIsValid(user, null, this.tableServer);
+        } else {
+          voteList = this.searchCandidateListByName(protocolValues.get("choice"));
+          message = this.voteIsValid(user, voteList, this.tableServer);
+        }
+
+        this.getOut().println(message);
+      } catch (InterruptedException e) {
+        System.out.println("Exception in locking thread");
+        this.close();
+        break;
+      } catch(SocketTimeoutException e) {
+        this.getOut().println("type | timeout");
+      } catch (Exception e) {
+        System.out.println(e.getMessage());
+        System.out.println("Client disconnected");
+        this.close();
+        break;
       }
+    }
   }
 
   private Map<String, String> parseProtocolMessage(String protocolMessage) {

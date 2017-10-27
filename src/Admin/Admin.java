@@ -19,12 +19,14 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
   private int port;
   private int mainPort;
   private int backupPort;
+  private String IPAddress;
   private boolean notify;
 
-  public Admin(int port, int mainPort, int backupPort) throws RemoteException {
+  public Admin(int port, int mainPort, int backupPort, String IPAddress) throws RemoteException {
     this.port = port;
     this.mainPort = mainPort;
     this.backupPort = backupPort;
+    this.IPAddress = IPAddress;
     this.notify = false;
   }
 
@@ -33,15 +35,17 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
     // System.getProperties().put("java.security.policy", "policy.all");
     // System.setSecurityManager(new RMISecurityManager());
 
-    if(args.length != 2) {
-      System.out.println("java Admin 1 port backupPort");
+    if(args.length != 3) {
+      System.out.println("java -jar console.jar IPAddress RMIPort RMIBackupPort");
       System.exit(0);
     }
 
-    int mainPort = Integer.parseInt(args[0]);
-    int backupPort = Integer.parseInt(args[1]);
+    String IPAddress = args[0];
+    int mainPort = Integer.parseInt(args[1]);
+    int backupPort = Integer.parseInt(args[2]);
+
     try {
-      Admin a = new Admin(mainPort, mainPort, backupPort);
+      Admin a = new Admin(mainPort, mainPort, backupPort, IPAddress);
       connectRMIInterface(a);
     }
     catch (RemoteException e) {
@@ -538,7 +542,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
   public static void connectRMIInterface(Admin a) {
     System.out.println("Trying to connect to port " + a.port);
     try {
-      RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(a.port).lookup("ivotas");
+      RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(a.IPAddress, a.port).lookup("ivotas");
       r.remote_print("New admin");
       System.out.println("Successfully connected to port " + a.port);
       menu(r, a);
