@@ -1,4 +1,4 @@
-package Servers.RMIServer;
+package Admin;
 
 import java.rmi.Remote;
 
