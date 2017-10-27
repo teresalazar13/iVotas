@@ -113,8 +113,10 @@ public interface RMIInterface extends Remote {
   /** Searches user by all types of attributes */
   User searchUser(String field, String res) throws RemoteException;
 
+  ArrayList<User> searchUsers(String field, String value) throws RemoteException;
+
   /** Given a name and password authenticates user. Return true if operation is successful and
-   * false otherwise. */
+  * false otherwise. */
   boolean authenticateUser(String name, String password) throws RemoteException;
 
   /** Giver a user, election, candidate list and department, votes */
