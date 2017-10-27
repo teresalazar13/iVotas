@@ -59,7 +59,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
 
   public static void main(String args[]) {
     if(args.length != 3) {
-      System.out.println("java RMIIMpl localhost UDPPort RegistryPort");
+      System.out.println("java RMIIMpl IPAddress UDPPort RegistryPort");
       System.exit(0);
     }
 
@@ -72,7 +72,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   public static void mainServer(int UDPPort, int registryPort) {
     try {
       RMIImpl server = new RMIImpl();
-      NewThread thread = new NewThread("CheckRMIServerStatus", UDPPort);
 
       /*
       System.out.println(server.users);
@@ -87,6 +86,38 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       Registry reg = LocateRegistry.createRegistry(registryPort);
       reg.rebind("ivotas", server);
       System.out.println("RMI Server ready.");
+
+      DatagramSocket aSocket = null;
+      String s;
+
+      try {
+        aSocket = new DatagramSocket(UDPPort);
+        System.out.println("Socket Datagram listening.");
+
+        while(true) {
+          byte[] buffer = new byte[1000];
+          DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+
+          aSocket.receive(request);
+          s = new String(request.getData(), 0, request.getLength());
+          if (s.equals("Server Status OK")) {
+            DatagramPacket reply = new DatagramPacket(request.getData(), request.getLength(), request.getAddress(), request.getPort());
+            aSocket.send(reply);
+          }
+        }
+
+      }
+      catch (SocketException e) {
+        System.out.println("Socket: " + e.getMessage());
+      }
+      catch (IOException e) {
+        System.out.println("IO: " + e.getMessage());
+      }
+      finally {
+        if(aSocket != null) {
+          aSocket.close();
+        }
+      }
 
     } catch (RemoteException re) {
       System.out.println("Exception in RMIImpl.main: " + re);
@@ -119,7 +150,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
           aSocket.receive(reply);
           String replyMessage = new String(reply.getData(), 0, reply.getLength());
 
-          if (replyMessage.equals("Server Status OK")) {
+          if (replyMessage.equals(text)) {
             System.out.println("Received: " + replyMessage);
             numberOfFails = 0;
             try {
@@ -753,54 +784,4 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   }
 
   public synchronized  ArrayList<Election> getElections() throws RemoteException { return elections; }
-}
-
-class NewThread implements Runnable {
-  private String threadName;
-  private Thread t;
-  private int port;
-
-  NewThread(String threadName, int port) {
-    this.port = port;
-    this.threadName = threadName;
-    t = new Thread(this, threadName);
-    System.out.println("New thread: " + t);
-    t.start();
-  }
-
-  public void run() {
-    DatagramSocket aSocket = null;
-    String s;
-
-    System.out.println("Thread " + this.threadName + " started.");
-
-    try {
-      aSocket = new DatagramSocket(this.port);
-      System.out.println("Socket Datagram listening.");
-
-      while(true) {
-        byte[] buffer = new byte[1000];
-        DatagramPacket request = new DatagramPacket(buffer, buffer.length);
-
-        aSocket.receive(request);
-        s = new String(request.getData(), 0, request.getLength());
-        if (s.equals("Server Status OK")) {
-          DatagramPacket reply = new DatagramPacket(request.getData(), request.getLength(), request.getAddress(), request.getPort());
-          aSocket.send(reply);
-        }
-      }
-
-    }
-    catch (SocketException e) {
-      System.out.println("Socket: " + e.getMessage());
-    }
-    catch (IOException e) {
-      System.out.println("IO: " + e.getMessage());
-    }
-    finally {
-      if(aSocket != null) {
-        aSocket.close();
-      }
-    }
-  }
 }
