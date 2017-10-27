@@ -63,6 +63,8 @@ public interface RMIInterface extends Remote {
 
   User searchUser(String field, String res) throws RemoteException;
 
+  ArrayList<User> searchUsers(String field, String value) throws RemoteException;
+
   boolean authenticateUser(String name, String password) throws RemoteException;
 
   void vote(User user, Election election, CandidateList candidateList, Department department) throws RemoteException;

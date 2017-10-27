@@ -49,16 +49,10 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
   }
 
-  // The backup server will be a client that will send a message to the main server every 5 seconds. The main server has
-  // 1 second to reply to the backup server. If it doesn't reply we have to turn the backup server into the main server.
-  // The backup server then has to read the object files to get the updated data.
-
-  // args server => localhost 6789 7000
-  // args backup => localhost 6789 8000
 
   public static void main(String args[]) {
     if(args.length != 3) {
-      System.out.println("java RMIIMpl IPAddress UDPPort RegistryPort");
+      System.out.println("java -jar dataserver.jar IPAddress UDPPort RMIPort");
       System.exit(0);
     }
 
@@ -122,7 +116,14 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
   }
 
-  private static void backupServer(String aHostName,int UDPPort, int registryPort) {
+
+  /**
+   * The backup server will be a client that will send a message to the main server every 5 seconds.
+   * The main server has 1 second to reply to the backup server.
+   * If it doesn't reply we have to turn the backup server into the main server.
+   * The backup server then has to read the object files to get the updated data.
+   * */
+  private static void backupServer(String aHostName, int UDPPort, int registryPort) {
 
     DatagramSocket aSocket = null;
 
@@ -590,6 +591,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return res;
   }
 
+  // Returns all the possible values of the field
   private ArrayList<String> fieldValues(String field, ArrayList<User> users) {
     ArrayList<String> values = new ArrayList<>();
 
@@ -597,16 +599,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       case "name":
         for (User user : users) {
           values.add(user.getName());
-        }
-        break;
-      case "department":
-        for (User user : users) {
-          values.add(user.getDepartment().getName());
-        }
-        break;
-      case "faculty":
-        for (User user : users) {
-          values.add(user.getFaculty().getName());
         }
         break;
       case "contact":
@@ -634,6 +626,28 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return values;
   }
 
+  // Returns all the users with the same field value
+  private ArrayList<User> usersWithSameField(String field, String value) {
+    ArrayList<User> users = new ArrayList<>();
+
+    if ("faculty".equals(field)) {
+      for (User user : this.users) {
+        if (value.equals(user.getFaculty().getName())) {
+          users.add(user);
+        }
+      }
+    } else {
+      for (User user : this.users) {
+        if (value.equals(user.getDepartment().getName())) {
+          users.add(user);
+        }
+      }
+    }
+
+    return users;
+  }
+
+  // The field value is unique, so we only need to return one user
   public User searchUser(String field, String value) throws RemoteException {
     ArrayList<User> users = this.users;
     ArrayList<String> values = fieldValues(field, users);
@@ -645,6 +659,11 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
 
     return null;
+  }
+
+  // Searchs for users based on the field value, there's several users with the same field value
+  public ArrayList<User> searchUsers(String field, String value) throws RemoteException {
+    return this.usersWithSameField(field, value);
   }
 
   public boolean authenticateUser(String name, String password) throws RemoteException {
