@@ -492,7 +492,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       a.setNotify(true);
       InputStreamReader input = new InputStreamReader(System.in);
       BufferedReader reader = new BufferedReader(input);
-      System.out.println("Type STOP to return. Don't press ^C.");
+      System.out.println("Type STOP to return.");
       while(true) {
         try {
           try {
@@ -539,7 +539,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
     System.out.println("Trying to connect to port " + a.port);
     try {
       RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(a.port).lookup("ivotas");
-      r.remote_print("New client");
+      r.remote_print("New admin");
       System.out.println("Successfully connected to port " + a.port);
       menu(r, a);
     } catch (Exception e) {
