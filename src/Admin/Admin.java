@@ -114,13 +114,15 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
     if (type == 4) return;
 
     String name = getValidString("Name: ");
-    String password = getValidString("Password: ");
+    System.out.println("Password: ");
+    Scanner sc = new Scanner(System.in);
+    String password = sc.nextLine();
     String departmentName = getValidString("Department: ");
     String facultyName = getValidString("Faculty: ");
-    String contact = getValidString("Contact: ");
+    String contact = Integer.toString(getValidInteger("Contact: ", 1, 999999999));
     String address = getValidString("Address: ");
     String cc = getValidString("CC: ");
-    String expireDate = getValidString("Expire date: ");
+    String expireDate = getValidExpireDate("Expire date: ");
 
     try {
       int success = r.createUser(name, password, departmentName, facultyName, contact, address, cc, expireDate, type);
@@ -485,7 +487,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
 
   public static void printNotifications(RMIInterface r, Admin a) {
     try {
-      r.subscribe("localhost", (AdminInterface) a);
+      r.subscribe("localhost", a);
       System.out.println("Client sent subscription to server");
       a.setNotify(true);
       while(true) {
@@ -574,6 +576,30 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
     }
   }
 
+  public static String getValidString(String field) {
+    Scanner sc = new Scanner(System.in);
+    System.out.println(field);
+    while(true) {
+      String res = sc.nextLine();
+      if (res.matches("^[a-zA-Z\\s]*$"))
+        return res;
+      else
+        System.out.println("Please write only letters and spaces");
+    }
+  }
+
+  public static String getValidExpireDate(String field) {
+    Scanner sc = new Scanner(System.in);
+    System.out.println(field);
+    while(true) {
+      String res = sc.nextLine();
+      if (res.matches("(?:0[1-9]|1[0-2])/[0-9]{2}"))
+        return res;
+      else
+        System.out.println("Please write expire date in MM/YY format");
+    }
+  }
+
   public static long createDate() {
     int day = getValidInteger("Day: ", 1,31);
     int month = getValidInteger("Month: ", 1, 12);
@@ -591,13 +617,6 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       e.printStackTrace();
     }
     return date;
-  }
-
-  public static String getValidString(String field) {
-    Scanner sc = new Scanner(System.in);
-    System.out.println(field);
-    String res = sc.next();
-    return res;
   }
 
   public void setNotify(boolean notify) {
