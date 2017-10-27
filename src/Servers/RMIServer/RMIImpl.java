@@ -24,11 +24,10 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   private ArrayList<CandidateList> candidateLists;
   private ArrayList<VotingTable> votingTables;
   private ArrayList<Vote> votes;
-  private ArrayList<ElectionResult> electionResults;
 
   private ArrayList<AdminInterface> admins;
 
-  public RMIImpl() throws RemoteException {
+  private RMIImpl() throws RemoteException {
     super();
 
     try {
@@ -41,7 +40,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       candidateLists = data.candidateLists;
       votingTables = data.votingTables;
       votes = data.votes;
-      electionResults = data.electionResults;
       admins = new ArrayList<>();
     } catch (ClassNotFoundException e) {
       System.out.println("Class Not Found Exception " + e);
@@ -69,7 +67,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     backupServer(args[0], UDPPort, registryPort);
   }
 
-  public static void mainServer(int UDPPort, int registryPort) {
+  private static void mainServer(int UDPPort, int registryPort) {
     try {
       RMIImpl server = new RMIImpl();
 
@@ -80,7 +78,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       System.out.println(server.elections);
       System.out.println(server.votingTables);
       System.out.println(server.votes);
-      System.out.println(server.electionResults);
       */
 
       Registry reg = LocateRegistry.createRegistry(registryPort);
@@ -124,8 +121,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
   }
 
-
-  public static void backupServer(String aHostName,int UDPPort, int registryPort) {
+  private static void backupServer(String aHostName,int UDPPort, int registryPort) {
 
     DatagramSocket aSocket = null;
 
@@ -279,7 +275,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     if (department == null) {
       return 3;
     }
-    int id = generateVotingTableId(election);
+    int id = generateVotingTableId();
     ArrayList<VotingTerminal> votingTerminals = new ArrayList<VotingTerminal>();
     VotingTable votingTable = new VotingTable(id, election, department, votingTerminals);
     votingTables.add(votingTable);
@@ -393,18 +389,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return vote.getDepartment().getName();
   }
 
-  private synchronized ArrayList<Vote> votesOfElection(Election election) {
-    ArrayList<Vote> votes = new ArrayList<>();
-
-    for (Vote vote : this.votes) {
-      if (vote.getElection().getName().equals(election.getName())) {
-        votes.add(vote);
-      }
-    }
-
-    return votes;
-  }
-
   public synchronized String detailsOfPastElections() throws RemoteException {
     System.out.println(".......................................");
     String res = "";
@@ -448,6 +432,18 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return res;
   }
 
+  private synchronized ArrayList<Vote> votesOfElection(Election election) {
+    ArrayList<Vote> votes = new ArrayList<>();
+
+    for (Vote vote : this.votes) {
+      if (vote.getElection().getName().equals(election.getName())) {
+        votes.add(vote);
+      }
+    }
+
+    return votes;
+  }
+
   public synchronized User getUserByName(String userName) throws RemoteException {
     for (int i = 0; i < users.size(); i++) {
       if (users.get(i).getName().equals(userName)) {
@@ -470,17 +466,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     for (int i = 0; i < faculties.size(); i++) {
       if (faculties.get(i).getName().equals(facultyName)) {
         return faculties.get(i);
-      }
-    }
-    return null;
-  }
-
-  public synchronized Faculty getFacultyByDepartmentName(String department) throws RemoteException {
-    for (int i = 0; i < faculties.size(); i++) {
-      for (int j = 0; j < faculties.get(i).getDepartments().size(); j++) {
-        if (faculties.get(i).getDepartments().get(j).getName().equals(department)) {
-          return faculties.get(i);
-        }
       }
     }
     return null;
@@ -513,6 +498,20 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return null;
   }
 
+  public synchronized VotingTable getVotingTableById(int id) {
+    for (VotingTable votingTable : this.votingTables) {
+      if (votingTable.getId() == id) {
+        return votingTable;
+      }
+    }
+
+    return null;
+  }
+
+  private synchronized int generateVotingTableId() throws RemoteException {
+    return votingTables.size() - 1;
+  }
+
   public synchronized String prettyPrint(int option) throws RemoteException {
     String res = "";
     if (option == 1)
@@ -530,7 +529,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return res;
   }
 
-  public synchronized String printUsers() throws RemoteException {
+  private synchronized String printUsers() throws RemoteException {
     String res = "";
     for (int i = 0; i < users.size(); i++) {
       res += users.get(i).prettyPrint();
@@ -540,7 +539,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return res;
   }
 
-  public synchronized String printFaculties() throws RemoteException {
+  private synchronized String printFaculties() throws RemoteException {
     String res = "";
     for (int i = 0; i < faculties.size(); i++) {
       res += faculties.get(i).prettyPrint();
@@ -550,7 +549,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return res;
   }
 
-  public synchronized String printDepartments() throws RemoteException {
+  private synchronized String printDepartments() throws RemoteException {
     String res = "";
     for (int i = 0; i < departments.size(); i++) {
       res += departments.get(i).prettyPrint();
@@ -560,7 +559,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return res;
   }
 
-  public synchronized String printElections() throws RemoteException {
+  private synchronized String printElections() throws RemoteException {
     String res = "";
     for (int i = 0; i < elections.size(); i++) {
       res += elections.get(i).prettyPrint();
@@ -570,7 +569,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return res;
   }
 
-  public synchronized String printCandidateLists() throws RemoteException {
+  private synchronized String printCandidateLists() throws RemoteException {
     String res = "";
     for (int i = 0; i < candidateLists.size(); i++) {
       res += candidateLists.get(i).prettyPrint();
@@ -580,7 +579,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return res;
   }
 
-  public synchronized String printVotingTables() throws RemoteException {
+  private synchronized String printVotingTables() throws RemoteException {
     String res = "";
     for (int i = 0; i < votingTables.size(); i++) {
       res += votingTables.get(i).prettyPrint();
@@ -588,26 +587,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     if (res == "")
       return "There are no voting tables";
     return res;
-  }
-
-  public synchronized VotingTable getVotingTableById(int id) {
-    for (VotingTable votingTable : this.votingTables) {
-      if (votingTable.getId() == id) {
-        return votingTable;
-      }
-    }
-
-    return null;
-  }
-
-  public synchronized int generateVotingTableId(Election election) throws RemoteException {
-    int id = 0;
-    for (int i = 0; i < votingTables.size(); i++) {
-      if (votingTables.get(i).getElection().getName().equals(election.getName())) {
-        id += 1;
-      }
-    }
-    return id;
   }
 
   private ArrayList<String> fieldValues(String field, ArrayList<User> users) {
@@ -702,44 +681,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
             ". \nCurrent number of votes " + numberOfVotes);
   }
 
-  private long currentTimestamp() {
-    long date = 0;
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
-    Calendar currentDate = Calendar.getInstance();
-
-    try {
-      /*System.out.println(Calendar.DAY_OF_MONTH);
-      System.out.println(Calendar.MONTH);
-      System.out.println(Calendar.YEAR);
-      System.out.println(Calendar.HOUR_OF_DAY);
-      System.out.println(Calendar.MINUTE); */
-      date = simpleDateFormat.parse(currentDate.get(Calendar.DAY_OF_MONTH) + "/" +
-              currentDate.get(Calendar.MONTH) + "/" +
-              currentDate.get(Calendar.YEAR) + " " +
-              currentDate.get(Calendar.HOUR_OF_DAY) + ":" +
-              currentDate.get(Calendar.MINUTE) + ":00").getTime();
-    } catch (ParseException e) {
-      e.printStackTrace();
-    }
-
-    return date;
-  }
-
-  public synchronized void updateFile(Object object, String className) {
-    try {
-      this.data.writeFile(object, className);
-    } catch(IOException e) {
-      System.out.println("IOException: Error writing in " + className + " file");
-    } catch(ClassNotFoundException e) {
-      System.out.println("ClassNotFoundException: Error writing in " + className + " file");
-    }
-    System.out.println(object);
-  }
-
-  public synchronized void remote_print(String s) throws RemoteException {
-    System.out.println("Server: " + s);
-  }
-
   public synchronized boolean voteIsValid(User user, VotingTable votingTable, CandidateList candidateList) throws RemoteException {
     Election election = votingTable.getElection();
     long currentTime = currentTimestamp();
@@ -771,6 +712,29 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return false;
   }
 
+  private long currentTimestamp() {
+    long date = 0;
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+    Calendar currentDate = Calendar.getInstance();
+
+    try {
+      /*System.out.println(Calendar.DAY_OF_MONTH);
+      System.out.println(Calendar.MONTH);
+      System.out.println(Calendar.YEAR);
+      System.out.println(Calendar.HOUR_OF_DAY);
+      System.out.println(Calendar.MINUTE); */
+      date = simpleDateFormat.parse(currentDate.get(Calendar.DAY_OF_MONTH) + "/" +
+              currentDate.get(Calendar.MONTH) + "/" +
+              currentDate.get(Calendar.YEAR) + " " +
+              currentDate.get(Calendar.HOUR_OF_DAY) + ":" +
+              currentDate.get(Calendar.MINUTE) + ":00").getTime();
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+
+    return date;
+  }
+
   public synchronized void subscribe(String name, AdminInterface c) throws RemoteException {
     System.out.println("Subscribing " + name);
     this.admins.add(c);
@@ -783,5 +747,18 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     }
   }
 
-  public synchronized  ArrayList<Election> getElections() throws RemoteException { return elections; }
+  private synchronized void updateFile(Object object, String className) {
+    try {
+      this.data.writeFile(object, className);
+    } catch(IOException e) {
+      System.out.println("IOException: Error writing in " + className + " file");
+    } catch(ClassNotFoundException e) {
+      System.out.println("ClassNotFoundException: Error writing in " + className + " file");
+    }
+    System.out.println(object);
+  }
+
+  public synchronized void remote_print(String s) throws RemoteException {
+    System.out.println("Server: " + s);
+  }
 }

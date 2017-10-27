@@ -16,10 +16,6 @@ import java.text.SimpleDateFormat;
 
 
 public class Admin extends UnicastRemoteObject implements AdminInterface, Serializable {
-  // TODO - configs em txt
-  // TODO - correr em Terminal
-  // TODO - Adicionar mais dados default a BD
-
   private int port;
   private int mainPort;
   private int backupPort;
@@ -602,10 +598,6 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
     System.out.println(field);
     String res = sc.next();
     return res;
-  }
-
-  public boolean isNotify() {
-    return notify;
   }
 
   public void setNotify(boolean notify) {

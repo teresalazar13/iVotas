@@ -16,20 +16,6 @@ public interface RMIInterface extends Remote {
 
   boolean createDepartment(String name, String facultyName) throws RemoteException;
 
-  void updateFacultyDepartment(Faculty faculty, Department department) throws RemoteException;
-
-  void updateFacultyName(Faculty faculty, String name) throws RemoteException;
-
-  void updateDepartmentName(Department department, String name) throws RemoteException;
-
-  void updateFacultyDepartmentName(Department department, String name) throws RemoteException;
-
-  int updateElection(String electionName, Object toChange, int type) throws RemoteException;
-
-  void removeDepartment(Department department) throws RemoteException;
-
-  void removeFaculty(Faculty faculty) throws RemoteException;
-
   int createElection(String name, String description, long startDate, long endDate, int type) throws RemoteException;
 
   int createStudentsElection(String name, String description, long startDate, long endDate, int type, String departmentName) throws RemoteException;
@@ -40,17 +26,21 @@ public interface RMIInterface extends Remote {
 
   int createVotingTable(String electionName, String departmentName) throws RemoteException;
 
-  User searchUser(String field, String res) throws RemoteException;
+  void updateDepartmentName(Department department, String name) throws RemoteException;
 
-  boolean authenticateUser(String name, String password) throws RemoteException;
+  void updateFacultyDepartment(Faculty faculty, Department department) throws RemoteException;
 
-  void vote(User user, Election election, CandidateList candidateList, Department department) throws RemoteException;
+  void updateFacultyDepartmentName(Department department, String name) throws RemoteException;
+
+  void updateFacultyName(Faculty faculty, String name) throws RemoteException;
+
+  int updateElection(String electionName, Object toChange, int type) throws RemoteException;
+
+  void removeDepartment(Department department) throws RemoteException;
+
+  void removeFaculty(Faculty faculty) throws RemoteException;
 
   String knowWhereUserVoted(String userName, String electionName) throws RemoteException;
-
-  Vote getVoteByUserAndElection(User user, Election election) throws RemoteException;
-
-  boolean voteIsValid(User user, VotingTable votingTable, CandidateList candidateList) throws RemoteException;
 
   String detailsOfPastElections() throws RemoteException;
 
@@ -62,17 +52,21 @@ public interface RMIInterface extends Remote {
 
   Election getElectionByName(String electionName) throws RemoteException;
 
-  Faculty getFacultyByDepartmentName(String department) throws RemoteException;
-
   CandidateList getCandidateListByName(String listName) throws RemoteException;
+
+  Vote getVoteByUserAndElection(User user, Election election) throws RemoteException;
 
   VotingTable getVotingTableById(int id) throws RemoteException;
 
-  ArrayList<Election> getElections() throws RemoteException;
-
   String prettyPrint(int option) throws RemoteException;
 
-  String printUsers() throws RemoteException;
+  User searchUser(String field, String res) throws RemoteException;
+
+  boolean authenticateUser(String name, String password) throws RemoteException;
+
+  void vote(User user, Election election, CandidateList candidateList, Department department) throws RemoteException;
+
+  boolean voteIsValid(User user, VotingTable votingTable, CandidateList candidateList) throws RemoteException;
 
   void subscribe(String name, AdminInterface client) throws RemoteException;
 
