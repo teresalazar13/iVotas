@@ -99,10 +99,8 @@ public class TCPServer {
         rmi = (RMIInterface) LocateRegistry.getRegistry(ip, this.getPort()).lookup("ivotas");
         //r.addAdmin(a);
         rmi.remote_print("New client");
-        System.out.println("Successfully connected to port " + this.getPort());
         passed = true;
       } catch (Exception e) {
-        System.out.println("Failed to connect to port " + this.getPort());
         try {
           TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException es) {
@@ -230,8 +228,6 @@ class Connection extends Thread {
       } catch(SocketTimeoutException e) {
         this.getOut().println("type | timeout");
       } catch (Exception e) {
-        System.out.println(e.getMessage());
-        System.out.println("Client disconnected");
         this.close();
         break;
       }
@@ -281,10 +277,8 @@ class Connection extends Thread {
         rmi = (RMIInterface) LocateRegistry.getRegistry(this.ip, server.getPort()).lookup("ivotas");
         //r.addAdmin(a);
         rmi.remote_print("New client");
-        System.out.println("Successfully connected to port " + server.getPort());
         noExceptions = true;
       } catch (Exception e) {
-        System.out.println("Failed to connect to port " + server.getPort());
         try {
           TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException es) {
@@ -340,7 +334,6 @@ class Connection extends Thread {
       }
     } catch (RemoteException e) {
       System.out.println("Waiting...");
-      System.out.println(e.getMessage());
       this.connectRMIInterface(tableServer);
     } catch (IOException e) {
       this.close();
@@ -378,7 +371,6 @@ class Connection extends Thread {
     while (true) {
       try {
         candidateList = this.rmi.getCandidateListByName(name);
-        System.out.println(rmi);
         noExceptions = true;
       } catch (RemoteException | NullPointerException e) {
         System.out.println("Waiting...");
@@ -454,28 +446,58 @@ class Menu extends Thread {
 
   public void run() {
     while (true) {
+      User user;
+      ArrayList<User> users;
+
       ArrayList<String> search = this.votingTableMenu(votingTableId);
-      User user = null;
+
+      if ("department".equals(search.get(0)) || "faculty".equals(search.get(0))) {
+        users = this.searchUsers(search);
+        if (users.size() != 0) {
+          user = this.chooseUser(users);
+          sendUserToTerminal(user);
+        } else {
+          System.out.println("User not found");
+        }
+
+        continue;
+      }
 
       // search user by field in voting table
       user = this.searchUser(search);
 
       // Check if user was found
       if (user != null) {
-        int lockedTerminalIndex = this.getLockedTerminal();
-
-        if (lockedTerminalIndex != -1) {
-          // send user to voting terminal
-          synchronized (this.votingTerminals.get(lockedTerminalIndex)) {
-            this.votingTableMenuMessages.add("type | search ; user | " + user.getName());
-            this.votingTerminals.get(this.getLockedTerminal()).notify();
-          }
-        } else {
-          System.out.println("All terminals are currently busy, return later");
-        }
+        sendUserToTerminal(user);
       } else {
         System.out.println("User not found");
       }
+    }
+  }
+
+  // Choose the user from a list of users
+  private User chooseUser(ArrayList<User> users) {
+    System.out.println("Which user do you want to choose: ");
+
+    for (int i=0; i < users.size(); i++) {
+      System.out.println("[" + i + "]" + "--> " + users.get(i));
+    }
+
+    return users.get(this.getValidInteger(users.size()-1));
+  }
+
+  // Checks if there are any voting terminals available and if there are send user to htat terminal
+  private void sendUserToTerminal(User user) {
+    int lockedTerminalIndex = this.getLockedTerminal();
+
+    if (lockedTerminalIndex != -1) {
+      // send user to voting terminal
+      synchronized (this.votingTerminals.get(lockedTerminalIndex)) {
+        this.votingTableMenuMessages.add("type | search ; user | " + user.getName());
+        this.votingTerminals.get(this.getLockedTerminal()).notify();
+      }
+    } else {
+      System.out.println("All terminals are currently busy, return later");
     }
   }
 
@@ -588,10 +610,8 @@ class Menu extends Thread {
         rmi = (RMIInterface) LocateRegistry.getRegistry(this.ip, server.getPort()).lookup("ivotas");
         //r.addAdmin(a);
         rmi.remote_print("New client");
-        System.out.println("Successfully connected to port " + server.getPort());
         noExceptions = true;
       } catch (Exception e) {
-        System.out.println("Failed to connect to port " + server.getPort());
         try {
           TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException es) {
@@ -613,7 +633,6 @@ class Menu extends Thread {
     while (true) {
       try {
         user = this.rmi.searchUser(searchParams.get(0), searchParams.get(1));
-        System.out.println(rmi);
         noExceptions = true;
       } catch (RemoteException | NullPointerException e) {
         System.out.println("Waiting...");
@@ -626,5 +645,26 @@ class Menu extends Thread {
     }
 
     return user;
+  }
+
+  private ArrayList<User> searchUsers(ArrayList<String> searchParams) {
+    boolean noExceptions = false;
+    ArrayList<User> users = new ArrayList<>();
+
+    while (true) {
+      try {
+        users = this.rmi.searchUsers(searchParams.get(0), searchParams.get(1));
+        noExceptions = true;
+      } catch (RemoteException | NullPointerException e) {
+        System.out.println("Waiting...");
+        this.rmi = this.connectRMIInterface(this.tableServer);
+      }
+
+      if (noExceptions) {
+        break;
+      }
+    }
+
+    return users;
   }
 }

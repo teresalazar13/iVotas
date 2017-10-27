@@ -232,7 +232,6 @@ class VotingTerminalMenu implements Runnable {
             this.getT().wait();
           }
         }
-        System.out.println("hey");
 
         // Choose the list to vote
         String listNameToVote = votingMenu();
