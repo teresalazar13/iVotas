@@ -487,7 +487,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
 
   public static void printNotifications(RMIInterface r, Admin a) {
     try {
-      r.subscribe("localhost", a);
+      r.subscribe(a);
       System.out.println("Client sent subscription to server");
       a.setNotify(true);
       InputStreamReader input = new InputStreamReader(System.in);
