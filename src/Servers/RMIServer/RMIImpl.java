@@ -742,7 +742,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   }
 
   public synchronized void unsubscribe(AdminInterface c) throws RemoteException {
-    System.out.println("Unsubscribed admin";
+    System.out.println("Unsubscribed admin");
     this.admins.remove(c);
   }
 
