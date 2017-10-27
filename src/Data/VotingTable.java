@@ -50,7 +50,7 @@ public class VotingTable implements Serializable {
     this.votingTerminals = votingTerminals;
   }
 
-  public String prettydPrint() {
+  public String prettyPrint() {
     return "\n\nID: " + this.id + "\nElection: " + this.election.getName() + "\nDepartment: " + this.getDepartment().getName();
   }
 
