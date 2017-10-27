@@ -736,9 +736,14 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     return date;
   }
 
-  public synchronized void subscribe(String name, AdminInterface c) throws RemoteException {
-    System.out.println("Subscribing " + name);
+  public synchronized void subscribe(AdminInterface c) throws RemoteException {
+    System.out.println("Subscribing new admin");
     this.admins.add(c);
+  }
+
+  public synchronized void unsubscribe(AdminInterface c) throws RemoteException {
+    System.out.println("Unsubscribed admin";
+    this.admins.remove(c);
   }
 
   public synchronized void notifyAdmins(String s) throws RemoteException {

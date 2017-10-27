@@ -503,8 +503,11 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
           }
           try {
             String text = reader.readLine();
-            if (text.equals("STOP"))
+            if (text.equals("STOP")) {
+              a.setNotify(false);
+              r.unsubscribe(a);
               return;
+            }
           } catch (IOException e) {
             System.out.println("Error reading line.");
           }
