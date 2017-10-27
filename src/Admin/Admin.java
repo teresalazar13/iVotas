@@ -12,6 +12,7 @@ import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.io.*;
 
 
 public class Admin extends UnicastRemoteObject implements AdminInterface, Serializable {
@@ -489,14 +490,25 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       r.subscribe("localhost", a);
       System.out.println("Client sent subscription to server");
       a.setNotify(true);
+      InputStreamReader input = new InputStreamReader(System.in);
+      BufferedReader reader = new BufferedReader(input);
+      System.out.println("Type STOP to return. Don't press ^C.");
       while(true) {
         try {
           try {
-            r.remote_print("testing");
+            r.test();
           }
           catch (RemoteException e) {
             connectRMIInterface(a);
           }
+          try {
+            String text = reader.readLine();
+            if (text.equals("STOP"))
+              return;
+          } catch (IOException e) {
+            System.out.println("Error reading line.");
+          }
+
           TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
           System.out.println("Error sleeping");

@@ -762,4 +762,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   public synchronized void remote_print(String s) throws RemoteException {
     System.out.println("Server: " + s);
   }
+
+  public void test() throws RemoteException {}
 }
