@@ -4,15 +4,16 @@ import Admin.AdminInterface;
 import Data.*;
 
 import java.io.IOException;
+import java.net.*;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.net.*;
-import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 
@@ -392,7 +393,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   }
 
   public synchronized String detailsOfPastElections() throws RemoteException {
-    System.out.println(".......................................");
     String res = "";
 
     for (Election election : this.elections) {
@@ -511,7 +511,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   }
 
   private synchronized int generateVotingTableId() throws RemoteException {
-    return votingTables.size() - 1;
+    return votingTables.size();
   }
 
   public synchronized String prettyPrint(int option) throws RemoteException {
@@ -704,10 +704,10 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   public synchronized boolean voteIsValid(User user, VotingTable votingTable, CandidateList candidateList) throws RemoteException {
     Election election = votingTable.getElection();
     long currentTime = currentTimestamp();
-
     if (!(currentTime >= votingTable.getElection().getStartDate() && currentTime < votingTable.getElection().getEndDate())) {
       return false;
     }
+
 
     // nucleo de estudantes
     if (election.getType() == 1) {
@@ -735,21 +735,18 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
   private long currentTimestamp() {
     long date = 0;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
-    Calendar currentDate = Calendar.getInstance();
+
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    LocalDateTime now = LocalDateTime.now();
 
     try {
-      /*System.out.println(Calendar.DAY_OF_MONTH);
-      System.out.println(Calendar.MONTH);
-      System.out.println(Calendar.YEAR);
-      System.out.println(Calendar.HOUR_OF_DAY);
-      System.out.println(Calendar.MINUTE); */
-      date = simpleDateFormat.parse(currentDate.get(Calendar.DAY_OF_MONTH) + "/" +
-              currentDate.get(Calendar.MONTH) + "/" +
-              currentDate.get(Calendar.YEAR) + " " +
-              currentDate.get(Calendar.HOUR_OF_DAY) + ":" +
-              currentDate.get(Calendar.MINUTE) + ":00").getTime();
+      date = simpleDateFormat.parse(now.getDayOfMonth() + "/" +
+              now.getMonthValue() + "/" +
+              now.getYear() + " " +
+              now.getHour() + ":" +
+              now.getMinute() + ":00").getTime();
     } catch (ParseException e) {
-      e.printStackTrace();
+      System.out.println("Error parsin date");
     }
 
     return date;
