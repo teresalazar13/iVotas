@@ -33,6 +33,7 @@ public class TCPServer {
   // arg[1] -> main rmi port
   // arg[2] -> backup rmi
   // arg[3] -> voting table
+  // arg[4] ->ip na rede
   public static void main(String args[]) {
     System.setProperty("java.rmi.server.hostname", "192.168.1.78");
     VotingTable votingTable = null;
@@ -43,7 +44,7 @@ public class TCPServer {
     CopyOnWriteArrayList <Connection> threads = new CopyOnWriteArrayList<>();
     tableServer = new TCPServer(Integer.parseInt(args[1]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), null, threads, true);
 
-    rmi = tableServer.connectRMIInterface();
+    rmi = tableServer.connectRMIInterface(args[4]);
 
     // get voting table by id
     // TODO-> deal with method rmi, the server could go down??
@@ -63,13 +64,13 @@ public class TCPServer {
       System.out.println("LISTEN SOCKET = " + listenSocket);
 
       System.out.println(rmi);
-      Menu menu = new Menu(votingTableMenuMessages, threads, rmi, tableServer, votingTable.getId());
+      Menu menu = new Menu(votingTableMenuMessages, threads, rmi, tableServer, votingTable.getId(), args[4]);
 
       // thread to accept new client connections
       while(true) {
         Socket clientSocket = listenSocket.accept();
         System.out.println("CLIENT_SOCKET (created at accept()) = " + clientSocket);
-        Connection thread = new Connection(clientSocket, tableServer.votingTerminals.size(), tableServer, votingTableMenuMessages, threads, rmi);
+        Connection thread = new Connection(clientSocket, tableServer.votingTerminals.size(), args[4], tableServer, votingTableMenuMessages, threads, rmi);
         tableServer.votingTerminals.add(thread);
       }
     } catch(IOException e) {
@@ -81,14 +82,14 @@ public class TCPServer {
     if (server.getPort() == server.getMainRmiPort()) server.setPort(server.getBackupRmiPort());
     else server.setPort(server.getMainRmiPort());
   }
-  private RMIInterface connectRMIInterface() {
+  private RMIInterface connectRMIInterface(String ip) {
     RMIInterface rmi = null;
     boolean passed = false;
 
     while (true) {
       try {
         // primeiro arg é o ip
-        rmi = (RMIInterface) LocateRegistry.getRegistry(this.getPort()).lookup("ivotas");
+        rmi = (RMIInterface) LocateRegistry.getRegistry(ip, this.getPort()).lookup("ivotas");
         //r.addAdmin(a);
         rmi.remote_print("New client");
         System.out.println("Successfully connected to port " + this.getPort());
@@ -130,6 +131,7 @@ public class TCPServer {
 // Thread to handle comm with client
 class Connection extends Thread {
   private int thread_number;
+  String ip;
   private Socket clientSocket;
   private BufferedReader bufferedReader;
   private PrintWriter outToServer;
@@ -138,8 +140,9 @@ class Connection extends Thread {
   private RMIInterface rmi;
   private TCPServer tableServer;
 
-  public Connection(Socket aClientSocket, int number, TCPServer tableServer, ArrayList<String> votingTableMessages, CopyOnWriteArrayList<Connection> threads, RMIInterface rmi) {
+  public Connection(Socket aClientSocket, int number, String ip, TCPServer tableServer, ArrayList<String> votingTableMessages, CopyOnWriteArrayList<Connection> threads, RMIInterface rmi) {
     this.thread_number = number;
+    this.ip = ip;
     this.tableServer = tableServer;
     this.threads = threads;
     this.votingTableMenuMessages = votingTableMessages;
@@ -269,7 +272,7 @@ class Connection extends Thread {
 
     while (true) {
       try {
-        rmi = (RMIInterface) LocateRegistry.getRegistry(server.getPort()).lookup("ivotas");
+        rmi = (RMIInterface) LocateRegistry.getRegistry(this.ip, server.getPort()).lookup("ivotas");
         //r.addAdmin(a);
         rmi.remote_print("New client");
         System.out.println("Successfully connected to port " + server.getPort());
@@ -361,7 +364,8 @@ class Connection extends Thread {
     return user;
   }
 
-  private CandidateList searchCandidateListByName(String name) {
+  private CandidateList searchCandidateListByName(String name)
+  {
     boolean noExceptions = false;
     CandidateList candidateList = null;
 
@@ -430,13 +434,15 @@ class Menu extends Thread {
   private RMIInterface rmi;
   private TCPServer tableServer;
   private int votingTableId;
+  String ip;
 
-  public Menu (ArrayList<String> votingTableMenuMessages, CopyOnWriteArrayList<Connection> votingTerminals, RMIInterface rmi, TCPServer tableServer, int votingTableId) {
+  public Menu (ArrayList<String> votingTableMenuMessages, CopyOnWriteArrayList<Connection> votingTerminals, RMIInterface rmi, TCPServer tableServer, int votingTableId, String ip) {
     this.votingTableMenuMessages = votingTableMenuMessages;
     this.votingTerminals = votingTerminals;
     this.rmi = rmi;
     this.tableServer = tableServer;
     this.votingTableId = votingTableId;
+    this.ip = ip;
     this.start();
   }
 
@@ -573,7 +579,7 @@ class Menu extends Thread {
 
     while (true) {
       try {
-        rmi = (RMIInterface) LocateRegistry.getRegistry(server.getPort()).lookup("ivotas");
+        rmi = (RMIInterface) LocateRegistry.getRegistry(this.ip, server.getPort()).lookup("ivotas");
         //r.addAdmin(a);
         rmi.remote_print("New client");
         System.out.println("Successfully connected to port " + server.getPort());
