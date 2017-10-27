@@ -54,6 +54,7 @@ public class TCPServer {
       rmi.notifyAdmins("New voting table with id " + votingTable.getId() + " of election " + votingTable.getElection().getName());
     } catch (IOException | NullPointerException e) {
       System.out.println("Unable to retrieve voting table");
+      tableServer.connectRMIInterface(args[4]);
       return;
     }
 
