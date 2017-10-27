@@ -125,7 +125,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
     String facultyName = getValidString("Faculty: ");
     String contact = Integer.toString(getValidInteger("Contact: ", 1, 999999999));
     String address = getValidString("Address: ");
-    String cc = getValidString("CC: ");
+    String cc = Integer.toString(getValidInteger("CC: ", 0, 999999999));
     String expireDate = getValidExpireDate("Expire date: ");
 
     try {
