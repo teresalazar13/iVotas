@@ -69,7 +69,11 @@ public interface RMIInterface extends Remote {
 
   boolean voteIsValid(User user, VotingTable votingTable, CandidateList candidateList) throws RemoteException;
 
-  void subscribe(String name, AdminInterface client) throws RemoteException;
+  void subscribe(AdminInterface client) throws RemoteException;
+
+  void unsubscribe(AdminInterface c) throws RemoteException;
 
   void notifyAdmins(String s) throws RemoteException;
+
+  void test() throws RemoteException;
 }

@@ -12,6 +12,7 @@ import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.io.*;
 
 
 public class Admin extends UnicastRemoteObject implements AdminInterface, Serializable {
@@ -486,17 +487,31 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
 
   public static void printNotifications(RMIInterface r, Admin a) {
     try {
-      r.subscribe("localhost", a);
+      r.subscribe(a);
       System.out.println("Client sent subscription to server");
       a.setNotify(true);
+      InputStreamReader input = new InputStreamReader(System.in);
+      BufferedReader reader = new BufferedReader(input);
+      System.out.println("Type STOP to return.");
       while(true) {
         try {
           try {
-            r.remote_print("testing");
+            r.test();
           }
           catch (RemoteException e) {
             connectRMIInterface(a);
           }
+          try {
+            String text = reader.readLine();
+            if (text.equals("STOP")) {
+              a.setNotify(false);
+              r.unsubscribe(a);
+              return;
+            }
+          } catch (IOException e) {
+            System.out.println("Error reading line.");
+          }
+
           TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
           System.out.println("Error sleeping");
@@ -524,7 +539,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
     System.out.println("Trying to connect to port " + a.port);
     try {
       RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(a.port).lookup("ivotas");
-      r.remote_print("New client");
+      r.remote_print("New admin");
       System.out.println("Successfully connected to port " + a.port);
       menu(r, a);
     } catch (Exception e) {
