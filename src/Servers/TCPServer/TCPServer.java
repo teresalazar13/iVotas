@@ -480,10 +480,10 @@ class Menu extends Thread {
     System.out.println("Which user do you want to choose: ");
 
     for (int i=0; i < users.size(); i++) {
-      System.out.println("[" + i + "]" + "--> " + users.get(i));
+      System.out.println("[" + (i+1) + "]" + "--> " + users.get(i));
     }
 
-    return users.get(this.getValidInteger(users.size()-1));
+    return users.get(this.getValidInteger(users.size())-1);
   }
 
   // Checks if there are any voting terminals available and if there are send user to htat terminal
