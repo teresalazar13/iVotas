@@ -67,15 +67,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     try {
       RMIImpl server = new RMIImpl();
 
-      /*
-      System.out.println(server.users);
-      System.out.println(server.faculties);
-      System.out.println(server.departments);
-      System.out.println(server.elections);
-      System.out.println(server.votingTables);
-      System.out.println(server.votes);
-      */
-
       Registry reg = LocateRegistry.createRegistry(registryPort);
       reg.rebind("ivotas", server);
       System.out.println("RMI Server ready.");
@@ -279,8 +270,7 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
       return 3;
     }
     int id = generateVotingTableId();
-    ArrayList<VotingTerminal> votingTerminals = new ArrayList<VotingTerminal>();
-    VotingTable votingTable = new VotingTable(id, election, department, votingTerminals);
+    VotingTable votingTable = new VotingTable(id, election, department);
     votingTables.add(votingTable);
     updateFile(this.votingTables, "VotingTables");
     return 1;
@@ -396,11 +386,9 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     String res = "";
 
     for (Election election : this.elections) {
-      ArrayList<Vote> electionVotes = this.votesOfElection(election);
-
       if (election.getEndDate() < currentTimestamp()) {
+        ArrayList<Vote> electionVotes = this.votesOfElection(election);
         int numberOfVotes = electionVotes.size();
-        System.out.println(numberOfVotes);
         ArrayList<CandidateResults> candidatesResults = new ArrayList<>();
 
         for (CandidateList candidateList : election.getCandidateLists()) {
@@ -427,7 +415,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
         float percentageOfBlankVotes = ((float) blankVotes / electionVotes.size()) * 100.0f;
         ElectionResult electionResult = new ElectionResult(
                 election, candidatesResults, blankVotes, (Math.round(percentageOfBlankVotes)), 0, 0);
-        System.out.println(electionResult);
         res += electionResult.toString() + "\n\n";
       }
     }
@@ -777,7 +764,6 @@ public class RMIImpl extends UnicastRemoteObject implements RMIInterface {
     } catch(ClassNotFoundException e) {
       System.out.println("ClassNotFoundException: Error writing in " + className + " file");
     }
-    System.out.println(object);
   }
 
   public synchronized void remote_print(String s) throws RemoteException {

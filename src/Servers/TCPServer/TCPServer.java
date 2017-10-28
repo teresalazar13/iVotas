@@ -18,41 +18,42 @@ public class TCPServer {
   private int backupRmiPort;
   private VotingTable votingTable;
   private CopyOnWriteArrayList <Connection> votingTerminals;
-  private boolean status;
 
-  public TCPServer(int port, int mainRmiPort, int backupRmiPort, VotingTable votingTable, CopyOnWriteArrayList<Connection> votingTerminals, boolean status) {
+  public TCPServer(int port, int mainRmiPort, int backupRmiPort, VotingTable votingTable, CopyOnWriteArrayList<Connection> votingTerminals) {
     this.port = port;
     this.mainRmiPort = mainRmiPort;
     this.backupRmiPort = backupRmiPort;
     this.votingTable = votingTable;
     this.votingTerminals = votingTerminals;
-    this.status = status;
   }
 
   public static void main(String args[]) {
 
+    // Check if the number of args is correct
     if(args.length != 5) {
       System.out.println("java -jar server.jar IPAddress serverPort RMIPort RMIBackupPort VotingTableID");
       System.exit(0);
     }
 
+    // Store args
     String IPAddress = args[0];
     int serverPort = Integer.parseInt(args[1]);
     int RMIPort = Integer.parseInt(args[2]);
     int RMIbackupPort = Integer.parseInt(args[3]);
     int VotingTableID = Integer.parseInt(args[4]);
 
-    System.setProperty("java.rmi.server.hostname", "192.168.1.78");
     VotingTable votingTable = null;
     TCPServer tableServer = null;
     RMIInterface rmi = null;
-
     ArrayList<String> votingTableMenuMessages = new ArrayList<>();
     CopyOnWriteArrayList <Connection> threads = new CopyOnWriteArrayList<>();
-    tableServer = new TCPServer(RMIPort, RMIPort, RMIbackupPort, null, threads, true);
 
+    tableServer = new TCPServer(RMIPort, RMIPort, RMIbackupPort, null, threads);
+
+    // Connect to rmi server
     rmi = tableServer.connectRMIInterface(IPAddress);
 
+    // Get voting table associated with this server
     try {
       votingTable = rmi.getVotingTableById(VotingTableID);
       tableServer.setVotingTable(votingTable);
@@ -67,15 +68,11 @@ public class TCPServer {
       System.out.println("Listening on port " + serverPort);
 
       ServerSocket listenSocket = new ServerSocket(serverPort);
-      System.out.println("LISTEN SOCKET = " + listenSocket);
-
-      System.out.println(rmi);
       Menu menu = new Menu(votingTableMenuMessages, threads, rmi, tableServer, votingTable.getId(), IPAddress);
 
-      // Thread to accept new client connections
+      // Accept new client connections
       while(true) {
         Socket clientSocket = listenSocket.accept();
-        System.out.println("CLIENT_SOCKET (created at accept()) = " + clientSocket);
         Connection thread = new Connection(clientSocket, tableServer.votingTerminals.size(), IPAddress, tableServer, votingTableMenuMessages, threads, rmi);
         tableServer.votingTerminals.add(thread);
       }
@@ -84,6 +81,7 @@ public class TCPServer {
     }
   }
 
+  // Update rmi port between main and backup
   private void updatePort(TCPServer server) {
     if (server.getPort() == server.getMainRmiPort()) server.setPort(server.getBackupRmiPort());
     else server.setPort(server.getMainRmiPort());
@@ -116,9 +114,6 @@ public class TCPServer {
 
     return rmi;
   }
-
-  public boolean isStatus() { return status; }
-  public void setStatus(boolean status) { this.status = status; }
 
   public VotingTable getVotingTable() { return votingTable; }
   public void setVotingTable(VotingTable votingTable) { this.votingTable = votingTable; }
@@ -175,13 +170,14 @@ class Connection extends Thread {
         String clientResponse = null;
         Map<String, String> protocolValues;
 
-        // Identify user at table
+        // Get user identified at voting table and send it to voting terminal
         synchronized (this) {
           message = votingTableMenuMessages.get(0);
           votingTableMenuMessages.remove(0);
           this.getOut().println(message);
         }
 
+        // Read login password
         synchronized (this) {
           // Set timeout of 120s
           this.clientSocket.setSoTimeout(120000);
@@ -192,12 +188,13 @@ class Connection extends Thread {
         // Check if login is valid
         boolean validLogin = loginIsValid(protocolValues);
 
-        // Send sucess login message
+        // Send success login message
         message = "type | status ; logged | " + validLogin;
         this.getOut().println(message);
 
         // Send election info to client
-        message = "type | voting ; election | " + this.tableServer.getVotingTable().getElection().toStringClient();
+        // TODO CHECK IF THIS IS WORKING WITH CHANGE
+        message = "type | vote ; election | " + this.tableServer.getVotingTable().getElection().toStringClient();
         this.getOut().println(message);
 
         // Read user voting option
@@ -205,7 +202,6 @@ class Connection extends Thread {
 
         // Socket back to normal
         this.clientSocket.setSoTimeout(0);
-
         protocolValues = parseProtocolMessage(clientResponse);
 
         // Vote search fields
@@ -226,6 +222,7 @@ class Connection extends Thread {
         this.close();
         break;
       } catch(SocketTimeoutException e) {
+        // User was idle for too long, send a timeout to the terminal
         this.getOut().println("type | timeout");
       } catch (Exception e) {
         this.close();
@@ -234,6 +231,7 @@ class Connection extends Thread {
     }
   }
 
+  // Parse the protocol message received from the voting terminal
   private Map<String, String> parseProtocolMessage(String protocolMessage) {
     // The protocol message is going to be parsed into key-value map
     Map<String, String> protocolValues = new LinkedHashMap<>();
@@ -253,9 +251,8 @@ class Connection extends Thread {
     return outToServer;
   }
 
+  // When a voting terminal disconnects we need to update the threads nu
   private  void updateTerminalsIndexes() {
-    int size = this.threads.size();
-
     for (int i = 0; i < this.threads.size(); i++) {
       this.threads.get(i).thread_number = i;
     }
@@ -433,7 +430,7 @@ class Menu extends Thread {
   private RMIInterface rmi;
   private TCPServer tableServer;
   private int votingTableId;
-  String ip;
+  private String ip;
 
   public Menu (ArrayList<String> votingTableMenuMessages, CopyOnWriteArrayList<Connection> votingTerminals, RMIInterface rmi, TCPServer tableServer, int votingTableId, String ip) {
     this.votingTableMenuMessages = votingTableMenuMessages;
@@ -464,7 +461,7 @@ class Menu extends Thread {
         continue;
       }
 
-      // search user by field in voting table
+      // Search user by field in voting table
       user = this.searchUser(search);
 
       // Check if user was found

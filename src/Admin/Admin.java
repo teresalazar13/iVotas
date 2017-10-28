@@ -540,14 +540,11 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
   }
 
   public static void connectRMIInterface(Admin a) {
-    System.out.println("Trying to connect to port " + a.port);
     try {
       RMIInterface r = (RMIInterface) LocateRegistry.getRegistry(a.IPAddress, a.port).lookup("ivotas");
       r.remote_print("New admin");
-      System.out.println("Successfully connected to port " + a.port);
       menu(r, a);
     } catch (Exception e) {
-      System.out.println("Failed to connect to port " + a.port);
       try {
         TimeUnit.SECONDS.sleep(1);
       } catch (InterruptedException es) {
@@ -573,6 +570,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
     }
     catch (RemoteException e) {
       System.out.println("Error printing data.");
+      connectRMIInterface(a);
     }
   }
 

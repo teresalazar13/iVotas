@@ -7,15 +7,13 @@ public class VotingTable implements Serializable {
   private int id;
   private Election election;
   private Department department;
-  private ArrayList<VotingTerminal> votingTerminals;
 
   public VotingTable() {}
 
-  public VotingTable(int id, Election election, Department department, ArrayList<VotingTerminal> votingTerminals) {
+  public VotingTable(int id, Election election, Department department) {
     this.id = id;
     this.election = election;
     this.department = department;
-    this.votingTerminals = votingTerminals;
   }
 
   public int getId() {
@@ -42,14 +40,6 @@ public class VotingTable implements Serializable {
     this.department = department;
   }
 
-  public ArrayList<VotingTerminal> getVotingTerminals() {
-    return votingTerminals;
-  }
-
-  public void setVotingTerminals(ArrayList<VotingTerminal> votingTerminals) {
-    this.votingTerminals = votingTerminals;
-  }
-
   public String prettyPrint() {
     return "\n\nID: " + this.id + "\nElection: " + this.election.getName() + "\nDepartment: " + this.getDepartment().getName();
   }
@@ -60,7 +50,6 @@ public class VotingTable implements Serializable {
             "id=" + id +
             ", election=" + election +
             ", department=" + department +
-            ", votingTerminals=" + votingTerminals +
             '}';
   }
 }

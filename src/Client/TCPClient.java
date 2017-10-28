@@ -236,7 +236,6 @@ class VotingTerminalMenu implements Runnable {
         // Choose the list to vote
         String listNameToVote = votingMenu();
         this.outToServer.println("type | vote ; " +
-                "election | " + electionInfo.get("name") + " ; " +
                 "username | " + this.currentUsername + " ; " +
                 "choice | " + listNameToVote + " ;"
         );
