@@ -273,7 +273,6 @@ class VotingTerminalMenu implements Runnable {
             "Password: ");
     password = sc.nextLine();
     messageToServer += password + " ; ";
-    System.out.println(messageToServer);
 
     return messageToServer;
   }
