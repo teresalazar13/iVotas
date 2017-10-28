@@ -138,7 +138,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
         System.out.println("There isn't a faculty with the name " + facultyName);
     }
     catch (RemoteException e) {
-      System.out.println("Remote Exception, " + e);
+      System.out.println("Waiting...");
       connectRMIInterface(a);
     }
   }
@@ -166,7 +166,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
           System.out.println("Faculty successfully created.");
         }
         catch (RemoteException e) {
-          System.out.println("Remote Exception, " + e);
+          System.out.println("Waiting...");
           connectRMIInterface(a);
         }
       }
@@ -180,7 +180,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
               r.updateFacultyName(faculty, newName);
             }
             catch (RemoteException e) {
-              System.out.println("Remote Exception in updating Faculty, " + e);
+              System.out.println("Waiting...");
               connectRMIInterface(a);
             }
           }
@@ -189,7 +189,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
           }
         }
         catch (RemoteException e) {
-          System.out.println("Remote Exception in updating Faculty, " + e);
+          System.out.println("Waiting...");
           connectRMIInterface(a);
         }
       }
@@ -206,7 +206,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
           }
         }
         catch (RemoteException e) {
-          System.out.println("Remote Exception in removing Faculty, " + e);
+          System.out.println("Waiting...");
           connectRMIInterface(a);
         }
       }
@@ -223,7 +223,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
             System.out.println("Error. There isn't a faculty with the name " + facultyName);
         }
         catch (RemoteException e) {
-          System.out.println("Remote Exception creating Department " + e);
+          System.out.println("Waiting...");
           connectRMIInterface(a);
         }
       }
@@ -240,7 +240,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
             }
 
             catch (RemoteException e) {
-              System.out.println("Remote Exception in updating Department, " + e);
+              System.out.println("Waiting...");
               connectRMIInterface(a);
             }
           }
@@ -249,7 +249,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
           }
         }
         catch (RemoteException e) {
-          System.out.println("Remote Exception in updating Department, " + e);
+          System.out.println("Waiting...");
           connectRMIInterface(a);
         }
       }
@@ -309,7 +309,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
 
     }
     catch(RemoteException e) {
-      System.out.println("Remote Exception creating election");
+      System.out.println("Waiting...");
       connectRMIInterface(a);
     }
   }
@@ -327,7 +327,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       }
     }
     catch(RemoteException e) {
-      System.out.println("Remote Exception creating candidate List.");
+      System.out.println("Waiting...");
       connectRMIInterface(a);
       return;
     }
@@ -396,7 +396,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       System.out.println("Candidate list successfully created.");
     }
     catch(RemoteException e) {
-      System.out.println("Remote Exception creating candidate List.");
+      System.out.println("Waiting...");
       connectRMIInterface(a);
     }
   }
@@ -417,7 +417,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       }
     }
     catch(RemoteException e) {
-      System.out.println("Remote Exception creating voting Table");
+      System.out.println("Waiting...");
       connectRMIInterface(a);
     }
   }
@@ -460,7 +460,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
           System.out.println("Error updating election. You cant update election because it has already started or even ended.");
       }
       catch(RemoteException e) {
-        System.out.println("Remote Exception updating Election");
+        System.out.println("Waiting...");
         connectRMIInterface(a);
       }
     }
@@ -474,7 +474,8 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       connectRMIInterface(a);
     }
     catch(RemoteException e) {
-      System.out.println("Remote exception knowing where user has voted.");
+      System.out.println("Waiting...");
+      connectRMIInterface(a);
     }
   }
 
@@ -484,7 +485,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       System.out.println(r.detailsOfPastElections());
     }
     catch(RemoteException e) {
-      System.out.println("Remote exception getting details of past elections.");
+      System.out.println("Waiting...");
       connectRMIInterface(a);
     }
   }
@@ -523,7 +524,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       }
     }
     catch(RemoteException e) {
-      System.out.println("Error subscribing.");
+      System.out.println("Waiting...");
       connectRMIInterface(a);
     }
   }
@@ -569,7 +570,7 @@ public class Admin extends UnicastRemoteObject implements AdminInterface, Serial
       System.out.println(r.prettyPrint(option));
     }
     catch (RemoteException e) {
-      System.out.println("Error printing data.");
+      System.out.println("Waiting...");
       connectRMIInterface(a);
     }
   }

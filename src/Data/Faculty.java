@@ -33,7 +33,11 @@ public class Faculty implements Serializable {
     for (int i = 0; i < departments.size(); i++) {
       res += departments.get(i).getName() + " ,";
     }
-    return res.substring(0, res.length() - 2);
+
+    res = res.substring(0, res.length() - 2);
+    res += "\n";
+
+    return res;
   }
 
   @Override

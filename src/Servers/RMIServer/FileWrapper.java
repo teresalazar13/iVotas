@@ -19,7 +19,7 @@ public class FileWrapper {
   public FileWrapper() throws IOException, ClassNotFoundException {
 
     // -------------DEPARTAMENTOS----------------
-    Department department1 = new Department("EngenhariaInformatica");
+    /*Department department1 = new Department("EngenhariaInformatica");
     Department department2 = new Department("EngenhariaMecanica");
     Department department3 = new Department("Gestao");
     Department department4 = new Department("Economia");
@@ -308,7 +308,7 @@ public class FileWrapper {
     writeFile(elections,"Elections");
     writeFile(candidateLists,"CandidateLists");
     writeFile(votingTables,"VotingTables");
-    writeFile(votes,"Votes");
+    writeFile(votes,"Votes");*/
 
     ArrayList<User> usersFromFile = (ArrayList<User>) readFile("User");
     ArrayList<Department> departmentsFromFile = (ArrayList<Department>) readFile("Department");

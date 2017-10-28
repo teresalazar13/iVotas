@@ -121,7 +121,6 @@ class TCPClient {
     } catch (IOException e) {
       if(inFromServer == null)
         System.out.println("\nUsage: java Client.TCPClient <host> <port>\n");
-        System.out.println(e.getMessage());
     } finally {
       try {
         inFromServer.close();
@@ -240,12 +239,15 @@ class VotingTerminalMenu implements Runnable {
                 "choice | " + listNameToVote + " ;"
         );
 
+        System.out.println("Waiting...");
         synchronized (this.getT()) {
           this.getT().wait();
         }
 
         if (!this.voteState) {
           System.out.println("You cannot vote, you have already voted or can't vote on this election/list");
+        } else {
+          System.out.println("Vote casted successfully");
         }
 
         // clean vars received

@@ -264,8 +264,6 @@ class Connection extends Thread {
   }
 
   private RMIInterface connectRMIInterface(TCPServer server) {
-    System.out.println("Trying to connect to port " + server.getPort());
-
     RMIInterface rmi = null;
     boolean noExceptions = false;
 
@@ -301,7 +299,6 @@ class Connection extends Thread {
         validLogin = this.rmi.authenticateUser(protocolValues.get("username"), protocolValues.get("password"));
         noExceptions = true;
       } catch (RemoteException | NullPointerException e) {
-        System.out.println("Waiting...");
         this.rmi = this.connectRMIInterface(this.tableServer);
       }
 
@@ -330,7 +327,6 @@ class Connection extends Thread {
         validLogin = this.authUser(protocolValues);
       }
     } catch (RemoteException e) {
-      System.out.println("Waiting...");
       this.connectRMIInterface(tableServer);
     } catch (IOException e) {
       this.close();
@@ -348,7 +344,6 @@ class Connection extends Thread {
         user = this.rmi.getUserByName(username);
         noExceptions = true;
       } catch (RemoteException | NullPointerException e) {
-        System.out.println("Waiting...");
         this.rmi = this.connectRMIInterface(this.tableServer);
       }
 
@@ -370,7 +365,6 @@ class Connection extends Thread {
         candidateList = this.rmi.getCandidateListByName(name);
         noExceptions = true;
       } catch (RemoteException | NullPointerException e) {
-        System.out.println("Waiting...");
         this.rmi = this.connectRMIInterface(this.tableServer);
       }
 
@@ -398,7 +392,6 @@ class Connection extends Thread {
 
         noExceptions = true;
       } catch (RemoteException | NullPointerException e) {
-        System.out.println("Waiting...");
         this.rmi = this.connectRMIInterface(this.tableServer);
       }
 
@@ -598,8 +591,6 @@ class Menu extends Thread {
   }
 
   private RMIInterface connectRMIInterface(TCPServer server) {
-    System.out.println("Trying to connect to port " + server.getPort());
-
     RMIInterface rmi = null;
     boolean noExceptions = false;
 
@@ -633,7 +624,6 @@ class Menu extends Thread {
         user = this.rmi.searchUser(searchParams.get(0), searchParams.get(1));
         noExceptions = true;
       } catch (RemoteException | NullPointerException e) {
-        System.out.println("Waiting...");
         this.rmi = this.connectRMIInterface(this.tableServer);
       }
 
@@ -654,7 +644,6 @@ class Menu extends Thread {
         users = this.rmi.searchUsers(searchParams.get(0), searchParams.get(1));
         noExceptions = true;
       } catch (RemoteException | NullPointerException e) {
-        System.out.println("Waiting...");
         this.rmi = this.connectRMIInterface(this.tableServer);
       }
 
