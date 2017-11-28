@@ -13,14 +13,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class TCPServer {
+  private String ip;
+  private String mainRMIIP;
+  private String backupRMIIP;
   private int port;
   private int mainRmiPort;
   private int backupRmiPort;
   private VotingTable votingTable;
   private CopyOnWriteArrayList <Connection> votingTerminals;
 
-  public TCPServer(int port, int mainRmiPort, int backupRmiPort, VotingTable votingTable, CopyOnWriteArrayList<Connection> votingTerminals) {
+  public TCPServer(String ip, String mainRMIIP, String backupRMIIP, int port,int mainRmiPort, int backupRmiPort, VotingTable votingTable, CopyOnWriteArrayList<Connection> votingTerminals) {
+    this.ip = ip;
     this.port = port;
+    this.mainRMIIP = mainRMIIP;
+    this.backupRMIIP = backupRMIIP;
     this.mainRmiPort = mainRmiPort;
     this.backupRmiPort = backupRmiPort;
     this.votingTable = votingTable;
@@ -30,17 +36,18 @@ public class TCPServer {
   public static void main(String args[]) {
 
     // Check if the number of args is correct
-    if(args.length != 5) {
-      System.out.println("java -jar server.jar IPAddress serverPort RMIPort RMIBackupPort VotingTableID");
+    if(args.length != 6) {
+      System.out.println("java -jar server.jar FirstIPAddress SecondIPAddress serverPort RMIPort RMIBackupPort VotingTableID");
       System.exit(0);
     }
 
     // Store args
-    String IPAddress = args[0];
-    int serverPort = Integer.parseInt(args[1]);
-    int RMIPort = Integer.parseInt(args[2]);
-    int RMIbackupPort = Integer.parseInt(args[3]);
-    int VotingTableID = Integer.parseInt(args[4]);
+    String mainRMIIP = args[0];
+    String backupRMIIP = args[1];
+    int serverPort = Integer.parseInt(args[2]);
+    int RMIPort = Integer.parseInt(args[3]);
+    int RMIbackupPort = Integer.parseInt(args[4]);
+    int VotingTableID = Integer.parseInt(args[5]);
 
     VotingTable votingTable = null;
     TCPServer tableServer = null;
@@ -48,10 +55,10 @@ public class TCPServer {
     ArrayList<String> votingTableMenuMessages = new ArrayList<>();
     CopyOnWriteArrayList <Connection> threads = new CopyOnWriteArrayList<>();
 
-    tableServer = new TCPServer(RMIPort, RMIPort, RMIbackupPort, null, threads);
+    tableServer = new TCPServer(mainRMIIP, mainRMIIP, backupRMIIP, RMIPort, RMIPort, RMIbackupPort, null, threads);
 
     // Connect to rmi server
-    rmi = tableServer.connectRMIInterface(IPAddress);
+    rmi = tableServer.connectRMIInterface();
 
     // Get voting table associated with this server
     try {
@@ -60,7 +67,7 @@ public class TCPServer {
       rmi.notifyAdmins("New voting table with id " + votingTable.getId() + " of election " + votingTable.getElection().getName());
     } catch (IOException | NullPointerException e) {
       System.out.println("Unable to retrieve voting table");
-      tableServer.connectRMIInterface(IPAddress);
+      tableServer.connectRMIInterface();
       return;
     }
 
@@ -68,12 +75,12 @@ public class TCPServer {
       System.out.println("Listening on port " + serverPort);
 
       ServerSocket listenSocket = new ServerSocket(serverPort);
-      Menu menu = new Menu(votingTableMenuMessages, threads, rmi, tableServer, votingTable.getId(), IPAddress);
+      Menu menu = new Menu(votingTableMenuMessages, threads, rmi, tableServer, votingTable.getId());
 
       // Accept new client connections
       while(true) {
         Socket clientSocket = listenSocket.accept();
-        Connection thread = new Connection(clientSocket, tableServer.votingTerminals.size(), IPAddress, tableServer, votingTableMenuMessages, threads, rmi);
+        Connection thread = new Connection(clientSocket, tableServer.votingTerminals.size(), tableServer, votingTableMenuMessages, threads, rmi);
         tableServer.votingTerminals.add(thread);
       }
     } catch(IOException e) {
@@ -87,14 +94,20 @@ public class TCPServer {
     else server.setPort(server.getMainRmiPort());
   }
 
-  private RMIInterface connectRMIInterface(String ip) {
+  // Update rmi ip between main and backup
+  private void updateIP(TCPServer server) {
+    if (server.getIp() == server.getMainRMIIP()) server.setIp(server.getBackupRMIIP());
+    else server.setIp(server.getMainRMIIP());
+  }
+
+  private RMIInterface connectRMIInterface() {
     RMIInterface rmi = null;
     boolean passed = false;
 
     while (true) {
       try {
         // primeiro arg é o ip
-        rmi = (RMIInterface) LocateRegistry.getRegistry(ip, this.getPort()).lookup("ivotas");
+        rmi = (RMIInterface) LocateRegistry.getRegistry(this.getIp(), this.getPort()).lookup("ivotas");
         //r.addAdmin(a);
         rmi.remote_print("New client");
         passed = true;
@@ -104,6 +117,7 @@ public class TCPServer {
         } catch (InterruptedException es) {
           System.out.println("Error sleep: " + es.getMessage());
         }
+        this.updateIP(this);
         this.updatePort(this);
       }
 
@@ -118,6 +132,15 @@ public class TCPServer {
   public VotingTable getVotingTable() { return votingTable; }
   public void setVotingTable(VotingTable votingTable) { this.votingTable = votingTable; }
 
+  public String getIp() { return ip; }
+  public void setIp(String ip) { this.ip = ip; }
+
+  public String getMainRMIIP() { return mainRMIIP; }
+  public void setMainRMIIP(String mainRMIIP) { this.mainRMIIP = mainRMIIP; }
+
+  public String getBackupRMIIP() { return backupRMIIP; }
+  public void setBackupRMIIP(String backupRMIIP) { this.backupRMIIP = backupRMIIP; }
+
   public int getMainRmiPort() { return mainRmiPort; }
   public void setMainRmiPort(int mainRmiPort) { this.mainRmiPort = mainRmiPort; }
 
@@ -131,7 +154,6 @@ public class TCPServer {
 // Thread to handle comm with client
 class Connection extends Thread {
   private int thread_number;
-  private String ip;
   private Socket clientSocket;
   private BufferedReader bufferedReader;
   private PrintWriter outToServer;
@@ -140,9 +162,8 @@ class Connection extends Thread {
   private RMIInterface rmi;
   private TCPServer tableServer;
 
-  public Connection(Socket aClientSocket, int number, String ip, TCPServer tableServer, ArrayList<String> votingTableMessages, CopyOnWriteArrayList<Connection> threads, RMIInterface rmi) {
+  public Connection(Socket aClientSocket, int number, TCPServer tableServer, ArrayList<String> votingTableMessages, CopyOnWriteArrayList<Connection> threads, RMIInterface rmi) {
     this.thread_number = number;
-    this.ip = ip;
     this.tableServer = tableServer;
     this.threads = threads;
     this.votingTableMenuMessages = votingTableMessages;
@@ -263,13 +284,19 @@ class Connection extends Thread {
     else server.setPort(server.getMainRmiPort());
   }
 
+  // Update rmi ip between main and backup
+  private void updateIP(TCPServer server) {
+    if (server.getIp() == server.getMainRMIIP()) server.setIp(server.getBackupRMIIP());
+    else server.setIp(server.getMainRMIIP());
+  }
+
   private RMIInterface connectRMIInterface(TCPServer server) {
     RMIInterface rmi = null;
     boolean noExceptions = false;
 
     while (true) {
       try {
-        rmi = (RMIInterface) LocateRegistry.getRegistry(this.ip, server.getPort()).lookup("ivotas");
+        rmi = (RMIInterface) LocateRegistry.getRegistry(server.getIp(), server.getPort()).lookup("ivotas");
         //r.addAdmin(a);
         rmi.remote_print("New client");
         noExceptions = true;
@@ -279,6 +306,7 @@ class Connection extends Thread {
         } catch (InterruptedException es) {
           System.out.println("Error sleep: " + es.getMessage());
         }
+        updateIP(server);
         updatePort(server);
       }
 
@@ -423,15 +451,13 @@ class Menu extends Thread {
   private RMIInterface rmi;
   private TCPServer tableServer;
   private int votingTableId;
-  private String ip;
 
-  public Menu (ArrayList<String> votingTableMenuMessages, CopyOnWriteArrayList<Connection> votingTerminals, RMIInterface rmi, TCPServer tableServer, int votingTableId, String ip) {
+  public Menu (ArrayList<String> votingTableMenuMessages, CopyOnWriteArrayList<Connection> votingTerminals, RMIInterface rmi, TCPServer tableServer, int votingTableId) {
     this.votingTableMenuMessages = votingTableMenuMessages;
     this.votingTerminals = votingTerminals;
     this.rmi = rmi;
     this.tableServer = tableServer;
     this.votingTableId = votingTableId;
-    this.ip = ip;
     this.start();
   }
 
@@ -590,13 +616,19 @@ class Menu extends Thread {
     else server.setPort(server.getMainRmiPort());
   }
 
+  // Update rmi ip between main and backup
+  private void updateIP(TCPServer server) {
+    if (server.getIp() == server.getMainRMIIP()) server.setIp(server.getBackupRMIIP());
+    else server.setIp(server.getMainRMIIP());
+  }
+
   private RMIInterface connectRMIInterface(TCPServer server) {
     RMIInterface rmi = null;
     boolean noExceptions = false;
 
     while (true) {
       try {
-        rmi = (RMIInterface) LocateRegistry.getRegistry(this.ip, server.getPort()).lookup("ivotas");
+        rmi = (RMIInterface) LocateRegistry.getRegistry(server.getIp(), server.getPort()).lookup("ivotas");
         //r.addAdmin(a);
         rmi.remote_print("New client");
         noExceptions = true;
@@ -606,6 +638,7 @@ class Menu extends Thread {
         } catch (InterruptedException es) {
           System.out.println("Error sleep: " + es.getMessage());
         }
+        updateIP(server);
         updatePort(server);
       }
 
